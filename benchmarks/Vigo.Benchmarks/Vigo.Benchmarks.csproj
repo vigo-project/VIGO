@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <!-- BenchmarkDotNet generated code does not follow the library analyzers. -->
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <AnalysisLevel>latest-minimum</AnalysisLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="BenchmarkDotNet" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\tests\Vigo.TestUtilities\Vigo.TestUtilities.csproj" />
+    <ProjectReference Include="..\..\src\Vigo.Core\Vigo.Core.csproj" />
+    <ProjectReference Include="..\..\src\Vigo.Git\Vigo.Git.csproj" />
+    <ProjectReference Include="..\..\src\Vigo.Graph\Vigo.Graph.csproj" />
+  </ItemGroup>
+</Project>

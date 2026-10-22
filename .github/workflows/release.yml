@@ -1,0 +1,73 @@
+# Beta deployment: pushing a tag "v<version>" (e.g. v0.1.0-beta.2) builds the Native AOT app, packs the installer and the
+# update packages with Velopack and publishes them as a pre-release of adgranger/vigo-installer. Installed copies update themselves from it.
+name: release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to pack (SemVer, e.g. 0.1.0-beta.2)'
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    env:
+      VERSION: ${{ github.event.inputs.version || github.ref_name }}
+      # Repository that receives the installers. INSTALLER_REPO_TOKEN: fine-grained token
+      # with "Contents: read and write" on it, stored as a secret of this repository.
+      INSTALLER_REPO: https://github.com/adgranger/vigo-installer
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      # Shows which SDK the build really uses (global.json is pinned exactly: a newer preinstalled SDK must not win).
+      - name: SDK info
+        run: dotnet --info
+
+      - name: Version
+        shell: pwsh
+        run: |
+          $v = "$env:VERSION".TrimStart('v')
+          if ($v -notmatch '^\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?$') { throw "Invalid version '$v'" }
+          # The "What's new" dialog shows the section titled with this exact version: none means no dialog.
+          foreach ($f in 'src/Vigo.Core/Changelog/CHANGELOG-fr.md', 'src/Vigo.Core/Changelog/CHANGELOG-en.md') {
+            if (-not (Select-String -Path $f -Pattern "^## $([regex]::Escape($v))( |$)" -Quiet)) { throw "No '## $v' section in $f" }
+          }
+          "PACK_VERSION=$v" | Out-File -Append -FilePath $env:GITHUB_ENV
+
+      - name: Tests
+        run: |
+          dotnet test --project tests/Vigo.Core.Tests -p:Platform=x64
+          dotnet test --project tests/Vigo.Git.Tests -p:Platform=x64
+
+      - name: Publish (Native AOT)
+        run: dotnet publish src/Vigo.App -c Release -r win-x64 -p:Platform=x64 -p:Version=${{ env.PACK_VERSION }} -o artifacts/publish/aot-x64
+
+      - name: Velopack
+        run: dotnet tool install --global vpk --version 1.2.161
+
+      # Previous releases give the delta packages (updates download only what changed).
+      - name: Download previous releases
+        continue-on-error: true
+        run: vpk download github --repoUrl ${{ env.INSTALLER_REPO }} --pre --token ${{ secrets.INSTALLER_REPO_TOKEN }}
+
+      - name: Pack
+        run: >
+          vpk pack --packId VIGO --packTitle "VIGO" --packAuthors "VIGO" --packVersion ${{ env.PACK_VERSION }}
+          --packDir artifacts/publish/aot-x64 --mainExe Vigo.exe --icon src/Vigo.App/Assets/Vigo.ico --outputDir Releases
+
+      - name: Upload (pre-release)
+        run: >
+          vpk upload github --repoUrl ${{ env.INSTALLER_REPO }} --outputDir Releases
+          --token ${{ secrets.INSTALLER_REPO_TOKEN }} --tag v${{ env.PACK_VERSION }} --releaseName "VIGO ${{ env.PACK_VERSION }}" --pre --publish

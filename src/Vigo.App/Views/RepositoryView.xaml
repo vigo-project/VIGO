@@ -1,0 +1,416 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Repository view (mockup VIGO.dc.html, isRepo section): toolbar, left panel, graph, right panel. -->
+<UserControl
+    x:Class="Vigo.App.Views.RepositoryView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Vigo.App.Controls"
+    xmlns:views="using:Vigo.App.Views"
+    xmlns:vm="using:Vigo.Core.ViewModels"
+    KeyboardAcceleratorPlacementMode="Hidden">
+
+    <!-- Shortcuts of the toolbar (mockup), active while this tab is shown: RepositoryView.xaml.cs (KeyboardShortcuts). -->
+
+    <Grid x:Name="Root">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <!-- Integrated terminal (J7.10): 0 while hidden, the saved height (LayoutState) while shown. -->
+            <RowDefinition x:Name="TerminalRow" Height="0" />
+        </Grid.RowDefinitions>
+
+        <!-- Toolbar -->
+        <Grid x:Name="Toolbar" Padding="8,2" BorderBrush="{ThemeResource VigoStrokeSubtleBrush}" BorderThickness="0,0,0,1" ColumnSpacing="4">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <!-- Spacer, then the search box: it takes the free space first (weight 100) up to 320 px, the spacer the rest. -->
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="100*" MaxWidth="320" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Orientation="Horizontal">
+                <!-- Repository selector: tabs open in this window, then recent repositories -->
+                <Button x:Name="RepositoryButton" Style="{StaticResource VigoSubtleButton}" MinWidth="180" Padding="8,2,8,2" VerticalAlignment="Stretch"
+                        HorizontalContentAlignment="Left" x:Uid="RepoRepositoryButton">
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock x:Uid="RepoRepositoryLabel" Style="{StaticResource VigoLabelText}" />
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <TextBlock Text="{x:Bind ViewModel.Info.Name, Mode=OneWay}" Style="{StaticResource VigoStrongText}" />
+                            <FontIcon Style="{StaticResource VigoIcon}" FontSize="12" Glyph="{x:Bind controls:FluentIcons.ChevronDown}" />
+                        </StackPanel>
+                    </StackPanel>
+                    <Button.Flyout>
+                        <Flyout x:Name="RepositoryFlyout" Placement="BottomEdgeAlignedLeft" Opening="OnRepositoryFlyoutOpening" Opened="OnRepositoryFlyoutOpened">
+                            <StackPanel Width="380" Spacing="6">
+                                <TextBox x:Name="RepositoryFilter" Style="{StaticResource VigoSearchBox}" x:Uid="RepoRepositoryFilter"
+                                         KeyDown="OnRepositoryFilterKeyDown"
+                                         Text="{x:Bind Shell.RepositoryPicker.Filter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                <ListView x:Name="RepositoryList" ItemsSource="{x:Bind Shell.RepositoryPicker.Items}" SelectionMode="None" IsItemClickEnabled="True"
+                                          ItemClick="OnRepositoryItemClick" MaxHeight="340" x:Uid="RepoRepositoryList">
+                                    <ListView.ItemContainerStyle>
+                                        <Style TargetType="ListViewItem" BasedOn="{StaticResource DefaultListViewItemStyle}">
+                                            <Setter Property="MinHeight" Value="30" />
+                                            <Setter Property="Padding" Value="8,2" />
+                                        </Style>
+                                    </ListView.ItemContainerStyle>
+                                    <ListView.ItemTemplate>
+                                        <DataTemplate x:DataType="vm:RepositoryPickerItem">
+                                            <StackPanel>
+                                                <TextBlock Text="{x:Bind GroupTitle}" Style="{StaticResource VigoLabelText}" Margin="0,6,0,4" Visibility="{x:Bind HasGroupTitle}" />
+                                                <Grid ColumnSpacing="8">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto" />
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="Auto" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <FontIcon Style="{StaticResource VigoIcon}" FontSize="14" VerticalAlignment="Center"
+                                                              Glyph="{x:Bind controls:FluentIcons.FromName(Icon)}" />
+                                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                        <TextBlock Text="{x:Bind Name}" Style="{StaticResource VigoStrongText}" TextTrimming="CharacterEllipsis" />
+                                                        <TextBlock Text="{x:Bind Path}" Style="{StaticResource VigoLabelText}" TextTrimming="CharacterEllipsis" />
+                                                    </StackPanel>
+                                                    <TextBlock Grid.Column="2" Text="{x:Bind Branch}" Style="{StaticResource VigoLabelText}" VerticalAlignment="Center"
+                                                               Visibility="{x:Bind HasBranch}" />
+                                                </Grid>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ListView.ItemTemplate>
+                                </ListView>
+                                <TextBlock x:Uid="RepoNoRepository" Style="{StaticResource VigoLabelText}" Margin="4,4"
+                                           Visibility="{x:Bind views:RepositoryView.Collapsed(Shell.RepositoryPicker.HasItems), Mode=OneWay}" />
+                                <Border Height="1" Background="{ThemeResource VigoStrokeSubtleBrush}" />
+                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                    <Button Style="{StaticResource VigoSubtleButton}" Command="{x:Bind Shell.OpenCommand}" Click="OnRepositoryActionClick" x:Uid="RepoOpen" />
+                                    <Button Style="{StaticResource VigoSubtleButton}" Command="{x:Bind Shell.CloneCommand}" Click="OnRepositoryActionClick" x:Uid="RepoClone"
+                                            Visibility="{x:Bind Shell.HasClone}" />
+                                    <Button Style="{StaticResource VigoSubtleButton}" Click="OnCopyRepositoryPathClick" x:Uid="RepoCopyPath" />
+                                    <Button Style="{StaticResource VigoSubtleButton}" Click="OnShowRepositoryInExplorerClick" x:Uid="RepoExplorer" />
+                                </StackPanel>
+                            </StackPanel>
+                        </Flyout>
+                    </Button.Flyout>
+                </Button>
+                <!-- Branch selector: filterable branches, remote branches and tags; a click checks out -->
+                <Button x:Name="BranchButton" Style="{StaticResource VigoSubtleButton}" MinWidth="200" Padding="12,2,12,2" VerticalAlignment="Stretch"
+                        HorizontalContentAlignment="Left" x:Uid="RepoBranchButton">
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock x:Uid="RepoBranchLabel" Style="{StaticResource VigoLabelText}" />
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <FontIcon Style="{StaticResource VigoIcon}" FontSize="14" Foreground="{ThemeResource VigoLane5Brush}" Glyph="{x:Bind controls:FluentIcons.Branch}" />
+                            <TextBlock Text="{x:Bind ViewModel.HeadDisplay, Mode=OneWay}" Style="{StaticResource VigoStrongText}" />
+                            <FontIcon Style="{StaticResource VigoIcon}" FontSize="12" Glyph="{x:Bind controls:FluentIcons.ChevronDown}" />
+                        </StackPanel>
+                    </StackPanel>
+                    <Button.Flyout>
+                        <Flyout x:Name="BranchFlyout" Placement="BottomEdgeAlignedLeft" Opening="OnBranchFlyoutOpening" Opened="OnBranchFlyoutOpened">
+                            <StackPanel Width="360" Spacing="6">
+                                <TextBox x:Name="BranchFilter" Style="{StaticResource VigoSearchBox}" x:Uid="RepoBranchFilter"
+                                         KeyDown="OnBranchFilterKeyDown"
+                                         Text="{x:Bind ViewModel.BranchPicker.Filter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                <ListView x:Name="BranchList" ItemsSource="{x:Bind ViewModel.BranchPicker.Items}" SelectionMode="None" IsItemClickEnabled="True"
+                                          ItemClick="OnBranchItemClick" MaxHeight="340" x:Uid="RepoBranchList">
+                                    <ListView.ItemContainerStyle>
+                                        <Style TargetType="ListViewItem" BasedOn="{StaticResource DefaultListViewItemStyle}">
+                                            <Setter Property="MinHeight" Value="30" />
+                                            <Setter Property="Padding" Value="8,2" />
+                                        </Style>
+                                    </ListView.ItemContainerStyle>
+                                    <ListView.ItemTemplate>
+                                        <DataTemplate x:DataType="vm:BranchPickerItem">
+                                            <StackPanel>
+                                                <TextBlock Text="{x:Bind GroupTitle}" Style="{StaticResource VigoLabelText}" Margin="0,6,0,4" Visibility="{x:Bind HasGroupTitle}" />
+                                                <Grid ColumnSpacing="8">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto" />
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="Auto" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <FontIcon Style="{StaticResource VigoIcon}" FontSize="14" VerticalAlignment="Center"
+                                                              Glyph="{x:Bind controls:FluentIcons.FromName(Icon)}" />
+                                                    <TextBlock Grid.Column="1" Text="{x:Bind Name}" Style="{StaticResource VigoStrongText}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                                                    <TextBlock Grid.Column="2" Text="{x:Bind Detail}" Style="{StaticResource VigoLabelText}" VerticalAlignment="Center"
+                                                               Visibility="{x:Bind HasDetail}" />
+                                                </Grid>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ListView.ItemTemplate>
+                                </ListView>
+                                <TextBlock x:Uid="RepoNoBranch" Style="{StaticResource VigoLabelText}" Margin="4,4"
+                                           Visibility="{x:Bind views:RepositoryView.Collapsed(ViewModel.BranchPicker.HasItems), Mode=OneWay}" />
+                                <Border Height="1" Background="{ThemeResource VigoStrokeSubtleBrush}" />
+                                <Button Style="{StaticResource VigoSubtleButton}" Command="{x:Bind ViewModel.RefActions.CreateBranchCommand}" Click="OnBranchActionClick"
+                                        x:Uid="RepoNewBranch" />
+                            </StackPanel>
+                        </Flyout>
+                    </Button.Flyout>
+                </Button>
+                <!-- Conflict prevention (J7.11): shown next to the branch when the merge with the default remote branch would (or might) conflict. -->
+                <Button x:Name="ConflictButton" Style="{StaticResource VigoSubtleButton}" Padding="8,2" VerticalAlignment="Stretch"
+                        Visibility="{x:Bind ViewModel.ConflictPrevention.HasIssue, Mode=OneWay}"
+                        ToolTipService.ToolTip="{x:Bind ViewModel.ConflictPrevention.Summary, Mode=OneWay}"
+                        AutomationProperties.Name="{x:Bind ViewModel.ConflictPrevention.Summary, Mode=OneWay}">
+                    <Grid>
+                        <FontIcon Style="{StaticResource VigoIcon}" FontSize="16" Glyph="{x:Bind controls:FluentIcons.Warning}" Foreground="{ThemeResource VigoWarningBrush}"
+                                  Visibility="{x:Bind ViewModel.ConflictPrevention.IsPossible, Mode=OneWay}" />
+                        <FontIcon Style="{StaticResource VigoIcon}" FontSize="16" Glyph="{x:Bind controls:FluentIcons.ErrorCircle}" Foreground="{ThemeResource VigoDangerBrush}"
+                                  Visibility="{x:Bind ViewModel.ConflictPrevention.IsConflict, Mode=OneWay}" />
+                    </Grid>
+                    <Button.Flyout>
+                        <Flyout x:Name="ConflictFlyout" Placement="BottomEdgeAlignedLeft">
+                            <StackPanel Width="380" Spacing="6">
+                                <TextBlock Text="{x:Bind ViewModel.ConflictPrevention.Summary, Mode=OneWay}" Style="{StaticResource VigoStrongText}" TextWrapping="Wrap" />
+                                <TextBlock x:Uid="PreventionConflicting" Style="{StaticResource VigoLabelText}" Margin="0,6,0,0"
+                                           Visibility="{x:Bind ViewModel.ConflictPrevention.HasConflictingFiles, Mode=OneWay}" />
+                                <ItemsControl ItemsSource="{x:Bind ViewModel.ConflictPrevention.ConflictingFiles}" MaxHeight="160"
+                                              Visibility="{x:Bind ViewModel.ConflictPrevention.HasConflictingFiles, Mode=OneWay}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="x:String">
+                                            <Button Style="{StaticResource VigoSubtleButton}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Padding="6,2"
+                                                    Tag="{x:Bind}" Click="OnPreventionFileClick">
+                                                <TextBlock Text="{x:Bind}" FontFamily="{StaticResource VigoMonoFont}" FontSize="{ThemeResource VigoFontSize12}" TextTrimming="CharacterEllipsis" />
+                                            </Button>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                                <TextBlock x:Uid="PreventionPossible" Style="{StaticResource VigoLabelText}" Margin="0,6,0,0" TextWrapping="Wrap"
+                                           Visibility="{x:Bind ViewModel.ConflictPrevention.HasPossibleFiles, Mode=OneWay}" />
+                                <ItemsControl ItemsSource="{x:Bind ViewModel.ConflictPrevention.PossibleFiles}" MaxHeight="160"
+                                              Visibility="{x:Bind ViewModel.ConflictPrevention.HasPossibleFiles, Mode=OneWay}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="x:String">
+                                            <Button Style="{StaticResource VigoSubtleButton}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Padding="6,2"
+                                                    Tag="{x:Bind}" Click="OnPreventionFileClick">
+                                                <TextBlock Text="{x:Bind}" FontFamily="{StaticResource VigoMonoFont}" FontSize="{ThemeResource VigoFontSize12}" TextTrimming="CharacterEllipsis" />
+                                            </Button>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                                <Border Height="1" Background="{ThemeResource VigoStrokeSubtleBrush}" />
+                                <Button Style="{StaticResource VigoSubtleButton}" Content="{x:Bind ViewModel.ConflictPrevention.RebaseText, Mode=OneWay}"
+                                        Command="{x:Bind ViewModel.ConflictPrevention.RebaseCommand}" IsEnabled="{x:Bind ViewModel.ConflictPrevention.CanIntegrate, Mode=OneWay}"
+                                        Click="OnPreventionActionClick" />
+                                <Button Style="{StaticResource VigoSubtleButton}" Content="{x:Bind ViewModel.ConflictPrevention.MergeText, Mode=OneWay}"
+                                        Command="{x:Bind ViewModel.ConflictPrevention.MergeCommand}" IsEnabled="{x:Bind ViewModel.ConflictPrevention.CanIntegrate, Mode=OneWay}"
+                                        Click="OnPreventionActionClick" />
+                                <Button Style="{StaticResource VigoSubtleButton}" x:Uid="PreventionFetch" Command="{x:Bind ViewModel.ConflictPrevention.FetchCommand}"
+                                        Click="OnPreventionActionClick" />
+                                <Button Style="{StaticResource VigoSubtleButton}" x:Uid="PreventionCopy" Click="OnPreventionCopyClick" />
+                            </StackPanel>
+                        </Flyout>
+                    </Button.Flyout>
+                </Button>
+            </StackPanel>
+
+            <!-- Buttons: Undo, Redo | Pull, Push (J3.4) | Branch, Stash, Pop (J4.4) | Terminal (enabled from J5/J7) -->
+            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                <StackPanel.Resources>
+                    <Style x:Key="Separator" TargetType="Border">
+                        <Setter Property="Width" Value="1" />
+                        <Setter Property="Height" Value="28" />
+                        <Setter Property="Margin" Value="6,0" />
+                        <Setter Property="Background" Value="{ThemeResource VigoStrokeSubtleBrush}" />
+                    </Style>
+                </StackPanel.Resources>
+                <Border Style="{StaticResource Separator}" Margin="4,0" />
+                <!-- Undo / Redo (J5.2): the tooltip names the operation taken back or replayed -->
+                <Button Style="{StaticResource VigoToolbarButton}" Command="{x:Bind ViewModel.Undo.UndoCommand}"
+                        ToolTipService.ToolTip="{x:Bind ViewModel.Undo.UndoTooltip, Mode=OneWay}" x:Uid="RepoUndo">
+                    <controls:ToolbarButtonContent x:Uid="RepoUndoContent" Icon="arrow_undo" />
+                </Button>
+                <Button Style="{StaticResource VigoToolbarButton}" Command="{x:Bind ViewModel.Undo.RedoCommand}"
+                        ToolTipService.ToolTip="{x:Bind ViewModel.Undo.RedoTooltip, Mode=OneWay}" x:Uid="RepoRedo">
+                    <controls:ToolbarButtonContent x:Uid="RepoRedoContent" Icon="arrow_redo" />
+                </Button>
+                <Border Style="{StaticResource Separator}" />
+                <!-- Pull / Push (J3.4): commits behind / ahead in the tooltip (no badge); right click: fetch, pull strategy, force push -->
+                <Button Style="{StaticResource VigoToolbarButton}" Command="{x:Bind ViewModel.Remote.PullCommand}"
+                        ToolTipService.ToolTip="{x:Bind ViewModel.Remote.PullTooltip, Mode=OneWay}" AutomationProperties.Name="Pull">
+                    <Button.ContextFlyout>
+                        <MenuFlyout>
+                            <MenuFlyoutItem x:Uid="RepoFetchAll" Command="{x:Bind ViewModel.Remote.FetchCommand}" KeyboardAcceleratorTextOverride="F5">
+                                <MenuFlyoutItem.Icon>
+                                    <FontIcon Glyph="{x:Bind controls:FluentIcons.ArrowSync}" FontFamily="{StaticResource VigoIconFont}" />
+                                </MenuFlyoutItem.Icon>
+                            </MenuFlyoutItem>
+                            <MenuFlyoutSeparator />
+                            <MenuFlyoutItem x:Uid="RepoPullMerge" Command="{x:Bind ViewModel.Remote.PullMergeCommand}" />
+                            <MenuFlyoutItem x:Uid="RepoPullRebase" Command="{x:Bind ViewModel.Remote.PullRebaseCommand}" />
+                            <MenuFlyoutItem x:Uid="RepoPullFastForward" Command="{x:Bind ViewModel.Remote.PullFastForwardCommand}" />
+                        </MenuFlyout>
+                    </Button.ContextFlyout>
+                    <controls:ToolbarButtonContent Icon="arrow_download" Label="Pull" />
+                </Button>
+                <Button Style="{StaticResource VigoToolbarButton}" Command="{x:Bind ViewModel.Remote.PushCommand}"
+                        ToolTipService.ToolTip="{x:Bind ViewModel.Remote.PushTooltip, Mode=OneWay}" AutomationProperties.Name="Push">
+                    <Button.ContextFlyout>
+                        <MenuFlyout>
+                            <MenuFlyoutItem x:Uid="RepoForcePush" Command="{x:Bind ViewModel.Remote.ForcePushCommand}">
+                                <MenuFlyoutItem.Icon>
+                                    <FontIcon Glyph="{x:Bind controls:FluentIcons.ArrowUpload}" FontFamily="{StaticResource VigoIconFont}" />
+                                </MenuFlyoutItem.Icon>
+                            </MenuFlyoutItem>
+                        </MenuFlyout>
+                    </Button.ContextFlyout>
+                    <controls:ToolbarButtonContent Icon="arrow_upload" Label="Push" />
+                </Button>
+                <Border Style="{StaticResource Separator}" />
+                <Button Style="{StaticResource VigoToolbarButton}" Command="{x:Bind ViewModel.RefActions.CreateBranchCommand}"
+                        x:Uid="RepoToolbarBranch">
+                    <controls:ToolbarButtonContent x:Uid="RepoToolbarBranchContent" Icon="branch" />
+                </Button>
+                <!-- Stash (J4.4): every change at once, untracked files included; right click: with a message -->
+                <Button Style="{StaticResource VigoToolbarButton}" Command="{x:Bind ViewModel.Stash.StashCommand}"
+                        x:Uid="RepoStash">
+                    <Button.ContextFlyout>
+                        <MenuFlyout>
+                            <MenuFlyoutItem x:Uid="RepoStashWithMessage" Command="{x:Bind ViewModel.Stash.StashWithMessageCommand}">
+                                <MenuFlyoutItem.Icon>
+                                    <FontIcon Glyph="{x:Bind controls:FluentIcons.Archive}" FontFamily="{StaticResource VigoIconFont}" />
+                                </MenuFlyoutItem.Icon>
+                            </MenuFlyoutItem>
+                        </MenuFlyout>
+                    </Button.ContextFlyout>
+                    <controls:ToolbarButtonContent Icon="archive" Label="Stash" />
+                </Button>
+                <Button Style="{StaticResource VigoToolbarButton}" Command="{x:Bind ViewModel.Stash.PopLatestCommand}"
+                        ToolTipService.ToolTip="{x:Bind ViewModel.Stash.PopTooltip, Mode=OneWay}" AutomationProperties.Name="Pop">
+                    <controls:ToolbarButtonContent Icon="archive_arrow_back" Label="Pop" />
+                </Button>
+                <Border Style="{StaticResource Separator}" />
+                <!-- Terminal (J7.10): highlighted while the panel is shown -->
+                <Grid>
+                    <Border CornerRadius="4" Background="{ThemeResource VigoAccentSoftBrush}" IsHitTestVisible="False"
+                            Visibility="{x:Bind ViewModel.Terminal.IsOpen, Mode=OneWay}" />
+                    <Button x:Name="TerminalButton" Style="{StaticResource VigoToolbarButton}" Command="{x:Bind ViewModel.Terminal.ToggleCommand}"
+                            ToolTipService.ToolTip="Terminal (Ctrl+`)" AutomationProperties.Name="Terminal">
+                        <controls:ToolbarButtonContent Icon="window_console" Label="Terminal" />
+                    </Button>
+                </Grid>
+            </StackPanel>
+
+            <Grid Grid.Column="2" />
+
+            <!-- Shrinks with the window (the placeholder is trimmed) instead of being clipped on its left. -->
+            <!-- Commit search: narrows the graph (git log) once the typing pauses; Escape clears it. -->
+            <Grid Grid.Column="3" Margin="8,0,0,0" VerticalAlignment="Center">
+                <TextBox
+                    x:Name="SearchBox"
+                    HorizontalAlignment="Stretch"
+                    Style="{StaticResource VigoSearchBox}"
+                    x:Uid="RepoSearch"
+                    Text="{x:Bind ViewModel.Search.Text, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                    KeyDown="OnSearchKeyDown"
+                    ToolTipService.ToolTip="{x:Bind vm:CommitSearchViewModel.Help}" />
+                <TextBlock Text="{x:Bind ViewModel.Search.Summary, Mode=OneWay}" Style="{StaticResource VigoLabelText}" Margin="0,0,34,0"
+                           HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False"
+                           Visibility="{x:Bind ViewModel.Search.HasSummary, Mode=OneWay}" AutomationProperties.AccessibilityView="Raw" />
+            </Grid>
+
+            <StackPanel Grid.Column="4" Orientation="Horizontal" Spacing="0" VerticalAlignment="Center">
+                <Button Style="{StaticResource VigoSubtleButton}" Width="32" Height="32" Click="OnPaletteClick"
+                        x:Uid="RepoPalette">
+                    <FontIcon Style="{StaticResource VigoIcon}" FontSize="18" Glyph="{x:Bind controls:FluentIcons.AppsList}" />
+                </Button>
+                <Button Style="{StaticResource VigoSubtleButton}" Width="32" Height="32" Command="{x:Bind Shell.OpenOnlineHelpCommand}"
+                        x:Uid="RepoOnlineHelp">
+                    <FontIcon Style="{StaticResource VigoIcon}" FontSize="18" Glyph="{x:Bind controls:FluentIcons.QuestionCircle}" />
+                </Button>
+                <Button Style="{StaticResource VigoSubtleButton}" Width="32" Height="32" Command="{x:Bind Shell.OpenPreferencesCommand}"
+                        x:Uid="RepoPreferences">
+                    <FontIcon Style="{StaticResource VigoIcon}" FontSize="18" Glyph="{x:Bind controls:FluentIcons.Settings}" />
+                </Button>
+            </StackPanel>
+
+            <!-- Network operation or automatic fetch running: 2px bar along the bottom edge of the toolbar (mockup) -->
+            <ProgressBar Grid.ColumnSpan="5" VerticalAlignment="Bottom" Margin="-8,0,-8,-3" MinHeight="2" Height="2"
+                         Value="{x:Bind ViewModel.Remote.ProgressValue, Mode=OneWay}" IsIndeterminate="{x:Bind ViewModel.Remote.IsProgressIndeterminate, Mode=OneWay}"
+                         Visibility="{x:Bind ViewModel.Remote.ShowsProgress, Mode=OneWay}" AutomationProperties.AccessibilityView="Raw" />
+        </Grid>
+
+        <!-- Body -->
+        <!-- Panel widths: LayoutState (shared by every tab), applied by RepositoryView.xaml.cs. -->
+        <Grid x:Name="Body" Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition x:Name="LeftColumn" Width="264" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition x:Name="RightColumn" Width="360" />
+            </Grid.ColumnDefinitions>
+
+            <!-- Left panel: branches, remotes, tags, stashes (J4.1). Border drawn outside the UserControl (see right panel). -->
+            <Border BorderBrush="{ThemeResource VigoStrokeSubtleBrush}" BorderThickness="0,0,1,0">
+                <views:RefsPanel x:Name="RefsPanel" />
+            </Border>
+
+            <!-- Main area: graph (J2.4), replaced by the diff of a file opened from the right panel (J2.5), or by the
+                 conflict editor of a conflicted file (J5.4), by the interactive rebase (J5.5), or by the history or the
+                 blame of a file (J5.6), or by a pull request (J6.9a). -->
+            <controls:GraphCanvas x:Name="GraphView" Grid.Column="1" Background="{ThemeResource VigoSunkenBrush}"
+                                  Visibility="{x:Bind ViewModel.ShowGraph, Mode=OneWay}" />
+            <controls:DiffView x:Name="DiffView" Grid.Column="1" Visibility="{x:Bind ViewModel.Diff.IsOpen, Mode=OneWay}" />
+            <controls:ConflictView x:Name="ConflictView" Grid.Column="1" Visibility="{x:Bind ViewModel.Conflicts.IsOpen, Mode=OneWay}" />
+            <controls:RebaseView x:Name="RebaseView" Grid.Column="1" Visibility="{x:Bind ViewModel.Rebase.IsOpen, Mode=OneWay}" />
+            <controls:FileHistoryView x:Name="FileHistoryView" Grid.Column="1" Visibility="{x:Bind ViewModel.FileHistory.IsOpen, Mode=OneWay}" />
+            <controls:BlameView x:Name="BlameView" Grid.Column="1" Visibility="{x:Bind ViewModel.Blame.IsOpen, Mode=OneWay}" />
+            <controls:PullRequestView x:Name="PullRequestView" Grid.Column="1" Visibility="{x:Bind ViewModel.PullRequest.IsOpen, Mode=OneWay}" />
+            <controls:IssueView x:Name="IssueView" Grid.Column="1" Visibility="{x:Bind ViewModel.Issue.IsOpen, Mode=OneWay}" />
+            <controls:WorkItemView x:Name="WorkItemView" Grid.Column="1" Visibility="{x:Bind ViewModel.WorkItem.IsOpen, Mode=OneWay}" />
+            <controls:RepositorySummaryView x:Name="SummaryView" Grid.Column="1" Grid.ColumnSpan="2" Visibility="{x:Bind ViewModel.Summary.IsOpen, Mode=OneWay}" />
+            <controls:RepositoryStatsView x:Name="StatsView" Grid.Column="1" Grid.ColumnSpan="2" Visibility="{x:Bind ViewModel.Stats.IsOpen, Mode=OneWay}" />
+
+            <!-- Right panel: selected commit, or the working directory when no commit is selected (J3.1). Hidden by the summary page (J7.13). -->
+            <!-- Left border drawn by a Border: a UserControl does not render its own BorderThickness. -->
+            <Border Grid.Column="2" BorderBrush="{ThemeResource VigoStrokeSubtleBrush}" BorderThickness="1,0,0,0"
+                    Visibility="{x:Bind ViewModel.ShowRightPanel, Mode=OneWay}">
+                <Grid>
+                    <views:CommitDetailsPanel x:Name="DetailsPanel"
+                                              Visibility="{x:Bind views:RepositoryView.Collapsed(ViewModel.ShowWorkingTree), Mode=OneWay}" />
+                    <views:WorkingTreePanel x:Name="WorkingTreePanel" Visibility="{x:Bind ViewModel.ShowWorkingTree, Mode=OneWay}" />
+                </Grid>
+            </Border>
+
+            <!-- Panel splitters, over the borders. -->
+            <controls:Splitter x:Name="LeftSplitter" x:Uid="RepoLeftSplitter" Grid.Column="1" HorizontalAlignment="Left" Margin="-3,0,0,0" />
+            <controls:Splitter x:Name="RightSplitter" x:Uid="RepoRightSplitter" Grid.Column="1" HorizontalAlignment="Right" Margin="0,0,-3,0"
+                               Visibility="{x:Bind ViewModel.ShowRightPanel, Mode=OneWay}" />
+
+            <!-- Fetch / pull / push in progress (mockup: toast with a bar and "Annuler"), over the graph -->
+            <Border Grid.Column="1" Width="360" Margin="0,0,16,16" Padding="14,12" HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                    Background="{ThemeResource VigoFlyoutBrush}" BorderBrush="{ThemeResource VigoStrokeBrush}" BorderThickness="1" CornerRadius="8"
+                    Translation="0,0,24" Visibility="{x:Bind ViewModel.Remote.IsRunning, Mode=OneWay}">
+                <Border.Shadow>
+                    <ThemeShadow />
+                </Border.Shadow>
+                <Grid ColumnSpacing="10" RowSpacing="2">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <FontIcon Style="{StaticResource VigoIcon}" FontSize="16" Margin="0,2,0,0" VerticalAlignment="Top"
+                              Foreground="{ThemeResource VigoAccentBrush}" Glyph="{x:Bind controls:FluentIcons.ArrowSync}" />
+                    <TextBlock Grid.Column="1" Text="{x:Bind ViewModel.Remote.OperationTitle, Mode=OneWay}" Style="{StaticResource VigoStrongText}"
+                               TextTrimming="CharacterEllipsis" />
+                    <Button Grid.Column="2" Grid.RowSpan="2" Style="{StaticResource VigoStandardButton}" x:Uid="RepoCancelOperation" VerticalAlignment="Top"
+                            Command="{x:Bind ViewModel.Remote.CancelCommand}" />
+                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{x:Bind ViewModel.Remote.OperationDetail, Mode=OneWay}" FontSize="{ThemeResource VigoFontSize12}"
+                               Foreground="{ThemeResource VigoText2Brush}" TextTrimming="CharacterEllipsis" />
+                    <ProgressBar Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" Margin="0,8,0,0"
+                                 Value="{x:Bind ViewModel.Remote.ProgressValue, Mode=OneWay}" IsIndeterminate="{x:Bind ViewModel.Remote.IsIndeterminate, Mode=OneWay}"
+                                 x:Uid="RepoProgress" />
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- Integrated terminal (J7.10, ADR-071): full width under the three columns; its top edge resizes it. -->
+        <views:TerminalPanel x:Name="TerminalPanel" Grid.Row="2" Visibility="{x:Bind ViewModel.Terminal.IsOpen, Mode=OneWay}" />
+        <controls:Splitter x:Name="TerminalSplitter" Grid.Row="2" Orientation="Horizontal" Height="6" VerticalAlignment="Top" Margin="0,-3,0,0"
+                           x:Uid="RepoTerminalSplitter" Visibility="{x:Bind ViewModel.Terminal.IsOpen, Mode=OneWay}" />
+    </Grid>
+</UserControl>

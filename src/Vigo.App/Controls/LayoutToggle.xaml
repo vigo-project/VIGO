@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Unified / side-by-side toggle of the diff, file history and pull request views: two icon segments, both always
+    visible, the active one raised. The names are the tooltips (set in code, Diff.Layout.* keys, ADR-075).
+-->
+<UserControl
+    x:Class="Vigo.App.Controls.LayoutToggle"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Vigo.App.Controls"
+    IsTabStop="False">
+    <Border Padding="1" CornerRadius="4" Background="{ThemeResource VigoCtrlBrush}"
+            BorderBrush="{ThemeResource VigoStrokeSubtleBrush}" BorderThickness="1">
+        <StackPanel Orientation="Horizontal">
+            <Grid>
+                <Border CornerRadius="3" Background="{ThemeResource VigoCardBrush}"
+                        Visibility="{x:Bind controls:LayoutToggle.Collapsed(IsSideBySide), Mode=OneWay}" />
+                <Button x:Name="UnifiedButton" Style="{StaticResource VigoSubtleButton}" Width="28" Height="24" MinHeight="24" MinWidth="28" Padding="0" CornerRadius="3"
+                        Click="OnUnifiedClick">
+                    <FontIcon Style="{StaticResource VigoIcon}" FontSize="14" Glyph="{x:Bind controls:FluentIcons.LayoutRowTwo}" />
+                </Button>
+            </Grid>
+            <Grid>
+                <Border CornerRadius="3" Background="{ThemeResource VigoCardBrush}"
+                        Visibility="{x:Bind IsSideBySide, Mode=OneWay}" />
+                <Button x:Name="SideBySideButton" Style="{StaticResource VigoSubtleButton}" Width="28" Height="24" MinHeight="24" MinWidth="28" Padding="0" CornerRadius="3"
+                        Click="OnSideBySideClick">
+                    <FontIcon Style="{StaticResource VigoIcon}" FontSize="14" Glyph="{x:Bind controls:FluentIcons.LayoutColumnTwo}" />
+                </Button>
+            </Grid>
+        </StackPanel>
+    </Border>
+</UserControl>

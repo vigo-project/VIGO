@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsVigoLibrary>true</IsVigoLibrary>
+  </PropertyGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Vigo.Integrations.Tests" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Vigo.Core\Vigo.Core.csproj" />
+  </ItemGroup>
+</Project>

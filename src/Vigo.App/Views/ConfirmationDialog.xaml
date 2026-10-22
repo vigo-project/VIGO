@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Confirmation of an irreversible action with an option (mockup VIGO Design System, "Boîte de dialogue": "Supprimer la
+    branche fix/cache-ttl ?", check box "Supprimer aussi origin/…", danger button). The default button is "Annuler".
+    The "Annuler" button: x:Uid (ADR-075); the rest of the texts comes from the (localized) callers.
+-->
+<ContentDialog
+    x:Class="Vigo.App.Views.ConfirmationDialog"
+    x:Uid="ConfirmationDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="{x:Bind Request.Title}"
+    PrimaryButtonText="{x:Bind Request.ConfirmText}"
+    PrimaryButtonStyle="{StaticResource VigoDangerButton}"
+    CloseButtonStyle="{StaticResource VigoStandardButton}"
+    DefaultButton="None"
+    Opened="OnOpened">
+
+    <StackPanel Width="432" Spacing="12">
+        <TextBlock Text="{x:Bind Request.Message}" TextWrapping="Wrap" Foreground="{ThemeResource VigoText2Brush}" />
+        <CheckBox x:Name="Option" Content="{x:Bind Request.OptionText}" IsChecked="{x:Bind Request.OptionChecked}"
+                  Visibility="{x:Bind HasOption}" />
+    </StackPanel>
+</ContentDialog>

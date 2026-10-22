@@ -1,0 +1,432 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Right panel of a repository tab when no commit is selected: the working directory (mockup VIGO.dc.html,
+    showWip section): stage / unstage / discard per file and for all files (J3.2), commit form (J3.3) with "Valider et
+    pousser" (J3.4), stash (J4.4; right click: with a message). Message generation (J7) is shown disabled until its milestone.
+    Texts: x:Uid (ADR-075); the ones that depend on the row or the state are bound.
+-->
+<UserControl
+    x:Class="Vigo.App.Views.WorkingTreePanel"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Vigo.App.Controls"
+    xmlns:views="using:Vigo.App.Views"
+    xmlns:services="using:Vigo.App.Services"
+    xmlns:vm="using:Vigo.Core.ViewModels">
+
+    <UserControl.Resources>
+        <Style x:Key="GroupHeader" TargetType="Grid">
+            <Setter Property="Height" Value="32" />
+            <Setter Property="Padding" Value="14,0,8,0" />
+        </Style>
+        <Style x:Key="GroupButton" TargetType="Button" BasedOn="{StaticResource VigoStandardButton}">
+            <Setter Property="Height" Value="24" />
+            <Setter Property="MinHeight" Value="24" />
+            <Setter Property="Padding" Value="8,0" />
+            <Setter Property="FontSize" Value="{ThemeResource VigoFontSize12}" />
+        </Style>
+        <Style x:Key="EmptyText" TargetType="TextBlock" BasedOn="{StaticResource VigoCaptionText}">
+            <Setter Property="Margin" Value="14,6,14,10" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+
+        <!--
+            One file row (indented in tree mode): accent pill when its diff is shown, change icon, name + folder in path
+            mode, ◐ when partially staged, then the stage (+) / unstage (−) / mark resolved (✓) button, kept outside the
+            row button.
+        -->
+        <DataTemplate x:Key="FileRowTemplate" x:DataType="vm:WorkingFileItem">
+            <Grid Margin="4,0" Height="{x:Bind services:Appearance.Current.RowHeight, Mode=OneWay}"
+                  PointerEntered="OnRowPointerEntered" PointerExited="OnRowPointerExited" GotFocus="OnRowFocusChanged" LostFocus="OnRowFocusChanged">
+                <Grid.ContextFlyout>
+                    <MenuFlyout Opening="OnRowMenuOpening">
+                        <MenuFlyoutItem Text="{x:Bind views:WorkingTreePanel.ToggleText(Side, IsConflicted)}" Tag="{x:Bind}" Click="OnToggleClick">
+                            <MenuFlyoutItem.Icon>
+                                <FontIcon Glyph="{x:Bind views:WorkingTreePanel.ToggleGlyph(Side, IsConflicted)}" FontFamily="{StaticResource VigoIconFont}" />
+                            </MenuFlyoutItem.Icon>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutItem x:Uid="WtRowDiscard" Tag="{x:Bind}" Click="OnDiscardClick"
+                                        Visibility="{x:Bind views:WorkingTreePanel.CanDiscard(Side, IsConflicted)}">
+                            <MenuFlyoutItem.Icon>
+                                <FontIcon Glyph="{x:Bind controls:FluentIcons.Delete}" FontFamily="{StaticResource VigoIconFont}" />
+                            </MenuFlyoutItem.Icon>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutSeparator />
+                        <MenuFlyoutItem x:Uid="WtRowHistory" Tag="{x:Bind}" Click="OnHistoryClick" IsEnabled="{x:Bind CanInspect}">
+                            <MenuFlyoutItem.Icon>
+                                <FontIcon Glyph="{x:Bind controls:FluentIcons.History}" FontFamily="{StaticResource VigoIconFont}" />
+                            </MenuFlyoutItem.Icon>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutItem x:Uid="WtRowBlame" Tag="{x:Bind}" Click="OnBlameClick" IsEnabled="{x:Bind CanInspect}">
+                            <MenuFlyoutItem.Icon>
+                                <FontIcon Glyph="{x:Bind controls:FluentIcons.Person}" FontFamily="{StaticResource VigoIconFont}" />
+                            </MenuFlyoutItem.Icon>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutSeparator />
+                        <MenuFlyoutItem x:Uid="WtRowPatch" Tag="{x:Bind}" Click="OnFilePatchClick">
+                            <MenuFlyoutItem.Icon>
+                                <FontIcon Glyph="{x:Bind controls:FluentIcons.DocumentText}" FontFamily="{StaticResource VigoIconFont}" />
+                            </MenuFlyoutItem.Icon>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutItem x:Uid="WtRowCopyPath" Tag="{x:Bind}" Click="OnCopyPathClick">
+                            <MenuFlyoutItem.Icon>
+                                <FontIcon Glyph="{x:Bind controls:FluentIcons.Copy}" FontFamily="{StaticResource VigoIconFont}" />
+                            </MenuFlyoutItem.Icon>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutItem x:Uid="WtRowReveal" Tag="{x:Bind}" Click="OnRevealClick">
+                            <MenuFlyoutItem.Icon>
+                                <FontIcon Glyph="{x:Bind controls:FluentIcons.FolderOpen}" FontFamily="{StaticResource VigoIconFont}" />
+                            </MenuFlyoutItem.Icon>
+                        </MenuFlyoutItem>
+                    </MenuFlyout>
+                </Grid.ContextFlyout>
+                <Border CornerRadius="4" Background="{ThemeResource VigoAccentSoftBrush}" Visibility="{x:Bind IsHighlighted, Mode=OneWay}" />
+                <Border Width="3" Height="16" CornerRadius="2" HorizontalAlignment="Left" Background="{ThemeResource VigoAccentBrush}"
+                        Visibility="{x:Bind IsOpen, Mode=OneWay}" />
+                <Button Style="{StaticResource VigoSubtleButton}" Padding="{x:Bind views:WorkingTreePanel.RowPadding(Indent), Mode=OneWay}"
+                        HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                        HorizontalContentAlignment="Stretch" Tag="{x:Bind}" Click="OnFileClick"
+                        ToolTipService.ToolTip="{x:Bind Tooltip}" AutomationProperties.Name="{x:Bind Path}">
+                    <Grid ColumnSpacing="8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <controls:StatusBadge Letter="{x:Bind StatusLetter}" VerticalAlignment="Center" />
+                        <TextBlock Grid.Column="1" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" FontSize="{ThemeResource VigoFontSize13}">
+                            <Run Text="{x:Bind Name}" />
+                            <Run Text="{x:Bind DirectoryLabel, Mode=OneWay}" FontSize="{ThemeResource VigoFontSize11}" Foreground="{ThemeResource VigoText3Brush}" />
+                        </TextBlock>
+                        <TextBlock x:Uid="WtPartial" Grid.Column="2" Text="◐" FontSize="{ThemeResource VigoFontSize11}" Foreground="{ThemeResource VigoText3Brush}" VerticalAlignment="Center"
+                                   Visibility="{x:Bind ShowPartiallyStaged}" />
+                    </Grid>
+                </Button>
+                <Button Style="{StaticResource VigoStandardButton}" Width="24" Height="24" MinHeight="24" Padding="0" Margin="0,0,6,0"
+                        HorizontalAlignment="Right" VerticalAlignment="Center" Tag="{x:Bind}" Click="OnToggleClick" Opacity="0"
+                        ToolTipService.ToolTip="{x:Bind views:WorkingTreePanel.ToggleText(Side, IsConflicted)}"
+                        AutomationProperties.Name="{x:Bind views:WorkingTreePanel.ToggleAutomationName(Path, Side, IsConflicted)}">
+                    <FontIcon Style="{StaticResource VigoIcon}" FontSize="12" Glyph="{x:Bind views:WorkingTreePanel.ToggleGlyph(Side, IsConflicted)}" />
+                </Button>
+            </Grid>
+        </DataTemplate>
+
+        <!-- Folder row of the tree: a click collapses or expands it. -->
+        <DataTemplate x:Key="FolderRowTemplate" x:DataType="vm:FolderRow">
+            <!-- No button on a folder: its right click menu stages (unstages) every file below it. -->
+            <Button Style="{StaticResource VigoSubtleButton}" Margin="4,0" Height="{x:Bind services:Appearance.Current.RowHeight, Mode=OneWay}"
+                    Padding="{x:Bind views:WorkingTreePanel.FolderPadding(Indent)}"
+                    HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"
+                    Tag="{x:Bind}" Click="OnFolderClick" ToolTipService.ToolTip="{x:Bind Path}"
+                    AutomationProperties.Name="{x:Bind Path}">
+                <Button.ContextFlyout>
+                    <MenuFlyout>
+                        <MenuFlyoutItem Text="{x:Bind views:WorkingTreePanel.FolderToggleText(Group)}" Tag="{x:Bind}" Click="OnFolderToggleClick">
+                            <MenuFlyoutItem.Icon>
+                                <FontIcon Glyph="{x:Bind views:WorkingTreePanel.FolderToggleGlyph(Group)}" FontFamily="{StaticResource VigoIconFont}" />
+                            </MenuFlyoutItem.Icon>
+                        </MenuFlyoutItem>
+                        <!-- Changes still to be made in the working directory: unstaged files only. -->
+                        <MenuFlyoutItem x:Uid="WtFolderDiscard" Tag="{x:Bind}" Click="OnFolderDiscardClick"
+                                        Visibility="{x:Bind views:WorkingTreePanel.IsUnstagedGroup(Group)}">
+                            <MenuFlyoutItem.Icon>
+                                <FontIcon Glyph="{x:Bind controls:FluentIcons.Delete}" FontFamily="{StaticResource VigoIconFont}" />
+                            </MenuFlyoutItem.Icon>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutItem Text="{x:Bind views:WorkingTreePanel.FolderIgnoreText(Path)}" Tag="{x:Bind}" Click="OnFolderIgnoreClick"
+                                        Visibility="{x:Bind views:WorkingTreePanel.IsUnstagedGroup(Group)}">
+                            <MenuFlyoutItem.Icon>
+                                <FontIcon Glyph="{x:Bind controls:FluentIcons.EyeOff}" FontFamily="{StaticResource VigoIconFont}" />
+                            </MenuFlyoutItem.Icon>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutItem x:Uid="WtFolderStash" Tag="{x:Bind}" Click="OnFolderStashClick">
+                            <MenuFlyoutItem.Icon>
+                                <FontIcon Glyph="{x:Bind controls:FluentIcons.Archive}" FontFamily="{StaticResource VigoIconFont}" />
+                            </MenuFlyoutItem.Icon>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutItem x:Uid="WtFolderPatch" Tag="{x:Bind}" Click="OnFolderPatchClick">
+                            <MenuFlyoutItem.Icon>
+                                <FontIcon Glyph="{x:Bind controls:FluentIcons.DocumentText}" FontFamily="{StaticResource VigoIconFont}" />
+                            </MenuFlyoutItem.Icon>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutSeparator />
+                        <MenuFlyoutItem x:Uid="WtFolderOpen" Tag="{x:Bind}" Click="OnFolderOpenClick">
+                            <MenuFlyoutItem.Icon>
+                                <FontIcon Glyph="{x:Bind controls:FluentIcons.FolderOpen}" FontFamily="{StaticResource VigoIconFont}" />
+                            </MenuFlyoutItem.Icon>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutItem x:Uid="WtFolderNewFile" Tag="{x:Bind}" Click="OnFolderNewFileClick">
+                            <MenuFlyoutItem.Icon>
+                                <FontIcon Glyph="{x:Bind controls:FluentIcons.DocumentAdd}" FontFamily="{StaticResource VigoIconFont}" />
+                            </MenuFlyoutItem.Icon>
+                        </MenuFlyoutItem>
+                    </MenuFlyout>
+                </Button.ContextFlyout>
+                <controls:FolderRowContent Folder="{x:Bind}" />
+            </Button>
+        </DataTemplate>
+
+        <controls:FileRowTemplateSelector x:Key="FileRowSelector"
+                                          FileTemplate="{StaticResource FileRowTemplate}"
+                                          FolderTemplate="{StaticResource FolderRowTemplate}" />
+    </UserControl.Resources>
+
+    <Grid Background="{ThemeResource VigoLayerBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="44" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Grid Padding="14,0,8,0" ColumnSpacing="4" BorderBrush="{ThemeResource VigoStrokeSubtleBrush}" BorderThickness="0,0,0,1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <StackPanel VerticalAlignment="Center">
+                <TextBlock x:Uid="WtTitle" FontSize="{ThemeResource VigoFontSize13}" FontWeight="SemiBold" LineHeight="{ThemeResource VigoLineHeight18}" />
+                <TextBlock Text="{x:Bind ViewModel.Subtitle, Mode=OneWay}" FontSize="{ThemeResource VigoFontSize11}" LineHeight="{ThemeResource VigoLineHeight14}"
+                           Foreground="{ThemeResource VigoText3Brush}" TextTrimming="CharacterEllipsis" />
+            </StackPanel>
+            <controls:FileListModeSwitch x:Name="FilesModeSwitch" Grid.Column="1" Margin="0,0,6,0" VerticalAlignment="Center" />
+            <Button x:Uid="WtStash" Grid.Column="2" Style="{StaticResource VigoSubtleButton}" Width="28" Height="28" Command="{x:Bind Stash.StashCommand, Mode=OneWay}">
+                <Button.ContextFlyout>
+                    <MenuFlyout Opening="OnStashMenuOpening">
+                        <MenuFlyoutItem x:Uid="WtStashWithMessage" Command="{x:Bind Stash.StashWithMessageCommand, Mode=OneWay}">
+                            <MenuFlyoutItem.Icon>
+                                <FontIcon Glyph="{x:Bind controls:FluentIcons.Archive}" FontFamily="{StaticResource VigoIconFont}" />
+                            </MenuFlyoutItem.Icon>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutSeparator />
+                        <MenuFlyoutItem x:Name="PatchAllItem" x:Uid="WtPatchAll" Click="OnPatchAllClick">
+                            <MenuFlyoutItem.Icon>
+                                <FontIcon Glyph="{x:Bind controls:FluentIcons.DocumentText}" FontFamily="{StaticResource VigoIconFont}" />
+                            </MenuFlyoutItem.Icon>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutItem x:Name="PatchStagedItem" x:Uid="WtPatchStaged" Click="OnPatchStagedClick" />
+                        <MenuFlyoutItem x:Name="PatchApplyItem" x:Uid="WtPatchApply" Click="OnPatchApplyClick" />
+                    </MenuFlyout>
+                </Button.ContextFlyout>
+                <FontIcon Style="{StaticResource VigoIcon}" FontSize="16" Glyph="{x:Bind controls:FluentIcons.Archive}" />
+            </Button>
+            <Button x:Uid="WtDiscardAll" Grid.Column="3" Style="{StaticResource VigoSubtleButton}" Width="28" Height="28" IsEnabled="{x:Bind ViewModel.CanDiscardAll, Mode=OneWay}" Command="{x:Bind ViewModel.DiscardAllCommand}">
+                <FontIcon Style="{StaticResource VigoIcon}" FontSize="16" Foreground="{ThemeResource VigoDangerBrush}"
+                          Opacity="{x:Bind views:WorkingTreePanel.EnabledOpacity(ViewModel.CanDiscardAll), Mode=OneWay}"
+                          Glyph="{x:Bind controls:FluentIcons.Delete}" />
+            </Button>
+        </Grid>
+
+        <StackPanel Grid.Row="1">
+            <TextBlock Text="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}" Style="{StaticResource VigoSecondaryText}"
+                       TextWrapping="Wrap" Margin="14,10" Visibility="{x:Bind views:WorkingTreePanel.VisibleIf(ViewModel.ErrorMessage), Mode=OneWay}" />
+
+            <!--
+                Operation stopped on conflicts (mockup isConflict): what is going on, what is left, and the ways out.
+                The conflict editor (J5.4) opens on the first conflicted file; a file can also be marked as resolved as is.
+            -->
+            <Border Margin="10,10,10,0" Padding="12,10" CornerRadius="4" Background="{ThemeResource VigoWarningSoftBrush}"
+                    BorderBrush="{ThemeResource VigoStrokeSubtleBrush}" BorderThickness="1"
+                    Visibility="{x:Bind Merge.HasOperation, Mode=OneWay, FallbackValue=Collapsed}">
+                <StackPanel Spacing="8">
+                    <Grid ColumnSpacing="8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <FontIcon Style="{StaticResource VigoIcon}" FontSize="14" Margin="0,1,0,0" VerticalAlignment="Top"
+                                  Foreground="{ThemeResource VigoWarningBrush}" Glyph="{x:Bind controls:FluentIcons.Warning}" />
+                        <TextBlock Grid.Column="1" FontSize="{ThemeResource VigoFontSize12}" LineHeight="{ThemeResource VigoLineHeight16}" TextWrapping="Wrap">
+                            <Run Text="{x:Bind Merge.OperationTitle, Mode=OneWay}" FontWeight="SemiBold" />
+                            <Run Text="{x:Bind Merge.OperationDetail, Mode=OneWay}" />
+                        </TextBlock>
+                    </Grid>
+                    <!-- Wraps when the panel is narrow, so that every way out stays visible. -->
+                    <controls:WrapPanel HorizontalSpacing="6" VerticalSpacing="6">
+                        <Button x:Uid="WtOpContinue" Style="{StaticResource VigoAccentButton}" Height="26" MinHeight="26" Padding="10,0" FontSize="{ThemeResource VigoFontSize12}"
+                                Command="{x:Bind Merge.ContinueCommand, Mode=OneWay}"
+                                Visibility="{x:Bind Merge.CanContinue, Mode=OneWay, FallbackValue=Collapsed}" />
+                        <Button x:Uid="WtOpSkip" Style="{StaticResource VigoStandardButton}" Height="26" MinHeight="26" Padding="10,0" FontSize="{ThemeResource VigoFontSize12}"
+                                Command="{x:Bind Merge.SkipCommand, Mode=OneWay}"
+                                Visibility="{x:Bind Merge.CanContinue, Mode=OneWay, FallbackValue=Collapsed}" />
+                        <Button x:Uid="WtOpEditor" Style="{StaticResource VigoStandardButton}" Height="26" MinHeight="26" Padding="10,0" FontSize="{ThemeResource VigoFontSize12}"
+                                Command="{x:Bind Conflicts.OpenFirstCommand, Mode=OneWay}" />
+                        <Button x:Uid="WtOpAbort" Style="{StaticResource VigoStandardButton}" Height="26" MinHeight="26" Padding="10,0" FontSize="{ThemeResource VigoFontSize12}"
+                                Content="{x:Bind Merge.AbortLabel, Mode=OneWay}" Command="{x:Bind Merge.AbortCommand, Mode=OneWay}" />
+                    </controls:WrapPanel>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+
+        <!-- File groups -->
+        <ScrollViewer Grid.Row="2" HorizontalScrollMode="Disabled" VerticalScrollBarVisibility="Auto">
+            <StackPanel Padding="0,4,0,8">
+                <StackPanel Visibility="{x:Bind ViewModel.HasConflicts, Mode=OneWay}">
+                    <Grid Style="{StaticResource GroupHeader}">
+                        <TextBlock VerticalAlignment="Center" FontSize="{ThemeResource VigoFontSize12}" FontWeight="SemiBold" Foreground="{ThemeResource VigoText2Brush}">
+                            <Run x:Uid="WtGroupConflicts" />
+                            <Run Text="{x:Bind ViewModel.ConflictedCount, Mode=OneWay}" FontWeight="Normal" Foreground="{ThemeResource VigoText3Brush}" />
+                        </TextBlock>
+                    </Grid>
+                    <ItemsRepeater ItemsSource="{x:Bind ViewModel.ConflictedRows}" ItemTemplate="{StaticResource FileRowSelector}" />
+                </StackPanel>
+
+                <Grid Style="{StaticResource GroupHeader}">
+                    <TextBlock VerticalAlignment="Center" FontSize="{ThemeResource VigoFontSize12}" FontWeight="SemiBold" Foreground="{ThemeResource VigoText2Brush}">
+                        <Run x:Uid="WtGroupUnstaged" />
+                        <Run Text="{x:Bind ViewModel.UnstagedCount, Mode=OneWay}" FontWeight="Normal" Foreground="{ThemeResource VigoText3Brush}" />
+                    </TextBlock>
+                    <Button x:Uid="WtStageAll" Style="{StaticResource GroupButton}" HorizontalAlignment="Right" Command="{x:Bind ViewModel.StageAllCommand}"
+                            Visibility="{x:Bind views:WorkingTreePanel.Collapsed(ViewModel.IsUnstagedEmpty), Mode=OneWay}" />
+                </Grid>
+                <ItemsRepeater ItemsSource="{x:Bind ViewModel.UnstagedRows}" ItemTemplate="{StaticResource FileRowSelector}" />
+                <TextBlock x:Uid="WtUnstagedEmpty" Style="{StaticResource EmptyText}"
+                           Visibility="{x:Bind ViewModel.IsUnstagedEmpty, Mode=OneWay}" />
+
+                <Grid Style="{StaticResource GroupHeader}">
+                    <TextBlock VerticalAlignment="Center" FontSize="{ThemeResource VigoFontSize12}" FontWeight="SemiBold" Foreground="{ThemeResource VigoText2Brush}">
+                        <Run x:Uid="WtGroupStaged" />
+                        <Run Text="{x:Bind ViewModel.StagedCount, Mode=OneWay}" FontWeight="Normal" Foreground="{ThemeResource VigoText3Brush}" />
+                    </TextBlock>
+                    <Button x:Uid="WtUnstageAll" Style="{StaticResource GroupButton}" HorizontalAlignment="Right" Command="{x:Bind ViewModel.UnstageAllCommand}"
+                            Visibility="{x:Bind views:WorkingTreePanel.Collapsed(ViewModel.IsStagedEmpty), Mode=OneWay}" />
+                </Grid>
+                <ItemsRepeater ItemsSource="{x:Bind ViewModel.StagedRows}" ItemTemplate="{StaticResource FileRowSelector}" />
+                <TextBlock x:Uid="WtStagedEmpty" Style="{StaticResource EmptyText}"
+                           Visibility="{x:Bind ViewModel.IsStagedEmpty, Mode=OneWay}" />
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Commit form (J3.3): Ctrl+Entrée commits from anywhere in the form -->
+        <Grid Grid.Row="3" Padding="12" RowSpacing="8" Background="{ThemeResource VigoLayer2Brush}"
+              BorderBrush="{ThemeResource VigoStrokeSubtleBrush}" BorderThickness="0,1,0,0" PreviewKeyDown="OnCommitFormPreviewKeyDown">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <TextBlock x:Uid="WtMessageTitle" FontSize="{ThemeResource VigoFontSize12}" FontWeight="SemiBold" Foreground="{ThemeResource VigoText2Brush}"
+                           VerticalAlignment="Center" />
+                <!-- While the engine works: a ring and "Annuler" take the place of "Générer" (J7.9) -->
+                <Button x:Uid="WtGenCancel" Style="{StaticResource GroupButton}" HorizontalAlignment="Right"
+                        Visibility="{x:Bind ViewModel.CommitForm.IsGenerating, Mode=OneWay}"
+                        Command="{x:Bind ViewModel.CommitForm.CancelGenerationCommand}">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <ProgressRing Width="14" Height="14" IsActive="{x:Bind ViewModel.CommitForm.IsGenerating, Mode=OneWay}" />
+                        <TextBlock x:Uid="WtGenCancelText" />
+                    </StackPanel>
+                </Button>
+                <Button x:Uid="WtGenerate" Style="{StaticResource GroupButton}" HorizontalAlignment="Right"
+                        Visibility="{x:Bind ViewModel.CommitForm.IsGenerateIdle, Mode=OneWay}"
+                        Command="{x:Bind ViewModel.CommitForm.GenerateCommand}"
+                        ToolTipService.ToolTip="{x:Bind ViewModel.CommitForm.GenerateTooltip, Mode=OneWay}">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <FontIcon Style="{StaticResource VigoIcon}" FontSize="14" Glyph="{x:Bind controls:FluentIcons.Sparkle}" />
+                        <TextBlock x:Uid="WtGenerateText" />
+                    </StackPanel>
+                </Button>
+                <TextBlock x:Uid="WtGenerating" Grid.Row="1" Margin="0,6,0,0" FontSize="{ThemeResource VigoFontSize11}" TextWrapping="Wrap" Foreground="{ThemeResource VigoText3Brush}"
+                           Visibility="{x:Bind ViewModel.CommitForm.IsGenerating, Mode=OneWay}" />
+            </Grid>
+
+            <!-- Counter next to the field, not over it: the right edge of the TextBox holds its clear button. -->
+            <Grid Grid.Row="1" ColumnSpacing="8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBox x:Name="SummaryBox" x:Uid="WtSummary" Text="{x:Bind ViewModel.CommitForm.Summary, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                         Padding="10,5,6,6" MinHeight="32" FontSize="{ThemeResource VigoFontSize13}"
+                         CornerRadius="{StaticResource VigoRadiusControl}" />
+                <TextBlock x:Name="SummaryCounter" x:Uid="WtSummaryCounter" Grid.Column="1" Text="{x:Bind ViewModel.CommitForm.SummaryLengthText, Mode=OneWay}"
+                           VerticalAlignment="Center" FontSize="{ThemeResource VigoFontSize11}" MinWidth="36" TextAlignment="Right"
+                           Foreground="{ThemeResource VigoText3Brush}" />
+            </Grid>
+
+            <TextBox x:Uid="WtDescription" Grid.Row="2" Text="{x:Bind ViewModel.CommitForm.Description, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                     AcceptsReturn="True" TextWrapping="Wrap" MinHeight="64" MaxHeight="180"
+                     FontSize="{ThemeResource VigoFontSize13}" Padding="10,6" ScrollViewer.VerticalScrollBarVisibility="Auto"
+                     CornerRadius="{StaticResource VigoRadiusControl}" />
+
+            <StackPanel Grid.Row="3" Orientation="Horizontal" Spacing="14">
+                <CheckBox x:Uid="WtAmend" MinWidth="0" MinHeight="24" FontSize="{ThemeResource VigoFontSize12}" Padding="6,0,0,0" VerticalContentAlignment="Center"
+                          IsChecked="{x:Bind ViewModel.CommitForm.IsAmend, Mode=TwoWay}" IsEnabled="{x:Bind ViewModel.CommitForm.CanAmend, Mode=OneWay}" />
+                <TextBlock Text="{x:Bind ViewModel.CommitForm.ProfileLabel, Mode=OneWay}" FontSize="{ThemeResource VigoFontSize12}" VerticalAlignment="Center"
+                           Foreground="{ThemeResource VigoText3Brush}" Visibility="{x:Bind ViewModel.CommitForm.HasProfile, Mode=OneWay}"
+                           ToolTipService.ToolTip="{x:Bind ViewModel.CommitForm.ProfileIdentity, Mode=OneWay}" />
+                <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center"
+                            Visibility="{x:Bind ViewModel.CommitForm.IsSigned, Mode=OneWay}">
+                    <FontIcon Style="{StaticResource VigoIcon}" FontSize="14" Foreground="{ThemeResource VigoSuccessBrush}"
+                              Glyph="{x:Bind controls:FluentIcons.ShieldKeyhole}" />
+                    <TextBlock Text="{x:Bind ViewModel.CommitForm.SigningLabel, Mode=OneWay}" FontSize="{ThemeResource VigoFontSize12}" Foreground="{ThemeResource VigoText2Brush}" />
+                </StackPanel>
+            </StackPanel>
+
+            <Grid Grid.Row="4" Height="32">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="1" />
+                    <ColumnDefinition Width="30" />
+                </Grid.ColumnDefinitions>
+                <Button Style="{StaticResource VigoAccentButton}" Height="32" HorizontalAlignment="Stretch" CornerRadius="4,0,0,4"
+                        Command="{x:Bind ViewModel.CommitForm.CommitCommand}"
+                        ToolTipService.ToolTip="{x:Bind ViewModel.CommitForm.CommitTooltip, Mode=OneWay}"
+                        AutomationProperties.Name="{x:Bind ViewModel.CommitForm.CommitLabel, Mode=OneWay}">
+                    <TextBlock Text="{x:Bind ViewModel.CommitForm.CommitLabel, Mode=OneWay}" TextTrimming="CharacterEllipsis" FontSize="{ThemeResource VigoFontSize13}" />
+                </Button>
+                <Border Grid.Column="1" Background="{ThemeResource VigoStrokeBrush}" />
+                <Button x:Uid="WtCommitMore" Grid.Column="2" Style="{StaticResource VigoAccentButton}" Height="32" Width="30" Padding="0" CornerRadius="0,4,4,0"
+                        IsEnabled="{x:Bind ViewModel.CommitForm.CanCommit, Mode=OneWay}">
+                    <FontIcon Style="{StaticResource VigoIcon}" FontSize="12" Glyph="{x:Bind controls:FluentIcons.ChevronDown}" />
+                    <Button.Flyout>
+                        <MenuFlyout Placement="TopEdgeAlignedRight">
+                            <MenuFlyoutItem x:Uid="WtMenuCommit" Command="{x:Bind ViewModel.CommitForm.CommitCommand}">
+                                <MenuFlyoutItem.Icon>
+                                    <FontIcon Glyph="{x:Bind controls:FluentIcons.Checkmark}" FontFamily="{StaticResource VigoIconFont}" />
+                                </MenuFlyoutItem.Icon>
+                            </MenuFlyoutItem>
+                            <MenuFlyoutItem x:Uid="WtMenuCommitPush" Command="{x:Bind ViewModel.CommitForm.CommitAndPushCommand}">
+                                <MenuFlyoutItem.Icon>
+                                    <FontIcon Glyph="{x:Bind controls:FluentIcons.ArrowUpload}" FontFamily="{StaticResource VigoIconFont}" />
+                                </MenuFlyoutItem.Icon>
+                            </MenuFlyoutItem>
+                            <MenuFlyoutItem x:Uid="WtMenuNoVerify" Command="{x:Bind ViewModel.CommitForm.CommitSkippingHooksCommand}">
+                                <MenuFlyoutItem.Icon>
+                                    <FontIcon Glyph="{x:Bind controls:FluentIcons.Edit}" FontFamily="{StaticResource VigoIconFont}" />
+                                </MenuFlyoutItem.Icon>
+                            </MenuFlyoutItem>
+                        </MenuFlyout>
+                    </Button.Flyout>
+                </Button>
+            </Grid>
+        </Grid>
+
+        <VisualStateManager.VisualStateGroups>
+            <!-- Summary counter color (mockup: > 50 warning, > 72 danger) -->
+            <VisualStateGroup x:Name="SummaryLengthStates">
+                <VisualState x:Name="SummaryNormal" />
+                <VisualState x:Name="SummaryWarning">
+                    <VisualState.Setters>
+                        <Setter Target="SummaryCounter.Foreground" Value="{ThemeResource VigoWarningBrush}" />
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="SummaryDanger">
+                    <VisualState.Setters>
+                        <Setter Target="SummaryCounter.Foreground" Value="{ThemeResource VigoDangerBrush}" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
+    </Grid>
+</UserControl>

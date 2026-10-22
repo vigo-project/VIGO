@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Blame of a file (J5.6, mockup VIGO Outils.dc.html, "Blame" screen), shown in place of the graph: header (file, version,
+    age legend, "Historique du fichier"), the file in the code editor with the commit column drawn by the page, and the
+    card of the selected commit ("Afficher dans le graphe", "Blame avant ce commit").
+-->
+<UserControl
+    x:Class="Vigo.App.Controls.BlameView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Vigo.App.Controls"
+    x:Uid="BlameRoot">
+
+    <Grid Background="{ThemeResource VigoSunkenBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="44" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Grid Padding="8,0,12,0" ColumnSpacing="8" Background="{ThemeResource VigoLayerBrush}"
+              BorderBrush="{ThemeResource VigoStrokeSubtleBrush}" BorderThickness="0,0,0,1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Button x:Uid="BlameBackButton" Style="{StaticResource VigoSubtleButton}" Height="28" Padding="6,0" Click="OnCloseClick">
+                <FontIcon Style="{StaticResource VigoIcon}" FontSize="14" Foreground="{ThemeResource VigoText2Brush}"
+                          Glyph="{x:Bind controls:FluentIcons.ChevronLeft}" />
+            </Button>
+            <FontIcon Grid.Column="1" Style="{StaticResource VigoIcon}" FontSize="16" Glyph="{x:Bind controls:FluentIcons.Person}" />
+            <TextBlock Grid.Column="2" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" IsTextSelectionEnabled="True">
+                <Run Text="Blame " FontWeight="SemiBold" />
+                <Run Text="{x:Bind ViewModel.Directory, Mode=OneWay}" Foreground="{ThemeResource VigoText3Brush}" />
+                <Run Text="{x:Bind ViewModel.FileName, Mode=OneWay}" />
+            </TextBlock>
+            <!-- Version blamed (mockup: chip "à HEAD"): the file on disk or HEAD; an older one after "Blame avant ce commit". -->
+            <Button x:Uid="BlameVersionButton" Grid.Column="3" Height="22" MinHeight="22" Padding="8,0" CornerRadius="4" VerticalAlignment="Center"
+                    Background="Transparent" BorderBrush="{ThemeResource VigoStrokeBrush}" BorderThickness="1">
+                <StackPanel Orientation="Horizontal" Spacing="4">
+                    <TextBlock FontSize="{ThemeResource VigoFontSize12}" Foreground="{ThemeResource VigoText2Brush}">
+                        <Run x:Uid="BlameAtRun" />
+                        <Run Text="{x:Bind ViewModel.RevisionLabel, Mode=OneWay}" FontFamily="{StaticResource VigoMonoFont}" />
+                    </TextBlock>
+                    <FontIcon Style="{StaticResource VigoIcon}" FontSize="12" Foreground="{ThemeResource VigoText2Brush}"
+                              Glyph="{x:Bind controls:FluentIcons.ChevronDown}" />
+                </StackPanel>
+                <Button.Flyout>
+                    <MenuFlyout Placement="BottomEdgeAlignedLeft">
+                        <MenuFlyoutItem x:Uid="BlameWorkingTreeItem" Click="OnWorkingTreeClick" />
+                        <MenuFlyoutItem Text="HEAD" Click="OnHeadClick" />
+                    </MenuFlyout>
+                </Button.Flyout>
+            </Button>
+            <StackPanel Grid.Column="5" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                <TextBlock x:Uid="BlameRecent" FontSize="{ThemeResource VigoFontSize11}" Foreground="{ThemeResource VigoText3Brush}" VerticalAlignment="Center" />
+                <Border Width="96" Height="6" CornerRadius="3" VerticalAlignment="Center">
+                    <Border.Background>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                            <GradientStop Offset="0" Color="{ThemeResource VigoAccentColor}" />
+                            <GradientStop Offset="1" Color="{ThemeResource VigoAccentSoftColor}" />
+                        </LinearGradientBrush>
+                    </Border.Background>
+                </Border>
+                <TextBlock x:Uid="BlameOld" FontSize="{ThemeResource VigoFontSize11}" Foreground="{ThemeResource VigoText3Brush}" VerticalAlignment="Center" />
+                <Border Width="1" Height="20" Background="{ThemeResource VigoStrokeSubtleBrush}" />
+                <Button x:Uid="BlameHistoryButton" Style="{StaticResource VigoSubtleButton}" Height="28" Padding="8,0" Command="{x:Bind ViewModel.ShowHistoryCommand}">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <FontIcon Style="{StaticResource VigoIcon}" FontSize="16" Glyph="{x:Bind controls:FluentIcons.History}" />
+                        <TextBlock x:Uid="BlameHistoryText" FontSize="{ThemeResource VigoFontSize12}" />
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+        </Grid>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="300" />
+            </Grid.ColumnDefinitions>
+            <controls:CodeEditor x:Name="Editor" />
+            <ProgressRing Width="24" Height="24" VerticalAlignment="Top" Margin="0,24,0,0" IsActive="{x:Bind ViewModel.IsLoading, Mode=OneWay}" />
+            <TextBlock x:Name="Message" Margin="24" HorizontalAlignment="Center" VerticalAlignment="Center" TextWrapping="Wrap"
+                       Style="{StaticResource VigoSecondaryText}" />
+
+            <!-- Selected commit. -->
+            <StackPanel Grid.Column="1" Padding="14" Spacing="12" Background="{ThemeResource VigoLayerBrush}"
+                        BorderBrush="{ThemeResource VigoStrokeSubtleBrush}" BorderThickness="1,0,0,0">
+                <TextBlock x:Uid="BlameSelectedTitle" FontSize="{ThemeResource VigoFontSize11}" Foreground="{ThemeResource VigoText3Brush}" />
+                <TextBlock x:Name="NoSelection" x:Uid="BlameNoSelection"
+                           TextWrapping="Wrap" Style="{StaticResource VigoSecondaryText}" />
+                <StackPanel x:Name="SelectionCard" Spacing="12">
+                    <TextBlock x:Name="SummaryText" FontSize="{ThemeResource VigoFontSize15}" LineHeight="{ThemeResource VigoLineHeight21}" FontWeight="SemiBold" TextWrapping="Wrap" IsTextSelectionEnabled="True" />
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <Border x:Name="Avatar" Width="32" Height="32" CornerRadius="16">
+                            <TextBlock x:Name="AvatarText" Foreground="White" FontSize="{ThemeResource VigoFontSize12}" FontWeight="SemiBold"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock x:Name="AuthorText" />
+                            <TextBlock x:Name="DateText" FontSize="{ThemeResource VigoFontSize12}" Foreground="{ThemeResource VigoText3Brush}" />
+                        </StackPanel>
+                    </StackPanel>
+                    <Grid ColumnSpacing="8" RowSpacing="6">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="72" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <TextBlock x:Uid="BlameSha" FontSize="{ThemeResource VigoFontSize12}" Foreground="{ThemeResource VigoText3Brush}" />
+                        <TextBlock x:Name="ShaText" Grid.Column="1" FontSize="{ThemeResource VigoFontSize12}" FontFamily="{StaticResource VigoMonoFont}" IsTextSelectionEnabled="True" />
+                        <TextBlock x:Uid="BlameLines" Grid.Row="1" FontSize="{ThemeResource VigoFontSize12}" Foreground="{ThemeResource VigoText3Brush}" />
+                        <TextBlock Grid.Row="1" Grid.Column="1" FontSize="{ThemeResource VigoFontSize12}" Text="{x:Bind ViewModel.SelectedLinesText, Mode=OneWay}" />
+                    </Grid>
+                    <StackPanel Spacing="6">
+                        <Button Style="{StaticResource VigoStandardButton}" Height="32" Padding="12,0" HorizontalAlignment="Stretch"
+                                x:Uid="BlameShowInGraph" HorizontalContentAlignment="Left" Command="{x:Bind ViewModel.ShowInGraphCommand}">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <FontIcon Style="{StaticResource VigoIcon}" FontSize="16" Glyph="{x:Bind controls:FluentIcons.Branch}" />
+                                <TextBlock x:Uid="BlameShowInGraphText" FontSize="{ThemeResource VigoFontSize13}" />
+                            </StackPanel>
+                        </Button>
+                        <Button Style="{StaticResource VigoStandardButton}" Height="32" Padding="12,0" HorizontalAlignment="Stretch"
+                                x:Uid="BlameBefore" HorizontalContentAlignment="Left" Command="{x:Bind ViewModel.BlameBeforeCommand}">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <FontIcon Style="{StaticResource VigoIcon}" FontSize="16" Glyph="{x:Bind controls:FluentIcons.ArrowPrevious}" />
+                                <TextBlock x:Uid="BlameBeforeText" FontSize="{ThemeResource VigoFontSize13}" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </StackPanel>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</UserControl>

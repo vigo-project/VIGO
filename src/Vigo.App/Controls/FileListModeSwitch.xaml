@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Path / Tree switch of the changed files lists: two small segments, the active one raised. The choice is
+    a shared layout setting (every list of every tab follows it), remembered across launches.
+    Texts: x:Uid (ADR-075).
+-->
+<UserControl
+    x:Class="Vigo.App.Controls.FileListModeSwitch"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Vigo.App.Controls"
+    IsTabStop="False">
+    <Border Padding="1" CornerRadius="4" Background="{ThemeResource VigoCtrlBrush}"
+            BorderBrush="{ThemeResource VigoStrokeSubtleBrush}" BorderThickness="1">
+        <StackPanel Orientation="Horizontal">
+            <Grid>
+                <Border CornerRadius="3" Background="{ThemeResource VigoCardBrush}"
+                        Visibility="{x:Bind controls:FileListModeSwitch.Collapsed(IsTree), Mode=OneWay}" />
+                <Button Style="{StaticResource VigoSubtleButton}" Width="24" Height="20" MinHeight="20" Padding="0" CornerRadius="3"
+                        x:Uid="FlmPath" Click="OnPathClick">
+                    <FontIcon Style="{StaticResource VigoIcon}" FontSize="13" Glyph="{x:Bind controls:FluentIcons.List}" />
+                </Button>
+            </Grid>
+            <Grid>
+                <Border CornerRadius="3" Background="{ThemeResource VigoCardBrush}"
+                        Visibility="{x:Bind IsTree, Mode=OneWay}" />
+                <Button Style="{StaticResource VigoSubtleButton}" Width="24" Height="20" MinHeight="20" Padding="0" CornerRadius="3"
+                        x:Uid="FlmTree" Click="OnTreeClick">
+                    <FontIcon Style="{StaticResource VigoIcon}" FontSize="13" Glyph="{x:Bind controls:FluentIcons.TextBulletListTree}" />
+                </Button>
+            </Grid>
+        </StackPanel>
+    </Border>
+</UserControl>

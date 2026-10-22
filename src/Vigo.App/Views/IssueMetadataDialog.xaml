@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Labels, assignees and milestone of an issue (J6.10d): two lists of check boxes and a milestone choice. Primary is the default
+    button: nothing is lost by confirming, the dialog only offers what the repository has.
+    Texts: x:Uid (ADR-075).
+-->
+<ContentDialog
+    x:Class="Vigo.App.Views.IssueMetadataDialog"
+    x:Uid="IssueMetaDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:vm="using:Vigo.Core.ViewModels"
+    Title="{x:Bind ViewModel.Title}"
+    PrimaryButtonText="{x:Bind ViewModel.ConfirmText}"
+    DefaultButton="Primary">
+
+    <ScrollViewer MaxHeight="460" VerticalScrollBarVisibility="Auto">
+        <StackPanel Width="432" Spacing="12">
+            <TextBlock Text="{x:Bind ViewModel.Description}" TextWrapping="Wrap" Foreground="{ThemeResource VigoText2Brush}" />
+            <TextBlock Text="{x:Bind ViewModel.TruncatedText}" Visibility="{x:Bind ViewModel.IsTruncated}" TextWrapping="Wrap"
+                       FontSize="{ThemeResource VigoFontSize12}" Foreground="{ThemeResource VigoWarningBrush}" />
+
+            <ComboBox x:Uid="IssueMetaMilestone" HorizontalAlignment="Stretch" ItemsSource="{x:Bind ViewModel.Milestones}"
+                      SelectedItem="{x:Bind ViewModel.SelectedMilestone, Mode=TwoWay}" />
+
+            <StackPanel Spacing="4">
+                <TextBlock x:Uid="IssueMetaLabelsHeading" Style="{StaticResource VigoStrongText}" />
+                <TextBlock x:Uid="IssueMetaNoLabels" Visibility="{x:Bind NoLabels}" FontSize="{ThemeResource VigoFontSize12}" Foreground="{ThemeResource VigoText3Brush}" />
+                <TextBox x:Uid="IssueMetaLabelFilter" Visibility="{x:Bind ViewModel.HasLabels}"
+                         Text="{x:Bind ViewModel.LabelFilter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                <ItemsControl ItemsSource="{x:Bind ViewModel.VisibleLabels}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:MetadataChoice">
+                            <CheckBox Content="{x:Bind Name}" IsChecked="{x:Bind IsSelected, Mode=TwoWay}" MinHeight="28" />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+
+            <StackPanel Spacing="4">
+                <TextBlock x:Uid="IssueMetaAssigneesHeading" Style="{StaticResource VigoStrongText}" />
+                <TextBlock x:Uid="IssueMetaNoAssignees" Visibility="{x:Bind NoAssignees}" FontSize="{ThemeResource VigoFontSize12}" Foreground="{ThemeResource VigoText3Brush}" />
+                <TextBox x:Uid="IssueMetaAssigneeFilter" Visibility="{x:Bind ViewModel.HasAssignees}"
+                         Text="{x:Bind ViewModel.AssigneeFilter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                <ItemsControl ItemsSource="{x:Bind ViewModel.VisibleAssignees}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:MetadataChoice">
+                            <CheckBox Content="{x:Bind Name}" IsChecked="{x:Bind IsSelected, Mode=TwoWay}" MinHeight="28" />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
+</ContentDialog>

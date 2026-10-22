@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Image diff (J5.7, ADR-043): before / after next to each other, after drawn over before with an adjustable opacity,
+    or after on one side of a movable divider. No mockup: built from the VIGO styles. Texts: x:Uid (ADR-075).
+-->
+<UserControl
+    x:Class="Vigo.App.Controls.ImageDiffView"
+    x:Uid="ImageDiffView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Grid Background="{ThemeResource VigoSunkenBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="40" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- Mode and its adjustment. -->
+        <Grid Padding="12,0" ColumnSpacing="16" Background="{ThemeResource VigoLayerBrush}"
+              BorderBrush="{ThemeResource VigoStrokeSubtleBrush}" BorderThickness="0,0,0,1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <!-- Plain radio buttons rather than RadioButtons: its layout adds an offset that shifts the labels off the row center. -->
+            <StackPanel x:Name="ModeButtons" x:Uid="ImageModeGroup" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                <RadioButton x:Uid="ImageModeSideBySide" GroupName="ImageMode" Tag="0" MinWidth="0" MinHeight="32"
+                             Padding="8,0,0,0" VerticalContentAlignment="Center" Checked="OnModeChecked" />
+                <RadioButton x:Uid="ImageModeOverlay" GroupName="ImageMode" Tag="1" MinWidth="0" MinHeight="32"
+                             Padding="8,0,0,0" VerticalContentAlignment="Center" Checked="OnModeChecked" />
+                <RadioButton x:Uid="ImageModeSlider" GroupName="ImageMode" Tag="2" MinWidth="0" MinHeight="32"
+                             Padding="8,0,0,0" VerticalContentAlignment="Center" Checked="OnModeChecked" />
+            </StackPanel>
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                <TextBlock x:Name="AdjustLabel" FontSize="{ThemeResource VigoFontSize12}" Foreground="{ThemeResource VigoText2Brush}" VerticalAlignment="Center" />
+                <Slider x:Name="AdjustSlider" Minimum="0" Maximum="100" Value="50" Width="220" VerticalAlignment="Center"
+                        ValueChanged="OnAdjustChanged" />
+            </StackPanel>
+        </Grid>
+
+        <!-- Side by side. -->
+        <Grid x:Name="SideBySidePanel" Grid.Row="1" Padding="12" ColumnSpacing="12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Grid RowSpacing="6">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <TextBlock x:Name="OldCaption" FontSize="{ThemeResource VigoFontSize12}" Foreground="{ThemeResource VigoDelTextBrush}" TextTrimming="CharacterEllipsis" />
+                <Border Grid.Row="1" Background="{ThemeResource VigoLayerBrush}" BorderBrush="{ThemeResource VigoStrokeSubtleBrush}"
+                        BorderThickness="1" CornerRadius="6" Padding="8">
+                    <Grid>
+                        <Viewbox Stretch="Uniform" StretchDirection="DownOnly"><Image x:Name="OldImageSide" Stretch="None" /></Viewbox>
+                        <TextBlock x:Name="OldMissing" Style="{StaticResource VigoSecondaryText}" HorizontalAlignment="Center"
+                                   VerticalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" />
+                    </Grid>
+                </Border>
+            </Grid>
+            <Grid Grid.Column="1" RowSpacing="6">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <TextBlock x:Name="NewCaption" FontSize="{ThemeResource VigoFontSize12}" Foreground="{ThemeResource VigoAddTextBrush}" TextTrimming="CharacterEllipsis" />
+                <Border Grid.Row="1" Background="{ThemeResource VigoLayerBrush}" BorderBrush="{ThemeResource VigoStrokeSubtleBrush}"
+                        BorderThickness="1" CornerRadius="6" Padding="8">
+                    <Grid>
+                        <Viewbox Stretch="Uniform" StretchDirection="DownOnly"><Image x:Name="NewImageSide" Stretch="None" /></Viewbox>
+                        <TextBlock x:Name="NewMissing" Style="{StaticResource VigoSecondaryText}" HorizontalAlignment="Center"
+                                   VerticalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" />
+                    </Grid>
+                </Border>
+            </Grid>
+        </Grid>
+
+        <!-- Overlay and slider: both images at their pixel size from the top-left corner, scaled down together to fit. -->
+        <Border x:Name="CompositePanel" Grid.Row="1" Margin="12" Background="{ThemeResource VigoLayerBrush}"
+                BorderBrush="{ThemeResource VigoStrokeSubtleBrush}" BorderThickness="1" CornerRadius="6" Padding="8" Visibility="Collapsed">
+            <Viewbox Stretch="Uniform" StretchDirection="DownOnly">
+                <Grid x:Name="Layers">
+                    <Image x:Name="OldImage" Stretch="None" HorizontalAlignment="Left" VerticalAlignment="Top" />
+                    <Image x:Name="NewImage" Stretch="None" HorizontalAlignment="Left" VerticalAlignment="Top" />
+                    <Rectangle x:Name="Divider" Width="2" HorizontalAlignment="Left" VerticalAlignment="Stretch"
+                               Fill="{ThemeResource VigoAccentBrush}" IsHitTestVisible="False" Visibility="Collapsed" />
+                </Grid>
+            </Viewbox>
+        </Border>
+
+        <TextBlock x:Name="Legend" Grid.Row="2" Margin="12,0,12,8" FontSize="{ThemeResource VigoFontSize12}" Foreground="{ThemeResource VigoText3Brush}"
+                   TextTrimming="CharacterEllipsis" Visibility="Collapsed" />
+        <TextBlock x:Name="Message" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" TextWrapping="Wrap" MaxWidth="480"
+                   TextAlignment="Center" Style="{StaticResource VigoSecondaryText}" Visibility="Collapsed" />
+    </Grid>
+</UserControl>

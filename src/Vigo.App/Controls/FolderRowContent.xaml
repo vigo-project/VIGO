@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Content of a folder row of a changed files tree: chevron, folder icon, name, number of files below. -->
+<UserControl
+    x:Class="Vigo.App.Controls.FolderRowContent"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Vigo.App.Controls"
+    IsTabStop="False">
+    <Grid ColumnSpacing="6">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+        <!-- 10 + 6 spacing: the folder icon lines up with the change icons of the files one level down. -->
+        <FontIcon Style="{StaticResource VigoIcon}" Width="10" FontSize="10" Foreground="{ThemeResource VigoText3Brush}" VerticalAlignment="Center"
+                  Glyph="{x:Bind controls:FolderRowContent.ChevronGlyph(Folder.IsExpanded)}" />
+        <FontIcon Grid.Column="1" Style="{StaticResource VigoIcon}" FontSize="16" Foreground="{ThemeResource VigoText2Brush}" VerticalAlignment="Center"
+                  Glyph="{x:Bind controls:FolderRowContent.FolderGlyph(Folder.IsExpanded)}" />
+        <TextBlock Grid.Column="2" Text="{x:Bind Folder.Name}" FontSize="{ThemeResource VigoFontSize13}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+        <TextBlock Grid.Column="3" Text="{x:Bind Folder.FileCountText}" FontSize="{ThemeResource VigoFontSize11}" Foreground="{ThemeResource VigoText3Brush}"
+                   VerticalAlignment="Center" />
+    </Grid>
+</UserControl>

@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Integrated terminal panel of a repository tab (mockup VIGO.dc.html, termOpen): a header with one tab per terminal, "+"
+    (menu of the shells found on the machine) and a hide button, then the terminal itself (xterm.js, TerminalView). The
+    terminals are created by the code-behind as the view model adds or removes tabs. J7.10, ADR-071.
+    Texts: x:Uid (ADR-075).
+-->
+<UserControl
+    x:Class="Vigo.App.Views.TerminalPanel"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Vigo.App.Controls"
+    xmlns:views="using:Vigo.App.Views"
+    xmlns:vm="using:Vigo.Core.ViewModels">
+
+    <Grid Background="{ThemeResource VigoSunkenBrush}" BorderBrush="{ThemeResource VigoStrokeBrush}" BorderThickness="0,1,0,0">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Grid Height="32" Padding="8,0,6,0" Background="{ThemeResource VigoLayerBrush}"
+              BorderBrush="{ThemeResource VigoStrokeSubtleBrush}" BorderThickness="0,0,0,1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <!-- Git tab: the git.exe commands VIGO runs (GitCommandLogView), before the terminals. -->
+            <Grid Height="32">
+                <Button Style="{StaticResource VigoSubtleButton}" Height="28" Padding="10,0,10,0" Click="OnGitTabClick"
+                        x:Uid="TermGitTab">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <FontIcon Style="{StaticResource VigoIcon}" FontSize="14" Glyph="{x:Bind controls:FluentIcons.BranchFork}" />
+                        <TextBlock Text="Git" FontSize="{ThemeResource VigoFontSize12}" VerticalAlignment="Center"
+                                   FontWeight="{x:Bind views:TerminalPanel.WeightOf(ViewModel.IsGitLogSelected), Mode=OneWay}" />
+                    </StackPanel>
+                </Button>
+                <Border Width="16" Height="3" CornerRadius="2" VerticalAlignment="Bottom" HorizontalAlignment="Center"
+                        Background="{ThemeResource VigoAccentBrush}" Visibility="{x:Bind ViewModel.IsGitLogSelected, Mode=OneWay}" />
+            </Grid>
+
+            <ScrollViewer Grid.Column="1" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled" HorizontalScrollMode="Auto">
+                <ItemsRepeater ItemsSource="{x:Bind ViewModel.Tabs}" x:Uid="TermList">
+                    <ItemsRepeater.Layout>
+                        <StackLayout Orientation="Horizontal" />
+                    </ItemsRepeater.Layout>
+                    <ItemsRepeater.ItemTemplate>
+                        <DataTemplate x:DataType="vm:TerminalTabViewModel">
+                            <Grid Height="32">
+                                <StackPanel Orientation="Horizontal">
+                                    <Button Style="{StaticResource VigoSubtleButton}" Height="28" Padding="10,0,4,0" Tag="{x:Bind}" Click="OnTabClick"
+                                            ToolTipService.ToolTip="{x:Bind Shell.CommandLine}" AutomationProperties.Name="{x:Bind Title, Mode=OneWay}">
+                                        <StackPanel Orientation="Horizontal" Spacing="6">
+                                            <FontIcon Style="{StaticResource VigoIcon}" FontSize="14" Glyph="{x:Bind controls:FluentIcons.WindowConsole}" />
+                                            <TextBlock Text="{x:Bind Title, Mode=OneWay}" FontSize="{ThemeResource VigoFontSize12}" VerticalAlignment="Center"
+                                                       FontWeight="{x:Bind views:TerminalPanel.WeightOf(IsSelected), Mode=OneWay}" />
+                                        </StackPanel>
+                                    </Button>
+                                    <Button Style="{StaticResource VigoSubtleButton}" Width="22" Height="22" Margin="0,0,2,0" Tag="{x:Bind}" Click="OnTabCloseClick"
+                                            x:Uid="TermClose">
+                                        <FontIcon Style="{StaticResource VigoIcon}" FontSize="10" Foreground="{ThemeResource VigoText2Brush}" Glyph="{x:Bind controls:FluentIcons.Dismiss}" />
+                                    </Button>
+                                </StackPanel>
+                                <Border Width="16" Height="3" CornerRadius="2" VerticalAlignment="Bottom" HorizontalAlignment="Center"
+                                        Background="{ThemeResource VigoAccentBrush}" Visibility="{x:Bind IsSelected, Mode=OneWay}" />
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsRepeater.ItemTemplate>
+                </ItemsRepeater>
+            </ScrollViewer>
+
+            <Button x:Name="NewTerminalButton" Grid.Column="2" Style="{StaticResource VigoSubtleButton}" Width="26" Height="26" Margin="2,0,0,0"
+                    x:Uid="TermNew">
+                <Button.Flyout>
+                    <MenuFlyout x:Name="ShellMenu" Opening="OnShellMenuOpening" />
+                </Button.Flyout>
+                <FontIcon Style="{StaticResource VigoIcon}" FontSize="14" Foreground="{ThemeResource VigoText2Brush}" Glyph="{x:Bind controls:FluentIcons.Add}" />
+            </Button>
+
+            <TextBlock x:Name="HintText" Grid.Column="4" Margin="0,0,8,0" VerticalAlignment="Center" FontSize="{ThemeResource VigoFontSize11}" Foreground="{ThemeResource VigoText3Brush}" />
+            <Button Grid.Column="5" Style="{StaticResource VigoSubtleButton}" Width="26" Height="26" Command="{x:Bind ViewModel.HideCommand}"
+                    x:Uid="TermHide">
+                <FontIcon Style="{StaticResource VigoIcon}" FontSize="14" Foreground="{ThemeResource VigoText2Brush}" Glyph="{x:Bind controls:FluentIcons.Dismiss}" />
+            </Button>
+        </Grid>
+
+        <!-- One TerminalView per terminal, added by the code-behind; only the selected one is visible. -->
+        <Grid x:Name="Host" Grid.Row="1">
+            <views:GitCommandLogView x:Name="GitLogView" Visibility="Collapsed" />
+        </Grid>
+    </Grid>
+</UserControl>

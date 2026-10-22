@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Toolbar button content: 20 icon + 11px label (normal density); icon only in compact density. It sizes the button. -->
+<UserControl
+    x:Class="Vigo.App.Controls.ToolbarButtonContent"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Vigo.App.Controls"
+    xmlns:services="using:Vigo.App.Services"
+    Width="{x:Bind services:Appearance.Current.ToolbarButtonWidth, Mode=OneWay}"
+    Height="{x:Bind services:Appearance.Current.ToolbarButtonHeight, Mode=OneWay}">
+    <StackPanel Spacing="2" HorizontalAlignment="Center" VerticalAlignment="Center">
+        <FontIcon Style="{StaticResource VigoIcon}" FontSize="20" Glyph="{x:Bind controls:FluentIcons.FromName(Icon)}" />
+        <TextBlock Text="{x:Bind Label}" FontSize="{ThemeResource VigoFontSize11}" LineHeight="{ThemeResource VigoLineHeight13}" HorizontalAlignment="Center"
+                   Visibility="{x:Bind services:Appearance.Current.ToolbarLabelVisibility, Mode=OneWay}" />
+    </StackPanel>
+</UserControl>

@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Commit graph (mockup VIGO.dc.html, graph section): column header in XAML, rows drawn by Win2D.
+    Only the visible rows are drawn on a viewport-sized canvas; the scroll bar drives the offset (ADR-018).
+-->
+<UserControl
+    x:Class="Vigo.App.Controls.GraphCanvas"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:win2d="using:Microsoft.Graphics.Canvas.UI.Xaml"
+    xmlns:primitives="using:Microsoft.UI.Xaml.Controls.Primitives"
+    xmlns:controls="using:Vigo.App.Controls"
+    IsTabStop="True"
+    UseSystemFocusVisuals="True"
+    AutomationProperties.Name="Graphe des commits">
+
+    <UserControl.Resources>
+        <Style x:Key="HeaderText" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="{ThemeResource VigoFontSize11}" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+            <Setter Property="Foreground" Value="{ThemeResource VigoText3Brush}" />
+        </Style>
+        <Style x:Key="HeaderCell" TargetType="Border">
+            <Setter Property="Padding" Value="8,0,0,0" />
+            <Setter Property="BorderThickness" Value="1,0,0,0" />
+            <Setter Property="BorderBrush" Value="{ThemeResource VigoStrokeSubtleBrush}" />
+        </Style>
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="28" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- Column widths computed by GraphColumnLayout and shared with the renderer (GraphCanvas.xaml.cs).
+             The splitters on the column borders resize them (layout shared by every tab). -->
+        <Grid Background="{ThemeResource VigoLayerBrush}" BorderBrush="{ThemeResource VigoStrokeSubtleBrush}" BorderThickness="0,0,0,1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition x:Name="GraphColumn" Width="64" />
+                <ColumnDefinition x:Name="MessageColumn" Width="120" />
+                <ColumnDefinition x:Name="AuthorColumn" Width="170" />
+                <ColumnDefinition x:Name="DateColumn" Width="120" />
+                <ColumnDefinition x:Name="ShaColumn" Width="76" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <TextBlock x:Uid="GraphHeaderGraph" Style="{StaticResource HeaderText}" Margin="10,0,0,0" />
+            <Border Grid.Column="1" Style="{StaticResource HeaderCell}">
+                <TextBlock x:Uid="GraphHeaderMessage" Style="{StaticResource HeaderText}" />
+            </Border>
+            <Border Grid.Column="2" Style="{StaticResource HeaderCell}">
+                <TextBlock x:Uid="GraphHeaderAuthor" Style="{StaticResource HeaderText}" />
+            </Border>
+            <Border Grid.Column="3" Style="{StaticResource HeaderCell}">
+                <TextBlock x:Uid="GraphHeaderDate" Style="{StaticResource HeaderText}" />
+            </Border>
+            <Border Grid.Column="4" Style="{StaticResource HeaderCell}">
+                <TextBlock x:Uid="GraphHeaderSha" Style="{StaticResource HeaderText}" />
+            </Border>
+            <!-- Over the left border of the next column. -->
+            <controls:Splitter x:Uid="GraphSplitterGraph" x:Name="GraphSplitter" Grid.Column="1" HorizontalAlignment="Left" Margin="-3,0,0,0" />
+            <controls:Splitter x:Uid="GraphSplitterAuthor" x:Name="AuthorSplitter" Grid.Column="2" HorizontalAlignment="Left" Margin="-3,0,0,0" />
+            <controls:Splitter x:Uid="GraphSplitterDate" x:Name="DateSplitter" Grid.Column="3" HorizontalAlignment="Left" Margin="-3,0,0,0" />
+            <controls:Splitter x:Uid="GraphSplitterSha" x:Name="ShaSplitter" Grid.Column="4" HorizontalAlignment="Left" Margin="-3,0,0,0" />
+        </Grid>
+
+        <Grid Grid.Row="1">
+                <!--
+                    Menu of a stash row (J7.16): the same actions as in the left panel. Attached to the canvas' parent, shown by hand:
+                    a ContextFlyout would open by itself, before the code has set the text of the delete entry.
+                -->
+            <FlyoutBase.AttachedFlyout>
+                <MenuFlyout x:Name="StashMenu">
+                        <MenuFlyoutItem x:Uid="GraphStashApplyItem" Click="OnStashApplyClick">
+                            <MenuFlyoutItem.Icon>
+                                <FontIcon Glyph="{x:Bind controls:FluentIcons.ArchiveArrowBack}" FontFamily="{StaticResource VigoIconFont}" />
+                            </MenuFlyoutItem.Icon>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutItem x:Uid="GraphStashPopItem" Click="OnStashPopClick">
+                            <MenuFlyoutItem.Icon>
+                                <FontIcon Glyph="{x:Bind controls:FluentIcons.Archive}" FontFamily="{StaticResource VigoIconFont}" />
+                            </MenuFlyoutItem.Icon>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutSeparator />
+                        <MenuFlyoutItem x:Name="StashDeleteItem" Click="OnStashDeleteClick"
+                                        Foreground="{ThemeResource VigoDangerBrush}">
+                            <MenuFlyoutItem.Icon>
+                                <FontIcon Glyph="{x:Bind controls:FluentIcons.Delete}" FontFamily="{StaticResource VigoIconFont}" />
+                            </MenuFlyoutItem.Icon>
+                        </MenuFlyoutItem>
+                    </MenuFlyout>
+            </FlyoutBase.AttachedFlyout>
+            <win2d:CanvasControl x:Name="Canvas" Draw="OnDraw" AllowDrop="True"
+                                 PointerPressed="OnPointerPressed" PointerMoved="OnPointerMoved" PointerExited="OnPointerExited"
+                                 PointerWheelChanged="OnPointerWheelChanged">
+                <!--
+                    Menu of a commit row (mockup rowMenu; interactive rebase comes in J5.4).
+                -->
+                <FlyoutBase.AttachedFlyout>
+                    <MenuFlyout x:Name="RowMenu">
+                        <MenuFlyoutItem x:Name="NewBranchItem" x:Uid="GraphNewBranchItem" KeyboardAcceleratorTextOverride="Ctrl+B" Click="OnNewBranchClick">
+                            <MenuFlyoutItem.Icon>
+                                <FontIcon Glyph="{x:Bind controls:FluentIcons.Branch}" FontFamily="{StaticResource VigoIconFont}" />
+                            </MenuFlyoutItem.Icon>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutItem x:Name="NewTagItem" x:Uid="GraphNewTagItem" Click="OnNewTagClick">
+                            <MenuFlyoutItem.Icon>
+                                <FontIcon Glyph="{x:Bind controls:FluentIcons.Tag}" FontFamily="{StaticResource VigoIconFont}" />
+                            </MenuFlyoutItem.Icon>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutItem x:Name="CherryPickItem" x:Uid="GraphCherryPickItem" Click="OnCherryPickClick">
+                            <MenuFlyoutItem.Icon>
+                                <FontIcon Glyph="{x:Bind controls:FluentIcons.ArrowEnter}" FontFamily="{StaticResource VigoIconFont}" />
+                            </MenuFlyoutItem.Icon>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutItem x:Name="RevertItem" x:Uid="GraphRevertItem" Click="OnRevertClick">
+                            <MenuFlyoutItem.Icon>
+                                <FontIcon Glyph="{x:Bind controls:FluentIcons.ArrowCounterclockwise}" FontFamily="{StaticResource VigoIconFont}" />
+                            </MenuFlyoutItem.Icon>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutSubItem x:Name="ResetItem" x:Uid="GraphResetItem">
+                            <MenuFlyoutSubItem.Icon>
+                                <FontIcon Glyph="{x:Bind controls:FluentIcons.ArrowReset}" FontFamily="{StaticResource VigoIconFont}" />
+                            </MenuFlyoutSubItem.Icon>
+                            <MenuFlyoutItem x:Uid="GraphResetSoft" Tag="Soft" Click="OnResetClick" />
+                            <MenuFlyoutItem x:Uid="GraphResetMixed" Tag="Mixed" Click="OnResetClick" />
+                            <MenuFlyoutItem x:Uid="GraphResetHard" Tag="Hard" Click="OnResetClick"
+                                            Foreground="{ThemeResource VigoDangerBrush}" />
+                        </MenuFlyoutSubItem>
+                        <MenuFlyoutItem x:Name="InteractiveRebaseItem" x:Uid="GraphInteractiveRebaseItem" Click="OnInteractiveRebaseClick">
+                            <MenuFlyoutItem.Icon>
+                                <FontIcon Glyph="{x:Bind controls:FluentIcons.ReOrderDotsVertical}" FontFamily="{StaticResource VigoIconFont}" />
+                            </MenuFlyoutItem.Icon>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutItem x:Name="CreatePatchItem" x:Uid="GraphCreatePatchItem" Click="OnCreatePatchClick">
+                            <MenuFlyoutItem.Icon>
+                                <FontIcon Glyph="{x:Bind controls:FluentIcons.DocumentText}" FontFamily="{StaticResource VigoIconFont}" />
+                            </MenuFlyoutItem.Icon>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutItem x:Name="PullRequestItem" x:Uid="GraphPullRequestItem" Click="OnPullRequestClick" Visibility="Collapsed">
+                            <MenuFlyoutItem.Icon>
+                                <FontIcon Glyph="{x:Bind controls:FluentIcons.Merge}" FontFamily="{StaticResource VigoIconFont}" />
+                            </MenuFlyoutItem.Icon>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutSeparator />
+                        <MenuFlyoutItem x:Uid="GraphCopyShaItem" KeyboardAcceleratorTextOverride="Ctrl+C" Click="OnCopyShaClick">
+                            <MenuFlyoutItem.Icon>
+                                <FontIcon Glyph="{x:Bind controls:FluentIcons.Copy}" FontFamily="{StaticResource VigoIconFont}" />
+                            </MenuFlyoutItem.Icon>
+                        </MenuFlyoutItem>
+                    </MenuFlyout>
+                </FlyoutBase.AttachedFlyout>
+            </win2d:CanvasControl>
+            <primitives:ScrollBar x:Name="VerticalBar" Orientation="Vertical" HorizontalAlignment="Right"
+                                  IndicatorMode="MouseIndicator" SmallChange="28" ValueChanged="OnScrollValueChanged" />
+            <TextBlock x:Name="Status" HorizontalAlignment="Center" VerticalAlignment="Center" TextWrapping="Wrap" MaxWidth="480"
+                       TextAlignment="Center" Style="{StaticResource VigoSecondaryText}" Visibility="Collapsed" />
+        </Grid>
+    </Grid>
+</UserControl>

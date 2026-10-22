@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsVigoLibrary>true</IsVigoLibrary>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" />
+    <PackageReference Include="Markdig" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Vigo.Graph\Vigo.Graph.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Changelog\*.md" LogicalName="%(Filename)%(Extension)" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Vigo.Core.Tests" />
+  </ItemGroup>
+</Project>

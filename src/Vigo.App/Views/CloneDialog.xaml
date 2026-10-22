@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    "Cloner un dépôt" dialog (mockup cloneOpen): repository URL, destination folder + "Parcourir…", recursive submodules,
+    shallow clone. "Cloner" keeps the dialog open and shows the progress under the fields; "Annuler" (or Échap) closes it
+    and stops a running clone. Sources (J6.13) are a list on the left (the typed URL, then each connected hosting account); the right side
+    changes with the selection (address box, or filter + repository list + HTTPS / SSH switch); a double click on a
+    repository clones it. The dialog is widened beyond the 548 px default so that every field fits.
+    Texts: x:Uid (ADR-075).
+-->
+<ContentDialog
+    x:Class="Vigo.App.Views.CloneDialog"
+    x:Uid="CloneDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Vigo.App.Controls"
+    xmlns:vm="using:Vigo.Core.ViewModels"
+    IsPrimaryButtonEnabled="{x:Bind ViewModel.CanClone, Mode=OneWay}"
+    DefaultButton="Primary">
+
+    <ContentDialog.Resources>
+        <x:Double x:Key="ContentDialogMaxWidth">860</x:Double>
+    </ContentDialog.Resources>
+
+    <Grid Width="760" ColumnSpacing="16">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="170" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <!-- Left: where the repository comes from. -->
+        <StackPanel Spacing="8">
+            <ListView x:Name="SourceList" ItemsSource="{x:Bind ViewModel.Sources}"
+                      SelectedItem="{x:Bind ViewModel.SelectedSource, Mode=TwoWay}" SelectionMode="Single"
+                      IsEnabled="{x:Bind ViewModel.CanEdit, Mode=OneWay}" x:Uid="CloneSources">
+                <ListView.ItemTemplate>
+                    <DataTemplate x:DataType="vm:CloneSource">
+                        <TextBlock Text="{x:Bind Label}" FontSize="{ThemeResource VigoFontSize13}" TextTrimming="CharacterEllipsis" Padding="0,6" />
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+            <HyperlinkButton x:Uid="CloneConnectHost" Padding="8,0" Command="{x:Bind ViewModel.ConnectHostCommand}"
+                             Visibility="{x:Bind ViewModel.ShowConnectHost}" />
+        </StackPanel>
+
+        <!-- Right: changes with the selected source. -->
+        <StackPanel Grid.Column="1" Spacing="12" MinWidth="0">
+        <StackPanel Spacing="12" Visibility="{x:Bind ViewModel.IsUrlSource, Mode=OneWay}">
+            <TextBox x:Name="UrlBox" x:Uid="CloneUrl"
+                     Text="{x:Bind ViewModel.Url, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                     IsEnabled="{x:Bind ViewModel.CanEdit, Mode=OneWay}" IsSpellCheckEnabled="False" />
+        </StackPanel>
+
+        <StackPanel Spacing="8" Visibility="{x:Bind ViewModel.IsHostSource, Mode=OneWay}">
+            <Grid ColumnSpacing="8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBox x:Name="RepositoryFilterBox" x:Uid="CloneRepoFilter" IsSpellCheckEnabled="False"
+                         Text="{x:Bind ViewModel.RepositoryFilter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                         IsEnabled="{x:Bind ViewModel.CanEdit, Mode=OneWay}" />
+                <Button Grid.Column="1" x:Uid="CloneRefresh" Command="{x:Bind ViewModel.RefreshRepositoriesCommand}"
+                        Style="{StaticResource VigoToolbarButton}">
+                    <FontIcon Style="{StaticResource VigoIcon}" Glyph="{x:Bind controls:FluentIcons.ArrowSync}" />
+                </Button>
+            </Grid>
+
+            <!-- The list sits on a card of its own (Fluent: a list is a surface above the dialog background), with a light row height. -->
+            <Border Style="{StaticResource VigoCard}" Height="260" Padding="4">
+            <Grid>
+                <ListView x:Name="RepositoryList" ItemsSource="{x:Bind ViewModel.Rows}"
+                          SelectedItem="{x:Bind ViewModel.SelectedRepository, Mode=TwoWay}" SelectionMode="Single"
+                          IsEnabled="{x:Bind ViewModel.CanEdit, Mode=OneWay}" DoubleTapped="OnRepositoryDoubleTapped" ContainerContentChanging="OnRowContainerChanging">
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="vm:CloneRepositoryItem">
+                            <Grid>
+                            <TextBlock Text="{x:Bind HeaderText}" Visibility="{x:Bind IsHeader}" FontSize="{ThemeResource VigoFontSize12}" FontWeight="SemiBold" Margin="2,10,0,2"
+                                       Foreground="{ThemeResource VigoText2Brush}" TextTrimming="CharacterEllipsis" />
+                            <Grid Padding="2,6" ColumnSpacing="12" Margin="12,0,0,0" Visibility="{x:Bind IsRepository}" ToolTipService.ToolTip="{x:Bind Name}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel>
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <TextBlock Text="{x:Bind ShortName}" FontSize="{ThemeResource VigoFontSize13}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                                        <FontIcon x:Uid="CloneRepoPrivate" Style="{StaticResource VigoIcon}" FontSize="12"
+                                                  Foreground="{ThemeResource VigoText3Brush}" Visibility="{x:Bind IsPrivate}"
+                                                  Glyph="{x:Bind controls:FluentIcons.LockClosed}" />
+                                        <TextBlock x:Uid="CloneRepoFork" FontSize="{ThemeResource VigoFontSize11}" VerticalAlignment="Center"
+                                                   Foreground="{ThemeResource VigoText3Brush}" Visibility="{x:Bind IsFork}" />
+                                    </StackPanel>
+                                    <TextBlock Text="{x:Bind Description}" Visibility="{x:Bind HasDescription}" FontSize="{ThemeResource VigoFontSize12}"
+                                               Foreground="{ThemeResource VigoText2Brush}" TextTrimming="CharacterEllipsis" MaxLines="1" />
+                                </StackPanel>
+                                <TextBlock Grid.Column="1" Text="{x:Bind UpdatedText}" FontSize="{ThemeResource VigoFontSize11}" VerticalAlignment="Center"
+                                           Foreground="{ThemeResource VigoText3Brush}" />
+                            </Grid>
+                            </Grid>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+                <ProgressRing IsActive="{x:Bind ViewModel.IsLoadingRepositories, Mode=OneWay}" Width="28" Height="28"
+                              HorizontalAlignment="Center" VerticalAlignment="Center" />
+                <TextBlock x:Uid="CloneEmpty" Visibility="{x:Bind ViewModel.IsRepositoryListEmpty, Mode=OneWay}"
+                           HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{ThemeResource VigoText2Brush}" />
+            </Grid>
+            </Border>
+
+            <TextBlock x:Uid="CloneTruncated" Visibility="{x:Bind ViewModel.IsRepositoryListTruncated, Mode=OneWay}"
+                       FontSize="{ThemeResource VigoFontSize12}" TextWrapping="Wrap" Foreground="{ThemeResource VigoText2Brush}" />
+            <TextBlock Text="{x:Bind ViewModel.RepositoriesError, Mode=OneWay}" Visibility="{x:Bind ViewModel.HasRepositoriesError, Mode=OneWay}"
+                       TextWrapping="Wrap" Foreground="{ThemeResource VigoDangerBrush}" AutomationProperties.LiveSetting="Assertive" />
+            <CheckBox x:Uid="CloneUseSsh" IsChecked="{x:Bind ViewModel.UseSsh, Mode=TwoWay}"
+                      IsEnabled="{x:Bind ViewModel.CanEdit, Mode=OneWay}" />
+        </StackPanel>
+
+        <Grid ColumnSpacing="8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBox x:Uid="CloneDestination" FontFamily="{StaticResource VigoMonoFont}"
+                     Text="{x:Bind ViewModel.Destination, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                     IsEnabled="{x:Bind ViewModel.CanEdit, Mode=OneWay}" IsSpellCheckEnabled="False" />
+            <Button Grid.Column="1" VerticalAlignment="Bottom" x:Uid="CloneBrowse" Command="{x:Bind ViewModel.BrowseCommand}" />
+        </Grid>
+
+        <StackPanel Orientation="Horizontal" Spacing="16">
+            <CheckBox x:Uid="CloneRecurse" IsChecked="{x:Bind ViewModel.RecurseSubmodules, Mode=TwoWay}"
+                      IsEnabled="{x:Bind ViewModel.CanEdit, Mode=OneWay}" />
+            <CheckBox x:Uid="CloneShallow" IsChecked="{x:Bind ViewModel.Shallow, Mode=TwoWay}"
+                      IsEnabled="{x:Bind ViewModel.CanEdit, Mode=OneWay}" />
+        </StackPanel>
+
+        <TextBlock Text="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}" Visibility="{x:Bind ViewModel.HasError, Mode=OneWay}"
+                   TextWrapping="Wrap" Foreground="{ThemeResource VigoDangerBrush}" AutomationProperties.LiveSetting="Assertive" />
+
+        <StackPanel Spacing="6" Visibility="{x:Bind ViewModel.IsCloning, Mode=OneWay}">
+            <TextBlock Text="{x:Bind ViewModel.ProgressDetail, Mode=OneWay}" FontSize="{ThemeResource VigoFontSize12}" TextTrimming="CharacterEllipsis"
+                       Foreground="{ThemeResource VigoText2Brush}" AutomationProperties.LiveSetting="Polite" />
+            <ProgressBar Minimum="0" Maximum="100" Value="{x:Bind ViewModel.ProgressValue, Mode=OneWay}"
+                         IsIndeterminate="{x:Bind ViewModel.IsIndeterminate, Mode=OneWay}" />
+        </StackPanel>
+        </StackPanel>
+    </Grid>
+</ContentDialog>

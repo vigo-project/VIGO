@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Diff of a file (mockup VIGO.dc.html, showDiff section; layouts of VIGO Outils.dc.html, diff screen): XAML header
+    bar, code editor below (Monaco, ADR-038). Unified layout: hunk buttons and line selection for working-directory
+    diffs (J3.2); side-by-side layout: whole old and new files.
+-->
+<UserControl
+    x:Class="Vigo.App.Controls.DiffView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Vigo.App.Controls"
+    x:Uid="DiffRoot">
+
+    <Grid Background="{ThemeResource VigoSunkenBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="40" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Grid Padding="8,0" ColumnSpacing="8" Background="{ThemeResource VigoLayerBrush}"
+              BorderBrush="{ThemeResource VigoStrokeSubtleBrush}" BorderThickness="0,0,0,1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Button x:Uid="DiffBackButton" Style="{StaticResource VigoSubtleButton}" Height="28" Padding="8,0" Click="OnCloseClick">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <FontIcon Style="{StaticResource VigoIcon}" FontSize="14" Foreground="{ThemeResource VigoText2Brush}"
+                              Glyph="{x:Bind controls:FluentIcons.ChevronLeft}" />
+                    <TextBlock x:Uid="DiffBackText" FontSize="{ThemeResource VigoFontSize12}" Foreground="{ThemeResource VigoText2Brush}" />
+                </StackPanel>
+            </Button>
+            <controls:StatusBadge x:Name="Status" Grid.Column="1" VerticalAlignment="Center" />
+            <TextBlock x:Name="PathText" Grid.Column="2" FontFamily="{StaticResource VigoMonoFont}" FontSize="{ThemeResource VigoFontSize12}"
+                       VerticalAlignment="Center" TextTrimming="CharacterEllipsis" IsTextSelectionEnabled="True" />
+            <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                <!-- "Indexé" / "Non indexé" / "Non suivi" for a working-directory change. -->
+                <Border x:Name="SideBadge" Padding="6,1" CornerRadius="4" Background="{ThemeResource VigoCtrlBrush}"
+                        BorderBrush="{ThemeResource VigoStrokeBrush}" BorderThickness="1" Margin="0,0,4,0" Visibility="Collapsed">
+                    <TextBlock x:Name="SideText" FontSize="{ThemeResource VigoFontSize11}" Foreground="{ThemeResource VigoText2Brush}" />
+                </Border>
+                <TextBlock x:Name="AdditionsText" FontSize="{ThemeResource VigoFontSize11}" Foreground="{ThemeResource VigoAddTextBrush}" />
+                <TextBlock x:Name="DeletionsText" FontSize="{ThemeResource VigoFontSize11}" Foreground="{ThemeResource VigoDelTextBrush}" />
+            </StackPanel>
+            <StackPanel Grid.Column="4" Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
+                <!-- Shown while lines are selected (mockup: "Indexer N lignes"). -->
+                <Button x:Name="ApplySelectionButton" Style="{StaticResource VigoAccentButton}" Height="28" MinHeight="28" Padding="10,0"
+                        Click="OnApplySelectionClick" Visibility="Collapsed" Margin="0,0,4,0">
+                    <TextBlock x:Name="ApplySelectionText" FontSize="{ThemeResource VigoFontSize12}" FontWeight="SemiBold" />
+                </Button>
+                <Button x:Name="DiscardSelectionButton" Style="{StaticResource VigoStandardButton}" Height="28" MinHeight="28" Padding="10,0"
+                        Click="OnDiscardSelectionClick" Visibility="Collapsed" Margin="0,0,4,0">
+                    <TextBlock x:Name="DiscardSelectionText" FontSize="{ThemeResource VigoFontSize12}" />
+                </Button>
+                <!-- Current hunk (Alt+↑ / Alt+↓): keyboard and screen-reader access to the hunk buttons of the editor. -->
+                <Button x:Name="ApplyHunkButton" Style="{StaticResource VigoSubtleButton}" Width="28" Height="28" Click="OnApplyHunkClick"
+                        Visibility="Collapsed">
+                    <FontIcon x:Name="ApplyHunkIcon" Style="{StaticResource VigoIcon}" FontSize="14" />
+                </Button>
+                <Button x:Name="DiscardHunkButton" x:Uid="DiffDiscardHunkButton" Style="{StaticResource VigoSubtleButton}" Width="28" Height="28" Click="OnDiscardHunkClick"
+                        Visibility="Collapsed">
+                    <FontIcon Style="{StaticResource VigoIcon}" FontSize="14" Foreground="{ThemeResource VigoDangerBrush}"
+                              Glyph="{x:Bind controls:FluentIcons.Delete}" />
+                </Button>
+                <StackPanel x:Name="HunkNavigation" Orientation="Horizontal" Spacing="2">
+                    <TextBlock x:Name="HunkText" FontSize="{ThemeResource VigoFontSize12}" Foreground="{ThemeResource VigoText3Brush}" VerticalAlignment="Center" Margin="8,0,6,0" />
+                    <Button x:Uid="DiffPrevHunkButton" Style="{StaticResource VigoSubtleButton}" Width="28" Height="28" Click="OnPreviousHunkClick">
+                        <FontIcon Style="{StaticResource VigoIcon}" FontSize="14" Glyph="{x:Bind controls:FluentIcons.ArrowUp}" />
+                    </Button>
+                    <Button x:Uid="DiffNextHunkButton" Style="{StaticResource VigoSubtleButton}" Width="28" Height="28" Click="OnNextHunkClick">
+                        <FontIcon Style="{StaticResource VigoIcon}" FontSize="14" Glyph="{x:Bind controls:FluentIcons.ArrowDown}" />
+                    </Button>
+                </StackPanel>
+                <!-- Layout (mockup: "Côte à côte" / "Unifié", Ctrl+Maj+M). -->
+                <controls:LayoutToggle x:Name="LayoutButton" Margin="6,0,0,0" VerticalAlignment="Center" />
+            </StackPanel>
+        </Grid>
+
+        <controls:CodeEditor x:Name="Editor" Grid.Row="1" />
+        <controls:ImageDiffView x:Name="ImageDiff" Grid.Row="1" Visibility="Collapsed" />
+        <ProgressRing x:Name="LoadingRing" Grid.Row="1" Width="32" Height="32" IsActive="False" />
+        <TextBlock x:Name="Message" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" TextWrapping="Wrap" MaxWidth="480"
+                   TextAlignment="Center" Style="{StaticResource VigoSecondaryText}" Visibility="Collapsed" />
+    </Grid>
+</UserControl>

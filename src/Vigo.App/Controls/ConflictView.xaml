@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Conflict editor (J5.4, mockup VIGO Outils.dc.html, "Conflits" screen): XAML header (operation, file, conflicts left,
+    navigation, Réinitialiser, Annuler la fusion, Marquer comme résolu) over the code editor, which shows the panes
+    Ours / Theirs and the editable result (ADR-038). Files without line-by-line merge (deleted on one side, binary):
+    a card to choose a whole version. External merge tool: a waiting panel until it closes.
+-->
+<UserControl
+    x:Class="Vigo.App.Controls.ConflictView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Vigo.App.Controls"
+    x:Uid="ConflictRoot">
+
+    <Grid Background="{ThemeResource VigoSunkenBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="52" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Grid Padding="8,0,12,0" ColumnSpacing="10" Background="{ThemeResource VigoLayerBrush}"
+              BorderBrush="{ThemeResource VigoStrokeSubtleBrush}" BorderThickness="0,0,0,1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Button x:Uid="ConflictBackButton" Style="{StaticResource VigoSubtleButton}" Height="28" Padding="8,0" Click="OnCloseClick">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <FontIcon Style="{StaticResource VigoIcon}" FontSize="14" Foreground="{ThemeResource VigoText2Brush}"
+                              Glyph="{x:Bind controls:FluentIcons.ChevronLeft}" />
+                    <TextBlock x:Uid="ConflictBackText" FontSize="{ThemeResource VigoFontSize12}" Foreground="{ThemeResource VigoText2Brush}" />
+                </StackPanel>
+            </Button>
+            <Border Grid.Column="1" Width="28" Height="28" CornerRadius="6" Background="{ThemeResource VigoWarningSoftBrush}">
+                <FontIcon Style="{StaticResource VigoIcon}" FontSize="16" Foreground="{ThemeResource VigoWarningBrush}"
+                          Glyph="{x:Bind controls:FluentIcons.Warning}" />
+            </Border>
+            <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                <TextBlock x:Name="TitleText" Style="{StaticResource VigoStrongText}" TextTrimming="CharacterEllipsis" />
+                <TextBlock x:Name="SubtitleText" FontSize="{ThemeResource VigoFontSize11}" LineHeight="{ThemeResource VigoLineHeight14}" Foreground="{ThemeResource VigoText3Brush}"
+                           TextTrimming="CharacterEllipsis" IsTextSelectionEnabled="True" />
+            </StackPanel>
+            <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                <!-- Conflicts left (warning) or all resolved (success). -->
+                <TextBlock x:Name="RemainingText" FontSize="{ThemeResource VigoFontSize12}" FontWeight="SemiBold" VerticalAlignment="Center"
+                           Foreground="{ThemeResource VigoWarningBrush}" />
+                <TextBlock x:Name="ResolvedText" FontSize="{ThemeResource VigoFontSize12}" FontWeight="SemiBold" VerticalAlignment="Center"
+                           Foreground="{ThemeResource VigoSuccessBrush}" />
+                <StackPanel x:Name="Navigation" Orientation="Horizontal" Spacing="2">
+                    <TextBlock x:Name="PositionText" FontSize="{ThemeResource VigoFontSize12}" Foreground="{ThemeResource VigoText2Brush}" VerticalAlignment="Center" Margin="6,0,4,0" />
+                    <Button x:Uid="ConflictPrevButton" Style="{StaticResource VigoSubtleButton}" Width="28" Height="28" Click="OnPreviousClick">
+                        <FontIcon Style="{StaticResource VigoIcon}" FontSize="16" Glyph="{x:Bind controls:FluentIcons.ChevronUp}" />
+                    </Button>
+                    <Button x:Uid="ConflictNextButton" Style="{StaticResource VigoSubtleButton}" Width="28" Height="28" Click="OnNextClick">
+                        <FontIcon Style="{StaticResource VigoIcon}" FontSize="16" Glyph="{x:Bind controls:FluentIcons.ChevronDown}" />
+                    </Button>
+                </StackPanel>
+                <Border Width="1" Height="20" Margin="4,0" Background="{ThemeResource VigoStrokeSubtleBrush}" />
+                <Button x:Name="ToolButton" x:Uid="ConflictToolButton" Style="{StaticResource VigoStandardButton}" Height="32" Padding="12,0" Click="OnToolClick">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <FontIcon Style="{StaticResource VigoIcon}" FontSize="14" Glyph="{x:Bind controls:FluentIcons.Open}" />
+                        <TextBlock x:Uid="ConflictToolText" FontSize="{ThemeResource VigoFontSize13}" />
+                    </StackPanel>
+                </Button>
+                <Button x:Name="ResetButton" x:Uid="ConflictResetButton" Style="{StaticResource VigoStandardButton}" Height="32" Padding="12,0" Click="OnResetClick">
+                    <TextBlock x:Uid="ConflictResetText" FontSize="{ThemeResource VigoFontSize13}" />
+                </Button>
+                <Button x:Name="AbortButton" x:Uid="ConflictAbortButton" Style="{StaticResource VigoStandardButton}" Height="32" Padding="12,0" Click="OnAbortClick">
+                    <TextBlock x:Name="AbortText" FontSize="{ThemeResource VigoFontSize13}" Foreground="{ThemeResource VigoDangerBrush}" />
+                </Button>
+                <Button x:Name="ResolveButton" x:Uid="ConflictResolveButton" Style="{StaticResource VigoAccentButton}" Height="32" Padding="14,0" Click="OnResolveClick">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <FontIcon Style="{StaticResource VigoIcon}" FontSize="14" Glyph="{x:Bind controls:FluentIcons.Checkmark}" />
+                        <TextBlock x:Uid="ConflictResolveText" FontSize="{ThemeResource VigoFontSize13}" FontWeight="SemiBold" />
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+        </Grid>
+
+        <controls:CodeEditor x:Name="Editor" Grid.Row="1" />
+
+        <!-- File without line-by-line merge: choose a whole version. -->
+        <Border x:Name="WholeFileCard" Grid.Row="1" MaxWidth="560" Padding="24,20" HorizontalAlignment="Center" VerticalAlignment="Center"
+                Background="{ThemeResource VigoCardBrush}" BorderBrush="{ThemeResource VigoStrokeBrush}" BorderThickness="1" CornerRadius="8"
+                Visibility="Collapsed">
+            <StackPanel Spacing="12">
+                <TextBlock x:Name="WholeFileTitle" Style="{StaticResource VigoSubtitleText}" TextWrapping="Wrap" />
+                <TextBlock x:Name="WholeFileMessage" Style="{StaticResource VigoSecondaryText}" TextWrapping="Wrap" />
+                <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,4,0,0">
+                    <Button x:Name="KeepOursButton" Style="{StaticResource VigoStandardButton}" Click="OnKeepOursClick">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <Border Width="10" Height="10" CornerRadius="2" Background="{ThemeResource VigoLane5Brush}" />
+                            <TextBlock x:Name="KeepOursText" />
+                        </StackPanel>
+                    </Button>
+                    <Button x:Name="KeepTheirsButton" Style="{StaticResource VigoStandardButton}" Click="OnKeepTheirsClick">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <Border Width="10" Height="10" CornerRadius="2" Background="{ThemeResource VigoLane1Brush}" />
+                            <TextBlock x:Name="KeepTheirsText" />
+                        </StackPanel>
+                    </Button>
+                    <Button x:Name="DeleteFileButton" x:Uid="ConflictDeleteButton" Style="{StaticResource VigoStandardButton}" Click="OnDeleteFileClick">
+                        <TextBlock x:Uid="ConflictDeleteText" Foreground="{ThemeResource VigoDangerBrush}" />
+                    </Button>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
+        <!-- External merge tool open on the file. -->
+        <StackPanel x:Name="ToolPanel" Grid.Row="1" Spacing="12" MaxWidth="480" HorizontalAlignment="Center" VerticalAlignment="Center"
+                    Visibility="Collapsed">
+            <ProgressRing x:Name="ToolRing" Width="32" Height="32" IsActive="False" />
+            <TextBlock x:Name="ToolText" Style="{StaticResource VigoSecondaryText}" TextAlignment="Center" TextWrapping="Wrap" />
+            <Button x:Uid="ConflictCancelToolButton" Style="{StaticResource VigoStandardButton}" HorizontalAlignment="Center" Click="OnCancelToolClick" />
+        </StackPanel>
+
+        <ProgressRing x:Name="LoadingRing" Grid.Row="1" Width="32" Height="32" IsActive="False" />
+        <TextBlock x:Name="Message" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" TextWrapping="Wrap" MaxWidth="480"
+                   TextAlignment="Center" Style="{StaticResource VigoSecondaryText}" Visibility="Collapsed" />
+    </Grid>
+</UserControl>

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    "Échec d'authentification" (mockup VIGO.dc.html, authOpen): what was refused, the ways out as radio cards
+    (reconnect through Git Credential Manager, personal access token, switch HTTPS / SSH), technical details.
+    The default button is "Annuler" (Enter never stores nor changes anything by surprise).
+    Texts: x:Uid (ADR-075); the explanation, options and button text come from the view model (localized).
+-->
+<ContentDialog
+    x:Class="Vigo.App.Views.AuthenticationDialog"
+    x:Uid="AuthenticationDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Vigo.App.Controls"
+    xmlns:vm="using:Vigo.Core.ViewModels"
+    PrimaryButtonText="{x:Bind ViewModel.ConfirmText, Mode=OneWay}"
+    IsPrimaryButtonEnabled="{x:Bind ViewModel.CanConfirm, Mode=OneWay}"
+    DefaultButton="Close">
+
+    <ContentDialog.Resources>
+        <x:Double x:Key="ContentDialogMaxWidth">560</x:Double>
+    </ContentDialog.Resources>
+
+    <StackPanel Width="500" Spacing="14">
+        <Grid ColumnSpacing="12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <FontIcon Style="{StaticResource VigoIcon}" FontSize="20" Margin="0,4,0,0" VerticalAlignment="Top"
+                      Foreground="{ThemeResource VigoDangerBrush}" Glyph="{x:Bind controls:FluentIcons.LockClosed}" />
+            <StackPanel Grid.Column="1" Spacing="4">
+                <TextBlock x:Uid="AuthTitle" FontSize="{ThemeResource VigoFontSize20}" FontWeight="SemiBold" LineHeight="{ThemeResource VigoLineHeight28}" />
+                <TextBlock Text="{x:Bind ViewModel.Explanation}" TextWrapping="Wrap" Foreground="{ThemeResource VigoText2Brush}" />
+            </StackPanel>
+        </Grid>
+
+        <!-- Options: radio cards; the selected one is outlined in accent -->
+        <ItemsRepeater ItemsSource="{x:Bind ViewModel.Options}">
+            <ItemsRepeater.Layout>
+                <StackLayout Spacing="8" />
+            </ItemsRepeater.Layout>
+            <ItemsRepeater.ItemTemplate>
+                <DataTemplate x:DataType="vm:AuthenticationOption">
+                    <RadioButton GroupName="AuthenticationOptions" HorizontalAlignment="Stretch" Padding="8,8,12,8"
+                                 IsChecked="{x:Bind IsSelected, Mode=TwoWay}" IsEnabled="{x:Bind IsAvailable}"
+                                 BorderThickness="1" CornerRadius="6" BorderBrush="{ThemeResource VigoStrokeSubtleBrush}"
+                                 AutomationProperties.Name="{x:Bind Title}">
+                        <StackPanel Spacing="2">
+                            <TextBlock Text="{x:Bind Title}" FontWeight="SemiBold" />
+                            <TextBlock Text="{x:Bind Description}" FontSize="{ThemeResource VigoFontSize12}" TextWrapping="Wrap" Foreground="{ThemeResource VigoText3Brush}" />
+                        </StackPanel>
+                    </RadioButton>
+                </DataTemplate>
+            </ItemsRepeater.ItemTemplate>
+        </ItemsRepeater>
+
+        <!-- Personal access token: stored by the credential helper, never logged -->
+        <StackPanel Spacing="8" Visibility="{x:Bind ViewModel.IsAccessTokenSelected, Mode=OneWay}">
+            <TextBox x:Uid="AuthUserName" Text="{x:Bind ViewModel.UserName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+            <PasswordBox x:Name="TokenBox" x:Uid="AuthToken" PasswordChanged="OnTokenChanged" />
+        </StackPanel>
+
+        <Expander x:Uid="AuthDetails" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+            <TextBlock Text="{x:Bind ViewModel.TechnicalDetails}" FontFamily="Cascadia Mono, Consolas" FontSize="{ThemeResource VigoFontSize11}" LineHeight="{ThemeResource VigoLineHeight16}"
+                       TextWrapping="Wrap" IsTextSelectionEnabled="True" />
+        </Expander>
+    </StackPanel>
+</ContentDialog>

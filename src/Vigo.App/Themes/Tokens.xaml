@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- GENERATED FILE by tools/gen-tokens.mjs from the Claude Design design system (VIGO.dc.html). Do not edit by hand. -->
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="Default">
+            <Color x:Key="VigoMicaColor">#FF1F1F22</Color>
+            <SolidColorBrush x:Key="VigoMicaBrush" Color="#FF1F1F22" />
+            <Color x:Key="VigoMicaAltColor">#FF1A1A1D</Color>
+            <SolidColorBrush x:Key="VigoMicaAltBrush" Color="#FF1A1A1D" />
+            <Color x:Key="VigoLayerColor">#FF27272A</Color>
+            <SolidColorBrush x:Key="VigoLayerBrush" Color="#FF27272A" />
+            <Color x:Key="VigoLayer2Color">#FF2E2E32</Color>
+            <SolidColorBrush x:Key="VigoLayer2Brush" Color="#FF2E2E32" />
+            <Color x:Key="VigoSunkenColor">#FF18181A</Color>
+            <SolidColorBrush x:Key="VigoSunkenBrush" Color="#FF18181A" />
+            <Color x:Key="VigoCardColor">#FF2B2B2F</Color>
+            <SolidColorBrush x:Key="VigoCardBrush" Color="#FF2B2B2F" />
+            <Color x:Key="VigoFlyoutColor">#FF2C2C30</Color>
+            <SolidColorBrush x:Key="VigoFlyoutBrush" Color="#FF2C2C30" />
+            <Color x:Key="VigoCtrlColor">#10FFFFFF</Color>
+            <SolidColorBrush x:Key="VigoCtrlBrush" Color="#10FFFFFF" />
+            <Color x:Key="VigoCtrlHoverColor">#15FFFFFF</Color>
+            <SolidColorBrush x:Key="VigoCtrlHoverBrush" Color="#15FFFFFF" />
+            <Color x:Key="VigoCtrlPressColor">#08FFFFFF</Color>
+            <SolidColorBrush x:Key="VigoCtrlPressBrush" Color="#08FFFFFF" />
+            <Color x:Key="VigoCtrlDisColor">#0BFFFFFF</Color>
+            <SolidColorBrush x:Key="VigoCtrlDisBrush" Color="#0BFFFFFF" />
+            <Color x:Key="VigoSubHoverColor">#0FFFFFFF</Color>
+            <SolidColorBrush x:Key="VigoSubHoverBrush" Color="#0FFFFFFF" />
+            <Color x:Key="VigoSubPressColor">#0AFFFFFF</Color>
+            <SolidColorBrush x:Key="VigoSubPressBrush" Color="#0AFFFFFF" />
+            <Color x:Key="VigoStrokeColor">#FF3A3A3E</Color>
+            <SolidColorBrush x:Key="VigoStrokeBrush" Color="#FF3A3A3E" />
+            <Color x:Key="VigoStrokeSubtleColor">#FF2F2F33</Color>
+            <SolidColorBrush x:Key="VigoStrokeSubtleBrush" Color="#FF2F2F33" />
+            <Color x:Key="VigoStrokeStrongColor">#FF55555B</Color>
+            <SolidColorBrush x:Key="VigoStrokeStrongBrush" Color="#FF55555B" />
+            <Color x:Key="VigoStrokeCtrlColor">#17FFFFFF</Color>
+            <SolidColorBrush x:Key="VigoStrokeCtrlBrush" Color="#17FFFFFF" />
+            <Color x:Key="VigoTextColor">#FFF3F3F5</Color>
+            <SolidColorBrush x:Key="VigoTextBrush" Color="#FFF3F3F5" />
+            <Color x:Key="VigoText2Color">#FFC5C5CC</Color>
+            <SolidColorBrush x:Key="VigoText2Brush" Color="#FFC5C5CC" />
+            <Color x:Key="VigoText3Color">#FF9A9AA3</Color>
+            <SolidColorBrush x:Key="VigoText3Brush" Color="#FF9A9AA3" />
+            <Color x:Key="VigoTextDisColor">#FF6B6B72</Color>
+            <SolidColorBrush x:Key="VigoTextDisBrush" Color="#FF6B6B72" />
+            <Color x:Key="VigoAccentColor">#FF60CDFF</Color>
+            <SolidColorBrush x:Key="VigoAccentBrush" Color="#FF60CDFF" />
+            <Color x:Key="VigoAccentHoverColor">#FF57B9E6</Color>
+            <SolidColorBrush x:Key="VigoAccentHoverBrush" Color="#FF57B9E6" />
+            <Color x:Key="VigoAccentPressColor">#FF4EA6CF</Color>
+            <SolidColorBrush x:Key="VigoAccentPressBrush" Color="#FF4EA6CF" />
+            <Color x:Key="VigoOnAccentColor">#FF0B0B0C</Color>
+            <SolidColorBrush x:Key="VigoOnAccentBrush" Color="#FF0B0B0C" />
+            <Color x:Key="VigoAccentTextColor">#FF60CDFF</Color>
+            <SolidColorBrush x:Key="VigoAccentTextBrush" Color="#FF60CDFF" />
+            <Color x:Key="VigoAccentSoftColor">#2460CDFF</Color>
+            <SolidColorBrush x:Key="VigoAccentSoftBrush" Color="#2460CDFF" />
+            <Color x:Key="VigoAccentSoft2Color">#3D60CDFF</Color>
+            <SolidColorBrush x:Key="VigoAccentSoft2Brush" Color="#3D60CDFF" />
+            <Color x:Key="VigoFocusColor">#FFFFFFFF</Color>
+            <SolidColorBrush x:Key="VigoFocusBrush" Color="#FFFFFFFF" />
+            <Color x:Key="VigoSuccessColor">#FF6CCB5F</Color>
+            <SolidColorBrush x:Key="VigoSuccessBrush" Color="#FF6CCB5F" />
+            <Color x:Key="VigoWarningColor">#FFFCE100</Color>
+            <SolidColorBrush x:Key="VigoWarningBrush" Color="#FFFCE100" />
+            <Color x:Key="VigoDangerColor">#FFFF99A4</Color>
+            <SolidColorBrush x:Key="VigoDangerBrush" Color="#FFFF99A4" />
+            <Color x:Key="VigoOnDangerColor">#FF1A0B0D</Color>
+            <SolidColorBrush x:Key="VigoOnDangerBrush" Color="#FF1A0B0D" />
+            <Color x:Key="VigoSuccessSoftColor">#246CCB5F</Color>
+            <SolidColorBrush x:Key="VigoSuccessSoftBrush" Color="#246CCB5F" />
+            <Color x:Key="VigoWarningSoftColor">#1FFCE100</Color>
+            <SolidColorBrush x:Key="VigoWarningSoftBrush" Color="#1FFCE100" />
+            <Color x:Key="VigoDangerSoftColor">#26FF6378</Color>
+            <SolidColorBrush x:Key="VigoDangerSoftBrush" Color="#26FF6378" />
+            <Color x:Key="VigoAddColor">#1F6CCB5F</Color>
+            <SolidColorBrush x:Key="VigoAddBrush" Color="#1F6CCB5F" />
+            <Color x:Key="VigoAdd2Color">#4D6CCB5F</Color>
+            <SolidColorBrush x:Key="VigoAdd2Brush" Color="#4D6CCB5F" />
+            <Color x:Key="VigoDelColor">#1FFF6378</Color>
+            <SolidColorBrush x:Key="VigoDelBrush" Color="#1FFF6378" />
+            <Color x:Key="VigoDel2Color">#4DFF6378</Color>
+            <SolidColorBrush x:Key="VigoDel2Brush" Color="#4DFF6378" />
+            <Color x:Key="VigoAddTextColor">#FF6CCB5F</Color>
+            <SolidColorBrush x:Key="VigoAddTextBrush" Color="#FF6CCB5F" />
+            <Color x:Key="VigoDelTextColor">#FFFF99A4</Color>
+            <SolidColorBrush x:Key="VigoDelTextBrush" Color="#FFFF99A4" />
+            <Color x:Key="VigoHitColor">#47FCE100</Color>
+            <SolidColorBrush x:Key="VigoHitBrush" Color="#47FCE100" />
+            <Color x:Key="VigoSynKwColor">#FFC8A2FF</Color>
+            <SolidColorBrush x:Key="VigoSynKwBrush" Color="#FFC8A2FF" />
+            <Color x:Key="VigoSynFnColor">#FF7FD4FF</Color>
+            <SolidColorBrush x:Key="VigoSynFnBrush" Color="#FF7FD4FF" />
+            <Color x:Key="VigoSynStrColor">#FF9FDC8C</Color>
+            <SolidColorBrush x:Key="VigoSynStrBrush" Color="#FF9FDC8C" />
+            <Color x:Key="VigoSynNumColor">#FFFFB86B</Color>
+            <SolidColorBrush x:Key="VigoSynNumBrush" Color="#FFFFB86B" />
+            <Color x:Key="VigoSynComColor">#FF8A8F98</Color>
+            <SolidColorBrush x:Key="VigoSynComBrush" Color="#FF8A8F98" />
+            <Color x:Key="VigoSynTypeColor">#FF5FE0C9</Color>
+            <SolidColorBrush x:Key="VigoSynTypeBrush" Color="#FF5FE0C9" />
+            <Color x:Key="VigoSynVarColor">#FFA9C7FF</Color>
+            <SolidColorBrush x:Key="VigoSynVarBrush" Color="#FFA9C7FF" />
+            <Color x:Key="VigoSynPropColor">#FFE6C78A</Color>
+            <SolidColorBrush x:Key="VigoSynPropBrush" Color="#FFE6C78A" />
+            <Color x:Key="VigoSynCtrlColor">#FFFF8CCF</Color>
+            <SolidColorBrush x:Key="VigoSynCtrlBrush" Color="#FFFF8CCF" />
+            <Color x:Key="VigoScrimColor">#73000000</Color>
+            <SolidColorBrush x:Key="VigoScrimBrush" Color="#73000000" />
+            <Color x:Key="VigoMicaTintColor">#0F6078FF</Color>
+            <SolidColorBrush x:Key="VigoMicaTintBrush" Color="#0F6078FF" />
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="Light">
+            <Color x:Key="VigoMicaColor">#FFF3F3F3</Color>
+            <SolidColorBrush x:Key="VigoMicaBrush" Color="#FFF3F3F3" />
+            <Color x:Key="VigoMicaAltColor">#FFEAEAEC</Color>
+            <SolidColorBrush x:Key="VigoMicaAltBrush" Color="#FFEAEAEC" />
+            <Color x:Key="VigoLayerColor">#FFFBFBFB</Color>
+            <SolidColorBrush x:Key="VigoLayerBrush" Color="#FFFBFBFB" />
+            <Color x:Key="VigoLayer2Color">#FFF5F5F6</Color>
+            <SolidColorBrush x:Key="VigoLayer2Brush" Color="#FFF5F5F6" />
+            <Color x:Key="VigoSunkenColor">#FFFFFFFF</Color>
+            <SolidColorBrush x:Key="VigoSunkenBrush" Color="#FFFFFFFF" />
+            <Color x:Key="VigoCardColor">#FFFFFFFF</Color>
+            <SolidColorBrush x:Key="VigoCardBrush" Color="#FFFFFFFF" />
+            <Color x:Key="VigoFlyoutColor">#FFFCFCFC</Color>
+            <SolidColorBrush x:Key="VigoFlyoutBrush" Color="#FFFCFCFC" />
+            <Color x:Key="VigoCtrlColor">#FFFFFFFF</Color>
+            <SolidColorBrush x:Key="VigoCtrlBrush" Color="#FFFFFFFF" />
+            <Color x:Key="VigoCtrlHoverColor">#FFF6F6F7</Color>
+            <SolidColorBrush x:Key="VigoCtrlHoverBrush" Color="#FFF6F6F7" />
+            <Color x:Key="VigoCtrlPressColor">#FFF0F0F1</Color>
+            <SolidColorBrush x:Key="VigoCtrlPressBrush" Color="#FFF0F0F1" />
+            <Color x:Key="VigoCtrlDisColor">#FFF5F5F5</Color>
+            <SolidColorBrush x:Key="VigoCtrlDisBrush" Color="#FFF5F5F5" />
+            <Color x:Key="VigoSubHoverColor">#09000000</Color>
+            <SolidColorBrush x:Key="VigoSubHoverBrush" Color="#09000000" />
+            <Color x:Key="VigoSubPressColor">#06000000</Color>
+            <SolidColorBrush x:Key="VigoSubPressBrush" Color="#06000000" />
+            <Color x:Key="VigoStrokeColor">#FFE0E0E3</Color>
+            <SolidColorBrush x:Key="VigoStrokeBrush" Color="#FFE0E0E3" />
+            <Color x:Key="VigoStrokeSubtleColor">#FFEBEBEE</Color>
+            <SolidColorBrush x:Key="VigoStrokeSubtleBrush" Color="#FFEBEBEE" />
+            <Color x:Key="VigoStrokeStrongColor">#FFC2C2C8</Color>
+            <SolidColorBrush x:Key="VigoStrokeStrongBrush" Color="#FFC2C2C8" />
+            <Color x:Key="VigoStrokeCtrlColor">#29000000</Color>
+            <SolidColorBrush x:Key="VigoStrokeCtrlBrush" Color="#29000000" />
+            <Color x:Key="VigoTextColor">#FF1A1A1C</Color>
+            <SolidColorBrush x:Key="VigoTextBrush" Color="#FF1A1A1C" />
+            <Color x:Key="VigoText2Color">#FF4A4A50</Color>
+            <SolidColorBrush x:Key="VigoText2Brush" Color="#FF4A4A50" />
+            <Color x:Key="VigoText3Color">#FF66666D</Color>
+            <SolidColorBrush x:Key="VigoText3Brush" Color="#FF66666D" />
+            <Color x:Key="VigoTextDisColor">#FFA0A0A6</Color>
+            <SolidColorBrush x:Key="VigoTextDisBrush" Color="#FFA0A0A6" />
+            <Color x:Key="VigoAccentColor">#FF005FB8</Color>
+            <SolidColorBrush x:Key="VigoAccentBrush" Color="#FF005FB8" />
+            <Color x:Key="VigoAccentHoverColor">#FF1975C5</Color>
+            <SolidColorBrush x:Key="VigoAccentHoverBrush" Color="#FF1975C5" />
+            <Color x:Key="VigoAccentPressColor">#FF3183CA</Color>
+            <SolidColorBrush x:Key="VigoAccentPressBrush" Color="#FF3183CA" />
+            <Color x:Key="VigoOnAccentColor">#FFFFFFFF</Color>
+            <SolidColorBrush x:Key="VigoOnAccentBrush" Color="#FFFFFFFF" />
+            <Color x:Key="VigoAccentTextColor">#FF005FB8</Color>
+            <SolidColorBrush x:Key="VigoAccentTextBrush" Color="#FF005FB8" />
+            <Color x:Key="VigoAccentSoftColor">#1A005FB8</Color>
+            <SolidColorBrush x:Key="VigoAccentSoftBrush" Color="#1A005FB8" />
+            <Color x:Key="VigoAccentSoft2Color">#2E005FB8</Color>
+            <SolidColorBrush x:Key="VigoAccentSoft2Brush" Color="#2E005FB8" />
+            <Color x:Key="VigoFocusColor">#FF1A1A1C</Color>
+            <SolidColorBrush x:Key="VigoFocusBrush" Color="#FF1A1A1C" />
+            <Color x:Key="VigoSuccessColor">#FF0F7B0F</Color>
+            <SolidColorBrush x:Key="VigoSuccessBrush" Color="#FF0F7B0F" />
+            <Color x:Key="VigoWarningColor">#FF9D5D00</Color>
+            <SolidColorBrush x:Key="VigoWarningBrush" Color="#FF9D5D00" />
+            <Color x:Key="VigoDangerColor">#FFC42B1C</Color>
+            <SolidColorBrush x:Key="VigoDangerBrush" Color="#FFC42B1C" />
+            <Color x:Key="VigoOnDangerColor">#FFFFFFFF</Color>
+            <SolidColorBrush x:Key="VigoOnDangerBrush" Color="#FFFFFFFF" />
+            <Color x:Key="VigoSuccessSoftColor">#1A0F7B0F</Color>
+            <SolidColorBrush x:Key="VigoSuccessSoftBrush" Color="#1A0F7B0F" />
+            <Color x:Key="VigoWarningSoftColor">#1A9D5D00</Color>
+            <SolidColorBrush x:Key="VigoWarningSoftBrush" Color="#1A9D5D00" />
+            <Color x:Key="VigoDangerSoftColor">#17C42B1C</Color>
+            <SolidColorBrush x:Key="VigoDangerSoftBrush" Color="#17C42B1C" />
+            <Color x:Key="VigoAddColor">#170F7B0F</Color>
+            <SolidColorBrush x:Key="VigoAddBrush" Color="#170F7B0F" />
+            <Color x:Key="VigoAdd2Color">#380F7B0F</Color>
+            <SolidColorBrush x:Key="VigoAdd2Brush" Color="#380F7B0F" />
+            <Color x:Key="VigoDelColor">#14C42B1C</Color>
+            <SolidColorBrush x:Key="VigoDelBrush" Color="#14C42B1C" />
+            <Color x:Key="VigoDel2Color">#33C42B1C</Color>
+            <SolidColorBrush x:Key="VigoDel2Brush" Color="#33C42B1C" />
+            <Color x:Key="VigoAddTextColor">#FF0F7B0F</Color>
+            <SolidColorBrush x:Key="VigoAddTextBrush" Color="#FF0F7B0F" />
+            <Color x:Key="VigoDelTextColor">#FFC42B1C</Color>
+            <SolidColorBrush x:Key="VigoDelTextBrush" Color="#FFC42B1C" />
+            <Color x:Key="VigoHitColor">#66FFC800</Color>
+            <SolidColorBrush x:Key="VigoHitBrush" Color="#66FFC800" />
+            <Color x:Key="VigoSynKwColor">#FF7A2FB8</Color>
+            <SolidColorBrush x:Key="VigoSynKwBrush" Color="#FF7A2FB8" />
+            <Color x:Key="VigoSynFnColor">#FF00639C</Color>
+            <SolidColorBrush x:Key="VigoSynFnBrush" Color="#FF00639C" />
+            <Color x:Key="VigoSynStrColor">#FF2D7D1E</Color>
+            <SolidColorBrush x:Key="VigoSynStrBrush" Color="#FF2D7D1E" />
+            <Color x:Key="VigoSynNumColor">#FFA24A00</Color>
+            <SolidColorBrush x:Key="VigoSynNumBrush" Color="#FFA24A00" />
+            <Color x:Key="VigoSynComColor">#FF6B6F76</Color>
+            <SolidColorBrush x:Key="VigoSynComBrush" Color="#FF6B6F76" />
+            <Color x:Key="VigoSynTypeColor">#FF00787A</Color>
+            <SolidColorBrush x:Key="VigoSynTypeBrush" Color="#FF00787A" />
+            <Color x:Key="VigoSynVarColor">#FF3D45B8</Color>
+            <SolidColorBrush x:Key="VigoSynVarBrush" Color="#FF3D45B8" />
+            <Color x:Key="VigoSynPropColor">#FF7A5D00</Color>
+            <SolidColorBrush x:Key="VigoSynPropBrush" Color="#FF7A5D00" />
+            <Color x:Key="VigoSynCtrlColor">#FFB4237A</Color>
+            <SolidColorBrush x:Key="VigoSynCtrlBrush" Color="#FFB4237A" />
+            <Color x:Key="VigoScrimColor">#4D000000</Color>
+            <SolidColorBrush x:Key="VigoScrimBrush" Color="#4D000000" />
+            <Color x:Key="VigoMicaTintColor">#0A005FB8</Color>
+            <SolidColorBrush x:Key="VigoMicaTintBrush" Color="#0A005FB8" />
+        </ResourceDictionary>
+    </ResourceDictionary.ThemeDictionaries>
+
+    <!-- Graph lane colors (same in light and dark) -->
+    <Color x:Key="VigoLane1Color">#FF3B8EEA</Color>
+    <SolidColorBrush x:Key="VigoLane1Brush" Color="#FF3B8EEA" />
+    <Color x:Key="VigoLane2Color">#FFE5534B</Color>
+    <SolidColorBrush x:Key="VigoLane2Brush" Color="#FFE5534B" />
+    <Color x:Key="VigoLane3Color">#FF2DA44E</Color>
+    <SolidColorBrush x:Key="VigoLane3Brush" Color="#FF2DA44E" />
+    <Color x:Key="VigoLane4Color">#FFB8860B</Color>
+    <SolidColorBrush x:Key="VigoLane4Brush" Color="#FFB8860B" />
+    <Color x:Key="VigoLane5Color">#FFA371F7</Color>
+    <SolidColorBrush x:Key="VigoLane5Brush" Color="#FFA371F7" />
+    <Color x:Key="VigoLane6Color">#FFE0702A</Color>
+    <SolidColorBrush x:Key="VigoLane6Brush" Color="#FFE0702A" />
+    <Color x:Key="VigoLane7Color">#FF1A9E9E</Color>
+    <SolidColorBrush x:Key="VigoLane7Brush" Color="#FF1A9E9E" />
+    <Color x:Key="VigoLane8Color">#FFD15A9C</Color>
+    <SolidColorBrush x:Key="VigoLane8Brush" Color="#FFD15A9C" />
+    <Color x:Key="VigoLane9Color">#FF6F7EE8</Color>
+    <SolidColorBrush x:Key="VigoLane9Brush" Color="#FF6F7EE8" />
+    <Color x:Key="VigoLane10Color">#FF7F9A1F</Color>
+    <SolidColorBrush x:Key="VigoLane10Brush" Color="#FF7F9A1F" />
+</ResourceDictionary>

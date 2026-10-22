@@ -1,0 +1,355 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Left panel of a repository tab (mockup VIGO.dc.html, aside): filter, then collapsible sections Branches locales /
+    Distants / Pull requests / Issues (J6.2) / Tags / Stashes / Worktrees (J7.1) / Submodules (J7.2) / Git LFS (J7.5). Click: select the commit
+    of a ref (or expand / collapse); double click, Enter or menu: checkout, or open a pull request / issue in the
+    browser. A branch dragged on a local branch (here or
+    from a graph badge) opens the merge / rebase menu (J4.3). Stash rows: apply, pop, delete (J4.4).
+    Texts: x:Uid of the menu entries below (ADR-075); the texts that depend on the row are set by the code behind.
+-->
+<UserControl
+    x:Class="Vigo.App.Views.RefsPanel"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Vigo.App.Controls"
+    xmlns:views="using:Vigo.App.Views"
+    xmlns:services="using:Vigo.App.Services"
+    xmlns:vm="using:Vigo.Core.ViewModels">
+
+    <UserControl.Resources>
+        <Style x:Key="RefRowContainer" TargetType="ListViewItem" BasedOn="{StaticResource DefaultListViewItemStyle}">
+            <Setter Property="MinHeight" Value="0" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Margin" Value="4,0" />
+            <Setter Property="CornerRadius" Value="4" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="VerticalContentAlignment" Value="Stretch" />
+        </Style>
+
+        <!--
+            One row: chevron (sections), icon, label, meta on the right. HEAD has a square check, a bold label and a
+            background tinted with its lane color (first border, see RefsPanel.RowTint), hidden while the row is hovered
+            or selected so that the standard backgrounds win. No accent pill of its own: it would sit next to the
+            ListView selection indicator (double bar).
+        -->
+        <DataTemplate x:Key="RefRowTemplate" x:DataType="vm:RefRowItem">
+            <Grid Height="{x:Bind services:Appearance.Current.RowHeight, Mode=OneWay}" ToolTipService.ToolTip="{x:Bind views:RefsPanel.ToolTipOf(Row.ToolTip), Mode=OneWay}"
+                  views:RefsPanel.RowTint="{x:Bind views:RefsPanel.TintOf(Row.IsHead, Row.ColorIndex), Mode=OneWay}">
+                <Border CornerRadius="4" Visibility="Collapsed" />
+                <Grid Padding="{x:Bind views:RefsPanel.PaddingOf(Row.Indent), Mode=OneWay}" ColumnSpacing="6">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <FontIcon Style="{StaticResource VigoIcon}" FontSize="12" Foreground="{ThemeResource VigoText2Brush}"
+                              Glyph="{x:Bind views:RefsPanel.ChevronOf(Row.IsExpanded), Mode=OneWay}" Visibility="{x:Bind Row.IsSection, Mode=OneWay}" />
+                    <Grid Grid.Column="1" VerticalAlignment="Center">
+                        <FontIcon Style="{StaticResource VigoIcon}" FontSize="14" Foreground="{ThemeResource VigoText2Brush}"
+                                  Glyph="{x:Bind views:RefsPanel.IconOf(Row.Kind, Row.Section, Row.IsHead, Row.IsExpanded, Row.Worktree, Row.ItemType), Mode=OneWay}"
+                                  Visibility="{x:Bind views:RefsPanel.NeutralIcon(Row.ColorIndex), Mode=OneWay}" />
+                        <FontIcon Style="{StaticResource VigoIcon}" FontSize="14" Foreground="{x:Bind views:RefsPanel.LaneBrush(Row.ColorIndex), Mode=OneWay}"
+                                  Glyph="{x:Bind views:RefsPanel.IconOf(Row.Kind, Row.Section, Row.IsHead, Row.IsExpanded, Row.Worktree, Row.ItemType), Mode=OneWay}"
+                                  Visibility="{x:Bind views:RefsPanel.LaneIcon(Row.ColorIndex), Mode=OneWay}" />
+                    </Grid>
+                    <TextBlock Grid.Column="2" Text="{x:Bind Row.Label, Mode=OneWay}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" FontSize="{ThemeResource VigoFontSize13}"
+                               FontWeight="{x:Bind views:RefsPanel.LabelWeight(Row.IsHead, Row.Kind), Mode=OneWay}" Opacity="{x:Bind views:RefsPanel.OpacityOf(Row.Kind, Row.IsHidden), Mode=OneWay}" Visibility="{x:Bind views:RefsPanel.Collapsed(Row.IsSection), Mode=OneWay}" />
+                    <TextBlock Grid.Column="2" Text="{x:Bind Row.Label, Mode=OneWay}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" FontSize="{ThemeResource VigoFontSize12}"
+                               FontWeight="SemiBold" Foreground="{ThemeResource VigoText2Brush}" Visibility="{x:Bind Row.IsSection, Mode=OneWay}" />
+                    <TextBlock Grid.Column="3" Text="{x:Bind Row.Meta, Mode=OneWay}" FontSize="{ThemeResource VigoFontSize11}" VerticalAlignment="Center"
+                               Foreground="{ThemeResource VigoText3Brush}" Visibility="{x:Bind views:RefsPanel.Collapsed(Row.IsMetaAccent), Mode=OneWay}" />
+                    <TextBlock Grid.Column="3" Text="{x:Bind Row.Meta, Mode=OneWay}" FontSize="{ThemeResource VigoFontSize11}" VerticalAlignment="Center"
+                               Foreground="{ThemeResource VigoAccentTextBrush}" Visibility="{x:Bind Row.IsMetaAccent, Mode=OneWay}" />
+                    <!-- Eye: hides the ref from the graph. Shown while the row is hovered, and always once hidden (crossed out). -->
+                    <Button Grid.Column="4" Width="22" Height="22" Padding="0" MinHeight="0" MinWidth="0" IsTabStop="False" CornerRadius="4"
+                            Background="Transparent" BorderThickness="0" VerticalAlignment="Center"
+                            Command="{x:Bind ToggleHiddenCommand}"
+                            Visibility="{x:Bind Row.CanHide, Mode=OneWay}"
+                            Opacity="{x:Bind views:RefsPanel.EyeOpacity(IsHovered, Row.IsHidden), Mode=OneWay}"
+                            IsHitTestVisible="{x:Bind views:RefsPanel.EyeActive(IsHovered, Row.IsHidden), Mode=OneWay}"
+                            ToolTipService.ToolTip="{x:Bind views:RefsPanel.EyeToolTip(Row.IsHidden), Mode=OneWay}"
+                            AutomationProperties.Name="{x:Bind views:RefsPanel.EyeToolTip(Row.IsHidden), Mode=OneWay}">
+                        <FontIcon Style="{StaticResource VigoIcon}" FontSize="14" Foreground="{ThemeResource VigoText2Brush}"
+                                  Glyph="{x:Bind views:RefsPanel.EyeGlyph(Row.IsHidden), Mode=OneWay}" />
+                    </Button>
+                </Grid>
+            </Grid>
+        </DataTemplate>
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <TextBox Margin="8" MinHeight="28" FontSize="{ThemeResource VigoFontSize12}" Style="{StaticResource VigoSearchBox}"
+                 Text="{x:Bind ViewModel.FilterText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                 x:Uid="RefsFilter"
+                 KeyDown="OnFilterKeyDown" />
+
+        <!-- Fixed entries above every section (J7.13 / J7.14): a page replaces the graph. Same list item style as the refs below; TrackPages keeps one selection across both lists. -->
+        <ListView x:Name="PagesList" Grid.Row="1" Margin="0,0,0,4" SelectionMode="Single" SelectionChanged="OnPagesSelectionChanged">
+            <ListViewItem x:Name="SummaryItem" x:Uid="RefsSummary" Style="{StaticResource RefRowContainer}" Height="28">
+                <StackPanel Orientation="Horizontal" Spacing="8" Padding="8,0" VerticalAlignment="Center">
+                    <FontIcon Style="{StaticResource VigoIcon}" FontSize="14" Foreground="{ThemeResource VigoText2Brush}"
+                              Glyph="{x:Bind controls:FluentIcons.Home}" />
+                    <TextBlock x:Uid="RefsSummaryText" FontSize="{ThemeResource VigoFontSize13}" VerticalAlignment="Center" />
+                </StackPanel>
+            </ListViewItem>
+            <ListViewItem x:Name="StatsItem" x:Uid="RefsStats" Style="{StaticResource RefRowContainer}" Height="28">
+                <StackPanel Orientation="Horizontal" Spacing="8" Padding="8,0" VerticalAlignment="Center">
+                    <FontIcon Style="{StaticResource VigoIcon}" FontSize="14" Foreground="{ThemeResource VigoText2Brush}"
+                              Glyph="{x:Bind controls:FluentIcons.DataBarVertical}" />
+                    <TextBlock x:Uid="RefsStatsText" FontSize="{ThemeResource VigoFontSize13}" VerticalAlignment="Center" />
+                </StackPanel>
+            </ListViewItem>
+        </ListView>
+
+        <TextBlock Grid.Row="2" Margin="14,4,14,8" Style="{StaticResource VigoCaptionText}" TextWrapping="Wrap"
+                   x:Uid="RefsNoMatch" Visibility="{x:Bind ViewModel.HasNoMatch, Mode=OneWay}" />
+
+        <ListView x:Name="RefList" Grid.Row="3" Padding="0,0,0,12"
+                  ItemsSource="{x:Bind ViewModel.Rows}" ItemTemplate="{StaticResource RefRowTemplate}"
+                  ItemContainerStyle="{StaticResource RefRowContainer}"
+                  SelectionMode="Single" IsItemClickEnabled="True" ItemClick="OnItemClick" SelectionChanged="OnRefSelectionChanged"
+                  ContainerContentChanging="OnContainerContentChanging"
+                  CanDragItems="True" AllowDrop="True" DragItemsStarting="OnDragItemsStarting" DragItemsCompleted="OnDragItemsCompleted"
+                  DragOver="OnDragOver" DragLeave="OnDragLeave" Drop="OnDrop"
+                  DoubleTapped="OnDoubleTapped" PreviewKeyDown="OnListPreviewKeyDown" ContextRequested="OnContextRequested"
+                  x:Uid="RefsList">
+            <!--
+                Only add / delete: rows fade in where they belong while the others make room. The default set also
+                has Content / Reorder / Entrance transitions, which slide new or replaced containers in from the
+                top-left corner (filter, expand / collapse).
+            -->
+            <ListView.ItemContainerTransitions>
+                <TransitionCollection>
+                    <AddDeleteThemeTransition />
+                </TransitionCollection>
+            </ListView.ItemContainerTransitions>
+            <!--
+                Menu of a row (mockup: checkout, rename F2, delete Suppr in danger color), shown by OnContextRequested.
+                Every entry is declared here (icons need the icon font, which C# cannot read from the resources under
+                AOT); the code shows the ones that apply to the row and sets their texts.
+            -->
+            <FlyoutBase.AttachedFlyout>
+                <MenuFlyout x:Name="RefMenu">
+                    <MenuFlyoutItem x:Name="CheckoutItem" Click="OnCheckoutClick">
+                        <MenuFlyoutItem.Icon>
+                            <FontIcon Glyph="{x:Bind controls:FluentIcons.ArrowSwap}" FontFamily="{StaticResource VigoIconFont}" />
+                        </MenuFlyoutItem.Icon>
+                    </MenuFlyoutItem>
+                    <MenuFlyoutItem x:Name="MergeItem" Click="OnMergeClick">
+                        <MenuFlyoutItem.Icon>
+                            <FontIcon Glyph="{x:Bind controls:FluentIcons.Merge}" FontFamily="{StaticResource VigoIconFont}" />
+                        </MenuFlyoutItem.Icon>
+                    </MenuFlyoutItem>
+                    <MenuFlyoutItem x:Name="RebaseItem" Click="OnRebaseClick">
+                        <MenuFlyoutItem.Icon>
+                            <FontIcon Glyph="{x:Bind controls:FluentIcons.ArrowRouting}" FontFamily="{StaticResource VigoIconFont}" />
+                        </MenuFlyoutItem.Icon>
+                    </MenuFlyoutItem>
+                    <MenuFlyoutItem x:Name="InteractiveRebaseItem" Click="OnInteractiveRebaseClick">
+                        <MenuFlyoutItem.Icon>
+                            <FontIcon Glyph="{x:Bind controls:FluentIcons.ReOrderDotsVertical}" FontFamily="{StaticResource VigoIconFont}" />
+                        </MenuFlyoutItem.Icon>
+                    </MenuFlyoutItem>
+                    <MenuFlyoutItem x:Name="ApplyStashItem" x:Uid="RefsApplyStashItem" Click="OnApplyStashClick">
+                        <MenuFlyoutItem.Icon>
+                            <FontIcon Glyph="{x:Bind controls:FluentIcons.ArchiveArrowBack}" FontFamily="{StaticResource VigoIconFont}" />
+                        </MenuFlyoutItem.Icon>
+                    </MenuFlyoutItem>
+                    <MenuFlyoutItem x:Name="PopStashItem" x:Uid="RefsPopStashItem" Click="OnPopStashClick">
+                        <MenuFlyoutItem.Icon>
+                            <FontIcon Glyph="{x:Bind controls:FluentIcons.Archive}" FontFamily="{StaticResource VigoIconFont}" />
+                        </MenuFlyoutItem.Icon>
+                    </MenuFlyoutItem>
+                    <MenuFlyoutSeparator x:Name="CreateSeparator" />
+                    <MenuFlyoutItem x:Name="NewBranchItem" x:Uid="RefsNewBranchItem" KeyboardAcceleratorTextOverride="Ctrl+B" Click="OnNewBranchClick">
+                        <MenuFlyoutItem.Icon>
+                            <FontIcon Glyph="{x:Bind controls:FluentIcons.Branch}" FontFamily="{StaticResource VigoIconFont}" />
+                        </MenuFlyoutItem.Icon>
+                    </MenuFlyoutItem>
+                    <MenuFlyoutItem x:Name="NewTagItem" x:Uid="RefsNewTagItem" Click="OnNewTagClick">
+                        <MenuFlyoutItem.Icon>
+                            <FontIcon Glyph="{x:Bind controls:FluentIcons.Tag}" FontFamily="{StaticResource VigoIconFont}" />
+                        </MenuFlyoutItem.Icon>
+                    </MenuFlyoutItem>
+                    <MenuFlyoutItem x:Name="PushItem" Click="OnPushClick">
+                        <MenuFlyoutItem.Icon>
+                            <FontIcon Glyph="{x:Bind controls:FluentIcons.ArrowUpload}" FontFamily="{StaticResource VigoIconFont}" />
+                        </MenuFlyoutItem.Icon>
+                    </MenuFlyoutItem>
+                    <MenuFlyoutItem x:Name="NewPullRequestItem" x:Uid="RefsNewPullRequestItem" Click="OnNewPullRequestClick">
+                        <MenuFlyoutItem.Icon>
+                            <FontIcon Glyph="{x:Bind controls:FluentIcons.BranchRequest}" FontFamily="{StaticResource VigoIconFont}" />
+                        </MenuFlyoutItem.Icon>
+                    </MenuFlyoutItem>
+                    <MenuFlyoutSeparator x:Name="HostingSeparator" />
+                    <MenuFlyoutItem x:Name="ShowPullRequestItem" x:Uid="RefsShowPullRequestItem" Click="OnShowPullRequestClick">
+                        <MenuFlyoutItem.Icon>
+                            <FontIcon Glyph="{x:Bind controls:FluentIcons.BranchRequest}" FontFamily="{StaticResource VigoIconFont}" />
+                        </MenuFlyoutItem.Icon>
+                    </MenuFlyoutItem>
+                    <MenuFlyoutItem x:Name="ShowIssueItem" x:Uid="RefsShowIssueItem" Click="OnShowIssueClick">
+                        <MenuFlyoutItem.Icon>
+                            <FontIcon Glyph="{x:Bind controls:FluentIcons.Bug}" FontFamily="{StaticResource VigoIconFont}" />
+                        </MenuFlyoutItem.Icon>
+                    </MenuFlyoutItem>
+                    <MenuFlyoutItem x:Name="NewIssueItem" x:Uid="RefsNewIssueItem" Click="OnNewIssueClick">
+                        <MenuFlyoutItem.Icon>
+                            <FontIcon Glyph="{x:Bind controls:FluentIcons.Bug}" FontFamily="{StaticResource VigoIconFont}" />
+                        </MenuFlyoutItem.Icon>
+                    </MenuFlyoutItem>
+                    <MenuFlyoutItem x:Name="OpenItem" Click="OnOpenClick">
+                        <MenuFlyoutItem.Icon>
+                            <FontIcon Glyph="{x:Bind controls:FluentIcons.Open}" FontFamily="{StaticResource VigoIconFont}" />
+                        </MenuFlyoutItem.Icon>
+                    </MenuFlyoutItem>
+                    <MenuFlyoutSubItem x:Name="IssueFilterMenu" x:Uid="RefsIssueFilterMenu">
+                        <MenuFlyoutSubItem.Icon>
+                            <FontIcon Glyph="{x:Bind controls:FluentIcons.Filter}" FontFamily="{StaticResource VigoIconFont}" />
+                        </MenuFlyoutSubItem.Icon>
+                    </MenuFlyoutSubItem>
+                    <MenuFlyoutItem x:Name="RefreshHostingItem" x:Uid="RefsRefreshHostingItem" Click="OnRefreshHostingClick">
+                        <MenuFlyoutItem.Icon>
+                            <FontIcon Glyph="{x:Bind controls:FluentIcons.ArrowSync}" FontFamily="{StaticResource VigoIconFont}" />
+                        </MenuFlyoutItem.Icon>
+                    </MenuFlyoutItem>
+                    <MenuFlyoutSeparator x:Name="EditSeparator" />
+                    <MenuFlyoutItem x:Name="RenameItem" x:Uid="RefsRenameItem" KeyboardAcceleratorTextOverride="F2" Click="OnRenameClick">
+                        <MenuFlyoutItem.Icon>
+                            <FontIcon Glyph="{x:Bind controls:FluentIcons.Rename}" FontFamily="{StaticResource VigoIconFont}" />
+                        </MenuFlyoutItem.Icon>
+                    </MenuFlyoutItem>
+                    <MenuFlyoutItem x:Name="DeleteItem" KeyboardAcceleratorTextOverride="Suppr" Click="OnDeleteClick"
+                                    Foreground="{ThemeResource VigoDangerBrush}">
+                        <MenuFlyoutItem.Icon>
+                            <FontIcon Glyph="{x:Bind controls:FluentIcons.Delete}" FontFamily="{StaticResource VigoIconFont}" />
+                        </MenuFlyoutItem.Icon>
+                    </MenuFlyoutItem>
+                    <MenuFlyoutSeparator x:Name="RemoteSeparator" />
+                    <MenuFlyoutItem x:Name="AddRemoteItem" x:Uid="RefsAddRemoteItem" Click="OnAddRemoteClick">
+                        <MenuFlyoutItem.Icon>
+                            <FontIcon Glyph="{x:Bind controls:FluentIcons.Add}" FontFamily="{StaticResource VigoIconFont}" />
+                        </MenuFlyoutItem.Icon>
+                    </MenuFlyoutItem>
+                    <MenuFlyoutItem x:Name="EditRemoteItem" x:Uid="RefsEditRemoteItem" KeyboardAcceleratorTextOverride="F2" Click="OnEditRemoteClick">
+                        <MenuFlyoutItem.Icon>
+                            <FontIcon Glyph="{x:Bind controls:FluentIcons.Edit}" FontFamily="{StaticResource VigoIconFont}" />
+                        </MenuFlyoutItem.Icon>
+                    </MenuFlyoutItem>
+                    <MenuFlyoutItem x:Name="RemoveRemoteItem" x:Uid="RefsRemoveRemoteItem" KeyboardAcceleratorTextOverride="Suppr" Click="OnRemoveRemoteClick"
+                                    Foreground="{ThemeResource VigoDangerBrush}">
+                        <MenuFlyoutItem.Icon>
+                            <FontIcon Glyph="{x:Bind controls:FluentIcons.Delete}" FontFamily="{StaticResource VigoIconFont}" />
+                        </MenuFlyoutItem.Icon>
+                    </MenuFlyoutItem>
+                    <MenuFlyoutSeparator x:Name="WorktreeSeparator" />
+                    <MenuFlyoutItem x:Name="OpenWorktreeItem" x:Uid="RefsOpenWorktreeItem" Click="OnOpenWorktreeClick">
+                        <MenuFlyoutItem.Icon>
+                            <FontIcon Glyph="{x:Bind controls:FluentIcons.WindowNew}" FontFamily="{StaticResource VigoIconFont}" />
+                        </MenuFlyoutItem.Icon>
+                    </MenuFlyoutItem>
+                    <MenuFlyoutItem x:Name="AddWorktreeItem" Text="Nouveau worktree…" Click="OnAddWorktreeClick">
+                        <MenuFlyoutItem.Icon>
+                            <FontIcon Glyph="{x:Bind controls:FluentIcons.FolderAdd}" FontFamily="{StaticResource VigoIconFont}" />
+                        </MenuFlyoutItem.Icon>
+                    </MenuFlyoutItem>
+                    <MenuFlyoutItem x:Name="PruneWorktreesItem" x:Uid="RefsPruneWorktreesItem" Click="OnPruneWorktreesClick">
+                        <MenuFlyoutItem.Icon>
+                            <FontIcon Glyph="{x:Bind controls:FluentIcons.ArrowSync}" FontFamily="{StaticResource VigoIconFont}" />
+                        </MenuFlyoutItem.Icon>
+                    </MenuFlyoutItem>
+                    <MenuFlyoutItem x:Name="RemoveWorktreeItem" x:Uid="RefsRemoveWorktreeItem" KeyboardAcceleratorTextOverride="Suppr"
+                                    Click="OnRemoveWorktreeClick" Foreground="{ThemeResource VigoDangerBrush}">
+                        <MenuFlyoutItem.Icon>
+                            <FontIcon Glyph="{x:Bind controls:FluentIcons.Delete}" FontFamily="{StaticResource VigoIconFont}" />
+                        </MenuFlyoutItem.Icon>
+                    </MenuFlyoutItem>
+                    <MenuFlyoutSeparator x:Name="SubmoduleSeparator" />
+                    <MenuFlyoutItem x:Name="OpenSubmoduleItem" x:Uid="RefsOpenSubmoduleItem" Click="OnOpenSubmoduleClick">
+                        <MenuFlyoutItem.Icon>
+                            <FontIcon Glyph="{x:Bind controls:FluentIcons.WindowNew}" FontFamily="{StaticResource VigoIconFont}" />
+                        </MenuFlyoutItem.Icon>
+                    </MenuFlyoutItem>
+                    <MenuFlyoutItem x:Name="UpdateSubmoduleItem" Click="OnUpdateSubmoduleClick">
+                        <MenuFlyoutItem.Icon>
+                            <FontIcon Glyph="{x:Bind controls:FluentIcons.ArrowSync}" FontFamily="{StaticResource VigoIconFont}" />
+                        </MenuFlyoutItem.Icon>
+                    </MenuFlyoutItem>
+                    <MenuFlyoutItem x:Name="UpdateAllSubmodulesItem" x:Uid="RefsUpdateAllSubmodulesItem" Click="OnUpdateAllSubmodulesClick">
+                        <MenuFlyoutItem.Icon>
+                            <FontIcon Glyph="{x:Bind controls:FluentIcons.ArrowSync}" FontFamily="{StaticResource VigoIconFont}" />
+                        </MenuFlyoutItem.Icon>
+                    </MenuFlyoutItem>
+                    <MenuFlyoutItem x:Name="AddSubmoduleItem" x:Uid="RefsAddSubmoduleItem" Click="OnAddSubmoduleClick">
+                        <MenuFlyoutItem.Icon>
+                            <FontIcon Glyph="{x:Bind controls:FluentIcons.Add}" FontFamily="{StaticResource VigoIconFont}" />
+                        </MenuFlyoutItem.Icon>
+                    </MenuFlyoutItem>
+                    <MenuFlyoutItem x:Name="DeinitSubmoduleItem" x:Uid="RefsDeinitSubmoduleItem" Click="OnDeinitSubmoduleClick"
+                                    Foreground="{ThemeResource VigoDangerBrush}">
+                        <MenuFlyoutItem.Icon>
+                            <FontIcon Glyph="{x:Bind controls:FluentIcons.Delete}" FontFamily="{StaticResource VigoIconFont}" />
+                        </MenuFlyoutItem.Icon>
+                    </MenuFlyoutItem>
+                    <MenuFlyoutSeparator x:Name="LfsSeparator" />
+                    <MenuFlyoutItem x:Name="TrackLfsItem" x:Uid="RefsTrackLfsItem" Click="OnTrackLfsClick">
+                        <MenuFlyoutItem.Icon>
+                            <FontIcon Glyph="{x:Bind controls:FluentIcons.DocumentAdd}" FontFamily="{StaticResource VigoIconFont}" />
+                        </MenuFlyoutItem.Icon>
+                    </MenuFlyoutItem>
+                    <MenuFlyoutItem x:Name="PullLfsItem" x:Uid="RefsPullLfsItem" Click="OnPullLfsClick">
+                        <MenuFlyoutItem.Icon>
+                            <FontIcon Glyph="{x:Bind controls:FluentIcons.ArrowDownload}" FontFamily="{StaticResource VigoIconFont}" />
+                        </MenuFlyoutItem.Icon>
+                    </MenuFlyoutItem>
+                    <MenuFlyoutItem x:Name="UntrackLfsItem" x:Uid="RefsUntrackLfsItem" KeyboardAcceleratorTextOverride="Suppr"
+                                    Click="OnUntrackLfsClick" Foreground="{ThemeResource VigoDangerBrush}">
+                        <MenuFlyoutItem.Icon>
+                            <FontIcon Glyph="{x:Bind controls:FluentIcons.Delete}" FontFamily="{StaticResource VigoIconFont}" />
+                        </MenuFlyoutItem.Icon>
+                    </MenuFlyoutItem>
+                    <MenuFlyoutSeparator x:Name="GitFlowSeparator" />
+                    <MenuFlyoutItem x:Name="InitGitFlowItem" x:Uid="RefsInitGitFlowItem" Click="OnInitGitFlowClick">
+                        <MenuFlyoutItem.Icon>
+                            <FontIcon Glyph="{x:Bind controls:FluentIcons.BranchFork}" FontFamily="{StaticResource VigoIconFont}" />
+                        </MenuFlyoutItem.Icon>
+                    </MenuFlyoutItem>
+                    <MenuFlyoutItem x:Name="StartFeatureItem" x:Uid="RefsStartFeatureItem" Click="OnStartFeatureClick">
+                        <MenuFlyoutItem.Icon>
+                            <FontIcon Glyph="{x:Bind controls:FluentIcons.Add}" FontFamily="{StaticResource VigoIconFont}" />
+                        </MenuFlyoutItem.Icon>
+                    </MenuFlyoutItem>
+                    <MenuFlyoutItem x:Name="StartReleaseItem" x:Uid="RefsStartReleaseItem" Click="OnStartReleaseClick">
+                        <MenuFlyoutItem.Icon>
+                            <FontIcon Glyph="{x:Bind controls:FluentIcons.Add}" FontFamily="{StaticResource VigoIconFont}" />
+                        </MenuFlyoutItem.Icon>
+                    </MenuFlyoutItem>
+                    <MenuFlyoutItem x:Name="StartHotfixItem" x:Uid="RefsStartHotfixItem" Click="OnStartHotfixClick">
+                        <MenuFlyoutItem.Icon>
+                            <FontIcon Glyph="{x:Bind controls:FluentIcons.Add}" FontFamily="{StaticResource VigoIconFont}" />
+                        </MenuFlyoutItem.Icon>
+                    </MenuFlyoutItem>
+                    <MenuFlyoutItem x:Name="FinishGitFlowItem" Click="OnFinishGitFlowClick">
+                        <MenuFlyoutItem.Icon>
+                            <FontIcon Glyph="{x:Bind controls:FluentIcons.Checkmark}" FontFamily="{StaticResource VigoIconFont}" />
+                        </MenuFlyoutItem.Icon>
+                    </MenuFlyoutItem>
+                    <MenuFlyoutSeparator x:Name="CopySeparator" />
+                    <MenuFlyoutItem x:Name="CopyItem" x:Uid="RefsCopyItem" Click="OnCopyNameClick">
+                        <MenuFlyoutItem.Icon>
+                            <FontIcon Glyph="{x:Bind controls:FluentIcons.Copy}" FontFamily="{StaticResource VigoIconFont}" />
+                        </MenuFlyoutItem.Icon>
+                    </MenuFlyoutItem>
+                </MenuFlyout>
+            </FlyoutBase.AttachedFlyout>
+        </ListView>
+    </Grid>
+</UserControl>

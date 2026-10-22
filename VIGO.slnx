@@ -1,0 +1,31 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="ARM64" />
+  </Configurations>
+  <Folder Name="/benchmarks/">
+    <Project Path="benchmarks/Vigo.Benchmarks/Vigo.Benchmarks.csproj" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/Vigo.App/Vigo.App.csproj" />
+    <Project Path="src/Vigo.Core/Vigo.Core.csproj" />
+    <Project Path="src/Vigo.Git/Vigo.Git.csproj" />
+    <Project Path="src/Vigo.Graph/Vigo.Graph.csproj" />
+    <Project Path="src/Vigo.Integrations/Vigo.Integrations.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Vigo.Core.Tests/Vigo.Core.Tests.csproj" />
+    <Project Path="tests/Vigo.Git.Tests/Vigo.Git.Tests.csproj" />
+    <Project Path="tests/Vigo.Graph.Tests/Vigo.Graph.Tests.csproj" />
+    <Project Path="tests/Vigo.Integrations.Tests/Vigo.Integrations.Tests.csproj" />
+    <Project Path="tests/Vigo.TestUtilities/Vigo.TestUtilities.csproj" />
+  </Folder>
+  <Folder Name="/solution/">
+    <File Path="CLAUDE.md" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
+    <File Path="global.json" />
+    <File Path="docs/PROGRESS.md" />
+    <File Path="docs/DECISIONS.md" />
+  </Folder>
+</Solution>

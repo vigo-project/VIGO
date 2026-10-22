@@ -1,0 +1,294 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- VIGO styles, translated from the Claude Design design system. Colors come from Tokens.xaml (generated). -->
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Fonts -->
+    <FontFamily x:Key="VigoMonoFont">Cascadia Mono, Cascadia Code, Consolas</FontFamily>
+    <FontFamily x:Key="VigoIconFont">ms-appx:///Assets/Fonts/FluentSystemIcons-Regular.ttf#FluentSystemIcons-Regular</FontFamily>
+
+    <!-- Interface font and text sizes: declared in App.xaml (top level), see UiText. -->
+
+    <!-- Normal density (row 28, ctl 32, pad 10). Sizes that follow the density preference (row height, toolbar buttons)
+         are bound to Services/Appearance instead (J4.6): a StaticResource cannot change while the app runs. -->
+    <x:Double x:Key="VigoControlHeight">32</x:Double>
+
+    <!-- Corner radii -->
+    <CornerRadius x:Key="VigoRadiusControl">4</CornerRadius>
+    <CornerRadius x:Key="VigoRadiusCard">8</CornerRadius>
+    <CornerRadius x:Key="VigoRadiusTile">6</CornerRadius>
+
+    <!-- Typography (13px/20px base) -->
+    <!-- Text without a style follows the interface font too. ThemeResource, not StaticResource: App.xaml.cs replaces
+         the font keys at launch when the user chose another font (a StaticResource is fixed when this file loads). -->
+    <Style TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{ThemeResource VigoFont}" />
+    </Style>
+    <Style x:Key="VigoBodyText" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{ThemeResource VigoFont}" />
+        <Setter Property="FontSize" Value="{ThemeResource VigoFontSize13}" />
+        <Setter Property="LineHeight" Value="{ThemeResource VigoLineHeight20}" />
+        <Setter Property="Foreground" Value="{ThemeResource VigoTextBrush}" />
+    </Style>
+    <Style x:Key="VigoStrongText" TargetType="TextBlock" BasedOn="{StaticResource VigoBodyText}">
+        <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+    <Style x:Key="VigoSecondaryText" TargetType="TextBlock" BasedOn="{StaticResource VigoBodyText}">
+        <Setter Property="Foreground" Value="{ThemeResource VigoText2Brush}" />
+    </Style>
+    <Style x:Key="VigoCaptionText" TargetType="TextBlock" BasedOn="{StaticResource VigoBodyText}">
+        <Setter Property="FontSize" Value="{ThemeResource VigoFontSize12}" />
+        <Setter Property="LineHeight" Value="{ThemeResource VigoLineHeight16}" />
+        <Setter Property="Foreground" Value="{ThemeResource VigoText3Brush}" />
+    </Style>
+    <Style x:Key="VigoLabelText" TargetType="TextBlock" BasedOn="{StaticResource VigoBodyText}">
+        <Setter Property="FontSize" Value="{ThemeResource VigoFontSize11}" />
+        <Setter Property="LineHeight" Value="{ThemeResource VigoLineHeight14}" />
+        <Setter Property="Foreground" Value="{ThemeResource VigoText3Brush}" />
+    </Style>
+    <Style x:Key="VigoMonoCaptionText" TargetType="TextBlock" BasedOn="{StaticResource VigoCaptionText}">
+        <Setter Property="FontFamily" Value="{StaticResource VigoMonoFont}" />
+        <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+        <Setter Property="TextWrapping" Value="NoWrap" />
+    </Style>
+    <Style x:Key="VigoTitleText" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{ThemeResource VigoDisplayFont}" />
+        <Setter Property="FontSize" Value="{ThemeResource VigoFontSize28}" />
+        <Setter Property="LineHeight" Value="{ThemeResource VigoLineHeight36}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{ThemeResource VigoTextBrush}" />
+    </Style>
+    <Style x:Key="VigoSubtitleText" TargetType="TextBlock" BasedOn="{StaticResource VigoTitleText}">
+        <Setter Property="FontSize" Value="{ThemeResource VigoFontSize16}" />
+        <Setter Property="LineHeight" Value="{ThemeResource VigoLineHeight22}" />
+    </Style>
+    <Style x:Key="VigoCardTitleText" TargetType="TextBlock" BasedOn="{StaticResource VigoTitleText}">
+        <Setter Property="FontSize" Value="{ThemeResource VigoFontSize14}" />
+        <Setter Property="LineHeight" Value="{ThemeResource VigoLineHeight20}" />
+    </Style>
+
+    <!-- Fluent System Icons glyph -->
+    <Style x:Key="VigoIcon" TargetType="FontIcon">
+        <Setter Property="FontFamily" Value="{StaticResource VigoIconFont}" />
+        <Setter Property="FontSize" Value="16" />
+    </Style>
+
+    <!-- Keyboard shortcut (kbd) -->
+    <Style x:Key="VigoKbdBorder" TargetType="Border">
+        <Setter Property="BorderBrush" Value="{ThemeResource VigoStrokeBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="4" />
+        <Setter Property="Padding" Value="6,0" />
+        <Setter Property="HorizontalAlignment" Value="Left" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+
+    <!-- Card -->
+    <Style x:Key="VigoCard" TargetType="Border">
+        <Setter Property="Background" Value="{ThemeResource VigoCardBrush}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource VigoStrokeSubtleBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="{StaticResource VigoRadiusCard}" />
+    </Style>
+
+    <!-- Subtle button (transparent background, sub-hover on pointer over) -->
+    <Style x:Key="VigoSubtleButton" TargetType="Button" BasedOn="{StaticResource DefaultButtonStyle}">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="MinWidth" Value="0" />
+        <Setter Property="MinHeight" Value="0" />
+        <Setter Property="CornerRadius" Value="{StaticResource VigoRadiusControl}" />
+        <Setter Property="Foreground" Value="{ThemeResource VigoTextBrush}" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <ContentPresenter
+                        x:Name="ContentPresenter"
+                        Background="{TemplateBinding Background}"
+                        CornerRadius="{TemplateBinding CornerRadius}"
+                        Padding="{TemplateBinding Padding}"
+                        Foreground="{TemplateBinding Foreground}"
+                        FontSize="{TemplateBinding FontSize}"
+                        Content="{TemplateBinding Content}"
+                        ContentTemplate="{TemplateBinding ContentTemplate}"
+                        HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                        VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                        AutomationProperties.AccessibilityView="Raw">
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="CommonStates">
+                                <VisualState x:Name="Normal" />
+                                <VisualState x:Name="PointerOver">
+                                    <VisualState.Setters>
+                                        <Setter Target="ContentPresenter.Background" Value="{ThemeResource VigoSubHoverBrush}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Pressed">
+                                    <VisualState.Setters>
+                                        <Setter Target="ContentPresenter.Background" Value="{ThemeResource VigoSubPressBrush}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Disabled">
+                                    <VisualState.Setters>
+                                        <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource VigoTextDisBrush}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+                    </ContentPresenter>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Toolbar button: 20 icon + 11px label; its size comes from ToolbarButtonContent (density). -->
+    <Style x:Key="VigoToolbarButton" TargetType="Button" BasedOn="{StaticResource VigoSubtleButton}">
+        <Setter Property="FontSize" Value="{ThemeResource VigoFontSize11}" />
+    </Style>
+
+    <!-- Status bar entry: 11px text on a 20px subtle button -->
+    <Style x:Key="VigoStatusBarButton" TargetType="Button" BasedOn="{StaticResource VigoSubtleButton}">
+        <Setter Property="FontSize" Value="{ThemeResource VigoFontSize11}" />
+        <Setter Property="Height" Value="20" />
+        <Setter Property="Padding" Value="4,0" />
+        <Setter Property="Foreground" Value="{ThemeResource VigoText2Brush}" />
+    </Style>
+
+    <!-- Welcome screen action tile -->
+    <Style x:Key="VigoActionTile" TargetType="Button" BasedOn="{StaticResource DefaultButtonStyle}">
+        <Setter Property="Background" Value="{ThemeResource VigoCardBrush}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource VigoStrokeBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="{StaticResource VigoRadiusCard}" />
+        <Setter Property="Padding" Value="16" />
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="HorizontalContentAlignment" Value="Left" />
+        <Setter Property="VerticalAlignment" Value="Stretch" />
+        <Setter Property="VerticalContentAlignment" Value="Top" />
+        <Setter Property="Foreground" Value="{ThemeResource VigoTextBrush}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <ContentPresenter
+                        x:Name="ContentPresenter"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="{TemplateBinding CornerRadius}"
+                        Padding="{TemplateBinding Padding}"
+                        Foreground="{TemplateBinding Foreground}"
+                        FontSize="{TemplateBinding FontSize}"
+                        Content="{TemplateBinding Content}"
+                        ContentTemplate="{TemplateBinding ContentTemplate}"
+                        HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                        VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                        AutomationProperties.AccessibilityView="Raw">
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="CommonStates">
+                                <VisualState x:Name="Normal" />
+                                <VisualState x:Name="PointerOver">
+                                    <VisualState.Setters>
+                                        <Setter Target="ContentPresenter.Background" Value="{ThemeResource VigoCtrlHoverBrush}" />
+                                        <Setter Target="ContentPresenter.BorderBrush" Value="{ThemeResource VigoStrokeStrongBrush}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Pressed">
+                                    <VisualState.Setters>
+                                        <Setter Target="ContentPresenter.Background" Value="{ThemeResource VigoCtrlPressBrush}" />
+                                        <Setter Target="ContentPresenter.BorderBrush" Value="{ThemeResource VigoStrokeStrongBrush}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Disabled">
+                                    <VisualState.Setters>
+                                        <Setter Target="ContentPresenter.Opacity" Value="0.55" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+                    </ContentPresenter>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- 28px buttons (Sign in / Manage) -->
+    <Style x:Key="VigoAccentButton" TargetType="Button" BasedOn="{StaticResource AccentButtonStyle}">
+        <Setter Property="Height" Value="28" />
+        <Setter Property="MinHeight" Value="0" />
+        <Setter Property="Padding" Value="10,0" />
+        <Setter Property="FontSize" Value="{ThemeResource VigoFontSize12}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="CornerRadius" Value="{StaticResource VigoRadiusControl}" />
+    </Style>
+    <Style x:Key="VigoStandardButton" TargetType="Button" BasedOn="{StaticResource DefaultButtonStyle}">
+        <Setter Property="Height" Value="28" />
+        <Setter Property="MinHeight" Value="0" />
+        <Setter Property="Padding" Value="10,0" />
+        <Setter Property="FontSize" Value="{ThemeResource VigoFontSize12}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="CornerRadius" Value="{StaticResource VigoRadiusControl}" />
+    </Style>
+
+    <!--
+        Danger button (mockup dialog "Supprimer la branche …": danger fill, on-danger text). Own template: the default
+        one swaps the background for the neutral hover brushes; here hover / press only dim the fill.
+    -->
+    <Style x:Key="VigoDangerButton" TargetType="Button">
+        <Setter Property="Background" Value="{ThemeResource VigoDangerBrush}" />
+        <Setter Property="Foreground" Value="{ThemeResource VigoOnDangerBrush}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Padding" Value="11,5,11,6" />
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="CornerRadius" Value="{StaticResource VigoRadiusControl}" />
+        <Setter Property="UseSystemFocusVisuals" Value="True" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <ContentPresenter x:Name="ContentPresenter"
+                                      Background="{TemplateBinding Background}"
+                                      Foreground="{TemplateBinding Foreground}"
+                                      CornerRadius="{TemplateBinding CornerRadius}"
+                                      Padding="{TemplateBinding Padding}"
+                                      Content="{TemplateBinding Content}"
+                                      ContentTemplate="{TemplateBinding ContentTemplate}"
+                                      HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                      VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                      AutomationProperties.AccessibilityView="Raw">
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="CommonStates">
+                                <VisualState x:Name="Normal" />
+                                <VisualState x:Name="PointerOver">
+                                    <VisualState.Setters>
+                                        <Setter Target="ContentPresenter.Opacity" Value="0.9" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Pressed">
+                                    <VisualState.Setters>
+                                        <Setter Target="ContentPresenter.Opacity" Value="0.8" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Disabled">
+                                    <VisualState.Setters>
+                                        <Setter Target="ContentPresenter.Opacity" Value="0.4" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+                    </ContentPresenter>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Search / filter box -->
+    <Style x:Key="VigoSearchBox" TargetType="TextBox" BasedOn="{StaticResource DefaultTextBoxStyle}">
+        <Setter Property="FontSize" Value="{ThemeResource VigoFontSize13}" />
+        <Setter Property="MinHeight" Value="30" />
+        <Setter Property="CornerRadius" Value="{StaticResource VigoRadiusControl}" />
+    </Style>
+</ResourceDictionary>

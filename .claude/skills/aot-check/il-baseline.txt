@@ -1,0 +1,2 @@
+# Accepted IL warnings. One "ILxxxx: message" per line.
+IL2104: Assembly 'Serilog' produced trim warnings. For more information see https://aka.ms/il2104

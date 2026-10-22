@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    "Statistiques" page of the left panel (J7.14, ADR-080), shown in place of the graph and of the right panel: commits per month
+    (line), top contributors (pie) with the table of all of them (sortable by clicking a header), commits per weekday and per hour
+    (bars). Charts are Win2D (Controls/Charts); the table is the textual alternative to the pie. Échap goes back to the graph.
+    Texts: x:Uid (ADR-075); counts, dates and chart sentences come from the view model (localized).
+-->
+<UserControl
+    x:Class="Vigo.App.Controls.RepositoryStatsView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Vigo.App.Controls"
+    xmlns:charts="using:Vigo.App.Controls.Charts"
+    xmlns:vm="using:Vigo.Core.ViewModels"
+    x:Uid="StatsView">
+
+    <UserControl.Resources>
+        <Style x:Key="StatsHeaderButton" TargetType="Button" BasedOn="{StaticResource VigoSubtleButton}">
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Left" />
+            <Setter Property="Padding" Value="8,4" />
+            <Setter Property="MinHeight" Value="0" />
+        </Style>
+
+        <!-- Same columns for the header of the table and its rows. -->
+        <DataTemplate x:Key="ContributorTemplate" x:DataType="vm:ContributorRow">
+            <Grid Padding="8,5" ColumnSpacing="8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="3*" MinWidth="120" />
+                    <ColumnDefinition Width="4*" MinWidth="120" />
+                    <ColumnDefinition Width="72" />
+                    <ColumnDefinition Width="64" />
+                    <ColumnDefinition Width="92" />
+                    <ColumnDefinition Width="92" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="{x:Bind Name}" FontSize="{ThemeResource VigoFontSize12}" TextTrimming="CharacterEllipsis" />
+                <TextBlock Grid.Column="1" Text="{x:Bind Email}" FontSize="{ThemeResource VigoFontSize12}" Foreground="{ThemeResource VigoText2Brush}" TextTrimming="CharacterEllipsis" />
+                <TextBlock Grid.Column="2" Text="{x:Bind CommitsText}" FontSize="{ThemeResource VigoFontSize12}" HorizontalAlignment="Right" />
+                <TextBlock Grid.Column="3" Text="{x:Bind PercentText}" FontSize="{ThemeResource VigoFontSize12}" Foreground="{ThemeResource VigoText2Brush}" HorizontalAlignment="Right" />
+                <TextBlock Grid.Column="4" Text="{x:Bind FirstText}" FontSize="{ThemeResource VigoFontSize12}" Foreground="{ThemeResource VigoText2Brush}" />
+                <TextBlock Grid.Column="5" Text="{x:Bind LastText}" FontSize="{ThemeResource VigoFontSize12}" Foreground="{ThemeResource VigoText2Brush}" />
+            </Grid>
+        </DataTemplate>
+    </UserControl.Resources>
+
+    <Grid x:Name="Root" SizeChanged="OnRootSizeChanged" Background="{ThemeResource VigoSunkenBrush}">
+        <ScrollViewer HorizontalScrollMode="Disabled" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+            <StackPanel x:Name="Column" Padding="24,16" Spacing="12" HorizontalAlignment="Left">
+
+                <!-- Header. -->
+                <Border Style="{StaticResource VigoCard}" Padding="16,12">
+                    <Grid ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <Button x:Uid="StatsBack" Style="{StaticResource VigoSubtleButton}" Height="28" Padding="6,0" Click="OnCloseClick">
+                                <FontIcon Style="{StaticResource VigoIcon}" FontSize="14" Foreground="{ThemeResource VigoText2Brush}"
+                                          Glyph="{x:Bind controls:FluentIcons.ChevronLeft}" />
+                            </Button>
+                            <TextBlock x:Uid="StatsTitle" Style="{StaticResource VigoStrongText}" FontSize="{ThemeResource VigoFontSize20}" VerticalAlignment="Center" />
+                            <ProgressRing Width="18" Height="18" IsActive="{x:Bind ViewModel.IsComputing, Mode=OneWay}" VerticalAlignment="Center" />
+                            <TextBlock Text="{x:Bind ViewModel.ProgressText, Mode=OneWay}" FontSize="{ThemeResource VigoFontSize12}" Foreground="{ThemeResource VigoText3Brush}"
+                                       VerticalAlignment="Center" />
+                        </StackPanel>
+                        <Button x:Uid="StatsRefresh" Grid.Column="1" Style="{StaticResource VigoSubtleButton}" Height="28" Padding="8,0"
+                                Command="{x:Bind ViewModel.RefreshCommand}">
+                            <FontIcon Style="{StaticResource VigoIcon}" FontSize="16" Glyph="{x:Bind controls:FluentIcons.ArrowSync}" />
+                        </Button>
+                    </Grid>
+                </Border>
+
+                <TextBlock Text="{x:Bind ViewModel.Message, Mode=OneWay}" TextWrapping="Wrap" Foreground="{ThemeResource VigoDangerBrush}"
+                           Visibility="{x:Bind ViewModel.HasMessage, Mode=OneWay}" />
+                <TextBlock x:Uid="StatsNoData" Style="{StaticResource VigoSecondaryText}" Margin="4,0" Visibility="{x:Bind ViewModel.NoData, Mode=OneWay}" />
+
+                <StackPanel Spacing="12" Visibility="{x:Bind ViewModel.HasData, Mode=OneWay}">
+
+                    <!-- Commits per month. -->
+                    <Border Style="{StaticResource VigoCard}" Padding="16,12">
+                        <StackPanel Spacing="6">
+                            <TextBlock x:Uid="StatsMonthTitle" Style="{StaticResource VigoStrongText}" />
+                            <charts:LineChart x:Name="MonthChart" Height="220" />
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Contributors: pie and table. -->
+                    <Grid x:Name="Middle" ColumnSpacing="12" RowSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition x:Name="MiddleColumn0" Width="380" />
+                            <ColumnDefinition x:Name="MiddleColumn1" Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <Border x:Name="PieCard" Style="{StaticResource VigoCard}" Padding="16,12">
+                            <StackPanel Spacing="6">
+                                <TextBlock x:Uid="StatsPieTitle" Style="{StaticResource VigoStrongText}" />
+                                <charts:PieChart x:Name="ContributorsChart" Height="240" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border x:Name="TableCard" Grid.Column="1" Style="{StaticResource VigoCard}" Padding="8">
+                            <StackPanel Spacing="4">
+                                <TextBlock x:Uid="StatsTableTitle" Style="{StaticResource VigoStrongText}" Margin="8,4,8,2" />
+                                <Grid ColumnSpacing="8" Padding="8,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="3*" MinWidth="120" />
+                                        <ColumnDefinition Width="4*" MinWidth="120" />
+                                        <ColumnDefinition Width="72" />
+                                        <ColumnDefinition Width="64" />
+                                        <ColumnDefinition Width="92" />
+                                        <ColumnDefinition Width="92" />
+                                    </Grid.ColumnDefinitions>
+                                    <Button Style="{StaticResource StatsHeaderButton}" Tag="Name" Click="OnSortClick" x:Uid="StatsSortName">
+                                        <StackPanel Orientation="Horizontal" Spacing="4">
+                                            <TextBlock x:Uid="StatsColName" FontSize="{ThemeResource VigoFontSize12}" FontWeight="SemiBold" Foreground="{ThemeResource VigoText2Brush}" />
+                                            <TextBlock x:Name="NameMark" FontSize="{ThemeResource VigoFontSize10}" VerticalAlignment="Center" Foreground="{ThemeResource VigoText3Brush}" />
+                                        </StackPanel>
+                                    </Button>
+                                    <Button Grid.Column="1" Style="{StaticResource StatsHeaderButton}" Tag="Email" Click="OnSortClick" x:Uid="StatsSortEmail">
+                                        <StackPanel Orientation="Horizontal" Spacing="4">
+                                            <TextBlock x:Uid="StatsColEmail" FontSize="{ThemeResource VigoFontSize12}" FontWeight="SemiBold" Foreground="{ThemeResource VigoText2Brush}" />
+                                            <TextBlock x:Name="EmailMark" FontSize="{ThemeResource VigoFontSize10}" VerticalAlignment="Center" Foreground="{ThemeResource VigoText3Brush}" />
+                                        </StackPanel>
+                                    </Button>
+                                    <Button Grid.Column="2" Style="{StaticResource StatsHeaderButton}" Tag="Commits" Click="OnSortClick" x:Uid="StatsSortCommits"
+                                            HorizontalContentAlignment="Right">
+                                        <StackPanel Orientation="Horizontal" Spacing="4">
+                                            <TextBlock x:Name="CommitsMark" FontSize="{ThemeResource VigoFontSize10}" VerticalAlignment="Center" Foreground="{ThemeResource VigoText3Brush}" />
+                                            <TextBlock x:Uid="StatsColCommits" FontSize="{ThemeResource VigoFontSize12}" FontWeight="SemiBold" Foreground="{ThemeResource VigoText2Brush}" />
+                                        </StackPanel>
+                                    </Button>
+                                    <TextBlock Grid.Column="3" x:Uid="StatsColShare" FontSize="{ThemeResource VigoFontSize12}" FontWeight="SemiBold" Foreground="{ThemeResource VigoText2Brush}"
+                                               HorizontalAlignment="Right" VerticalAlignment="Center" />
+                                    <Button Grid.Column="4" Style="{StaticResource StatsHeaderButton}" Tag="First" Click="OnSortClick" x:Uid="StatsSortFirst">
+                                        <StackPanel Orientation="Horizontal" Spacing="4">
+                                            <TextBlock x:Uid="StatsColFirst" FontSize="{ThemeResource VigoFontSize12}" FontWeight="SemiBold" Foreground="{ThemeResource VigoText2Brush}" />
+                                            <TextBlock x:Name="FirstMark" FontSize="{ThemeResource VigoFontSize10}" VerticalAlignment="Center" Foreground="{ThemeResource VigoText3Brush}" />
+                                        </StackPanel>
+                                    </Button>
+                                    <Button Grid.Column="5" Style="{StaticResource StatsHeaderButton}" Tag="Last" Click="OnSortClick" x:Uid="StatsSortLast">
+                                        <StackPanel Orientation="Horizontal" Spacing="4">
+                                            <TextBlock x:Uid="StatsColLast" FontSize="{ThemeResource VigoFontSize12}" FontWeight="SemiBold" Foreground="{ThemeResource VigoText2Brush}" />
+                                            <TextBlock x:Name="LastMark" FontSize="{ThemeResource VigoFontSize10}" VerticalAlignment="Center" Foreground="{ThemeResource VigoText3Brush}" />
+                                        </StackPanel>
+                                    </Button>
+                                </Grid>
+                                <ListView ItemsSource="{x:Bind ViewModel.Contributors}" ItemTemplate="{StaticResource ContributorTemplate}" Height="240"
+                                          SelectionMode="None" x:Uid="StatsContributorsList" />
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+
+                    <!-- When people work. -->
+                    <Grid x:Name="Bars" ColumnSpacing="12" RowSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition x:Name="BarsColumn0" Width="*" />
+                            <ColumnDefinition x:Name="BarsColumn1" Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Border x:Name="WeekdayCard" Style="{StaticResource VigoCard}" Padding="16,12">
+                            <StackPanel Spacing="6">
+                                <TextBlock x:Uid="StatsWeekdayTitle" Style="{StaticResource VigoStrongText}" />
+                                <charts:BarChart x:Name="WeekdayChart" Height="200" />
+                            </StackPanel>
+                        </Border>
+                        <Border x:Name="HourCard" Grid.Column="1" Style="{StaticResource VigoCard}" Padding="16,12">
+                            <StackPanel Spacing="6">
+                                <TextBlock x:Uid="StatsHourTitle" Style="{StaticResource VigoStrongText}" />
+                                <charts:BarChart x:Name="HourChart" Height="200" />
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

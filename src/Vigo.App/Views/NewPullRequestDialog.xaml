@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Creation of a pull request with reviewers, labels and linked issues (J6.9l). Primary is disabled while the title is empty; the
+    default button stays Primary (nothing destructive here).
+    Texts: x:Uid (ADR-075).
+-->
+<ContentDialog
+    x:Class="Vigo.App.Views.NewPullRequestDialog"
+    x:Uid="NewPrDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:vm="using:Vigo.Core.ViewModels"
+    Title="{x:Bind ViewModel.DialogTitle}"
+    PrimaryButtonText="{x:Bind ViewModel.ConfirmText}"
+    IsPrimaryButtonEnabled="{x:Bind ViewModel.CanConfirm, Mode=OneWay}"
+    DefaultButton="Primary">
+
+    <ScrollViewer MaxHeight="520" VerticalScrollBarVisibility="Auto">
+        <StackPanel Width="448" Spacing="12">
+            <TextBlock Text="{x:Bind ViewModel.Description}" TextWrapping="Wrap" Foreground="{ThemeResource VigoText2Brush}" />
+
+            <TextBox x:Uid="NewPrTitle" Text="{x:Bind ViewModel.Title, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+            <TextBox x:Uid="NewPrBody"
+                     Text="{x:Bind ViewModel.Body, Mode=TwoWay}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="88" MaxHeight="160" />
+            <CheckBox x:Uid="NewPrDraft" IsChecked="{x:Bind ViewModel.IsDraft, Mode=TwoWay}" />
+
+            <TextBox x:Uid="NewPrLabels" Text="{x:Bind ViewModel.LabelsText, Mode=TwoWay}" />
+
+            <StackPanel Spacing="4">
+                <TextBlock x:Uid="NewPrReviewersHeading" Style="{StaticResource VigoStrongText}" />
+                <TextBlock x:Uid="NewPrNoReviewers" Visibility="{x:Bind ViewModel.HasNoReviewers}"
+                           TextWrapping="Wrap" FontSize="{ThemeResource VigoFontSize12}" Foreground="{ThemeResource VigoText3Brush}" />
+                <TextBlock Text="{x:Bind ViewModel.TruncatedText}" Visibility="{x:Bind ViewModel.IsTruncated}" TextWrapping="Wrap"
+                           FontSize="{ThemeResource VigoFontSize12}" Foreground="{ThemeResource VigoWarningBrush}" />
+                <TextBox x:Uid="NewPrReviewerFilter" Visibility="{x:Bind ViewModel.HasReviewers}"
+                         Text="{x:Bind ViewModel.ReviewerFilter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                <ScrollViewer MaxHeight="180" Visibility="{x:Bind ViewModel.HasReviewers}" VerticalScrollBarVisibility="Auto">
+                    <ItemsControl ItemsSource="{x:Bind ViewModel.VisibleReviewers}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:ReviewerChoice">
+                                <Grid ColumnDefinitions="*,Auto" MinHeight="28">
+                                    <CheckBox Content="{x:Bind Name}" IsChecked="{x:Bind IsSelected, Mode=TwoWay}" />
+                                    <CheckBox Grid.Column="1" x:Uid="NewPrRequired" IsChecked="{x:Bind IsRequired, Mode=TwoWay}"
+                                              IsEnabled="{x:Bind CanBeRequired, Mode=OneWay}"
+                                              Visibility="{x:Bind ShowRequired}" />
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </StackPanel>
+
+            <StackPanel Spacing="4" Visibility="{x:Bind ViewModel.HasAssignees}">
+                <TextBlock x:Uid="NewPrAssigneesHeading" Style="{StaticResource VigoStrongText}" />
+                <TextBox x:Uid="NewPrAssigneeFilter"
+                         Text="{x:Bind ViewModel.AssigneeFilter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                <ScrollViewer MaxHeight="150" VerticalScrollBarVisibility="Auto">
+                    <ItemsControl ItemsSource="{x:Bind ViewModel.VisibleAssignees}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:AssigneeChoice">
+                                <CheckBox Content="{x:Bind Name}" IsChecked="{x:Bind IsSelected, Mode=TwoWay}" MinHeight="28" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </StackPanel>
+
+            <StackPanel Spacing="4" Visibility="{x:Bind ViewModel.HasIssues}">
+                <TextBlock x:Uid="NewPrIssuesHeading" Style="{StaticResource VigoStrongText}" />
+                <ScrollViewer MaxHeight="150" VerticalScrollBarVisibility="Auto">
+                    <ItemsControl ItemsSource="{x:Bind ViewModel.Issues}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:LinkedIssueChoice">
+                                <CheckBox Content="{x:Bind Label}" IsChecked="{x:Bind IsSelected, Mode=TwoWay}" MinHeight="28" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
+</ContentDialog>

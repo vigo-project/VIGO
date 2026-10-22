@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Name dialog (new branch, tag or remote, renaming), mockup "Boîte de dialogue": title, origin line ("Depuis a1b2c3d ·
+    …"), name validated while typing (reason in danger color under the field), optional second field (tag message,
+    remote URL) and check box. Enter confirms once the name is valid (Primary is the default button: nothing is lost).
+    The "Annuler" button: x:Uid (ADR-075); the rest of the texts comes from the (localized) callers.
+-->
+<ContentDialog
+    x:Class="Vigo.App.Views.InputDialog"
+    x:Uid="InputDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="{x:Bind ViewModel.Title}"
+    PrimaryButtonText="{x:Bind ViewModel.ConfirmText}"
+    IsPrimaryButtonEnabled="{x:Bind ViewModel.CanConfirm, Mode=OneWay}"
+    DefaultButton="Primary">
+
+    <StackPanel Width="432" Spacing="12">
+        <TextBlock Text="{x:Bind ViewModel.Description}" TextWrapping="Wrap" Foreground="{ThemeResource VigoText2Brush}"
+                   Visibility="{x:Bind ViewModel.HasDescription}" />
+
+        <StackPanel Spacing="4">
+            <TextBox x:Name="NameBox" Header="{x:Bind ViewModel.NameHeader}" PlaceholderText="{x:Bind ViewModel.NamePlaceholder}"
+                     Text="{x:Bind ViewModel.Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" IsSpellCheckEnabled="False" />
+            <TextBlock Text="{x:Bind ViewModel.NameError, Mode=OneWay}" Visibility="{x:Bind ViewModel.HasNameError, Mode=OneWay}"
+                       FontSize="{ThemeResource VigoFontSize12}" TextWrapping="Wrap" Foreground="{ThemeResource VigoDangerBrush}"
+                       AutomationProperties.LiveSetting="Polite" />
+        </StackPanel>
+
+        <StackPanel Spacing="4" Visibility="{x:Bind ViewModel.HasSecondField}">
+            <TextBox Header="{x:Bind ViewModel.SecondHeader}" PlaceholderText="{x:Bind ViewModel.SecondPlaceholder}"
+                     Text="{x:Bind ViewModel.SecondText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                     AcceptsReturn="{x:Bind ViewModel.IsSecondMultiline}" TextWrapping="Wrap" IsSpellCheckEnabled="False"
+                     MinHeight="{x:Bind SecondMinHeight}" MaxHeight="160" />
+            <TextBlock Text="{x:Bind ViewModel.SecondError, Mode=OneWay}" Visibility="{x:Bind ViewModel.HasSecondError, Mode=OneWay}"
+                       FontSize="{ThemeResource VigoFontSize12}" TextWrapping="Wrap" Foreground="{ThemeResource VigoDangerBrush}"
+                       AutomationProperties.LiveSetting="Polite" />
+        </StackPanel>
+
+        <CheckBox Content="{x:Bind ViewModel.OptionText}" IsChecked="{x:Bind ViewModel.OptionChecked, Mode=TwoWay}"
+                  Visibility="{x:Bind ViewModel.HasOption}" />
+    </StackPanel>
+</ContentDialog>

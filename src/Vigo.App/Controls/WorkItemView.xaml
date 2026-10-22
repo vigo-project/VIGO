@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Work item (J6.14, read only), shown in place of the graph: header (type, number, title), state, assignee and tags; then the
+    rich text fields and the timeline (comments and changes) in the main column, and the planning / people / dates / details /
+    custom fields, the links (hierarchy, related items, pull requests, commits, branches, builds) and the attachments in the side
+    column (under the main one on a narrow view). Texts: x:Uid (ADR-075); state, counts and failures come from the view model.
+-->
+<UserControl
+    x:Class="Vigo.App.Controls.WorkItemView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Vigo.App.Controls"
+    xmlns:models="using:Vigo.Core.Models"
+    xmlns:vm="using:Vigo.Core.ViewModels"
+    x:Uid="WorkItemView">
+
+    <Grid x:Name="Root" SizeChanged="OnRootSizeChanged" Background="{ThemeResource VigoSunkenBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- Header. -->
+        <Grid x:Name="Header" HorizontalAlignment="Left" Padding="8,8,14,8" RowSpacing="6" Background="{ThemeResource VigoLayerBrush}"
+              BorderBrush="{ThemeResource VigoStrokeSubtleBrush}" BorderThickness="0,0,0,1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <Grid ColumnSpacing="8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Button x:Uid="WorkItemBack" Style="{StaticResource VigoSubtleButton}" Height="28" Padding="6,0" Click="OnBackClick">
+                    <FontIcon Style="{StaticResource VigoIcon}" FontSize="14" Foreground="{ThemeResource VigoText2Brush}"
+                              Glyph="{x:Bind controls:FluentIcons.ChevronLeft}" />
+                </Button>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                    <Border x:Name="TypeBar" Width="4" Height="18" CornerRadius="2" VerticalAlignment="Center" />
+                    <TextBlock Text="{x:Bind ViewModel.TypeText, Mode=OneWay}" FontSize="{ThemeResource VigoFontSize12}" Foreground="{ThemeResource VigoText3Brush}" VerticalAlignment="Center" />
+                    <TextBlock Text="{x:Bind ViewModel.Title, Mode=OneWay}" Style="{StaticResource VigoStrongText}" FontSize="{ThemeResource VigoFontSize15}"
+                               TextTrimming="CharacterEllipsis" VerticalAlignment="Center" IsTextSelectionEnabled="True" />
+                    <TextBlock Text="{x:Bind ViewModel.NumberText, Mode=OneWay}" Foreground="{ThemeResource VigoText3Brush}" FontSize="{ThemeResource VigoFontSize15}"
+                               VerticalAlignment="Center" />
+                </StackPanel>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                    <ProgressRing Width="18" Height="18" IsActive="{x:Bind ViewModel.IsLoading, Mode=OneWay}" />
+                    <Button x:Uid="WorkItemRefresh" Style="{StaticResource VigoSubtleButton}" Height="28" Padding="8,0" Command="{x:Bind ViewModel.RefreshCommand}">
+                        <FontIcon Style="{StaticResource VigoIcon}" FontSize="16" Glyph="{x:Bind controls:FluentIcons.ArrowSync}" />
+                    </Button>
+                    <Button x:Uid="WorkItemBrowser" Style="{StaticResource VigoStandardButton}" Height="28" Padding="10,0" Command="{x:Bind ViewModel.OpenInBrowserCommand}">
+                        <TextBlock x:Uid="WorkItemBrowserText" FontSize="{ThemeResource VigoFontSize12}" />
+                    </Button>
+                </StackPanel>
+            </Grid>
+
+            <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="10" Margin="36,0,0,0">
+                <Border x:Name="StateBadge" Height="20" Padding="8,0" CornerRadius="10" VerticalAlignment="Center">
+                    <TextBlock x:Name="StateLabel" FontSize="{ThemeResource VigoFontSize11}" FontWeight="SemiBold" VerticalAlignment="Center" />
+                </Border>
+                <TextBlock Text="{x:Bind ViewModel.AssignedToText, Mode=OneWay}" Visibility="{x:Bind ViewModel.HasDetail, Mode=OneWay}" FontSize="{ThemeResource VigoFontSize12}"
+                           Foreground="{ThemeResource VigoText3Brush}" VerticalAlignment="Center" />
+                <TextBlock Text="{x:Bind ViewModel.SummaryText, Mode=OneWay}" FontSize="{ThemeResource VigoFontSize12}" Foreground="{ThemeResource VigoText3Brush}" VerticalAlignment="Center" />
+                <ItemsControl ItemsSource="{x:Bind ViewModel.Tags, Mode=OneWay}" Visibility="{x:Bind ViewModel.HasTags, Mode=OneWay}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal" Spacing="4" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:IssueTagRow">
+                            <Border Height="20" Padding="8,0" CornerRadius="10" Background="{ThemeResource VigoAccentSoftBrush}">
+                                <TextBlock Text="{x:Bind Name}" FontSize="{ThemeResource VigoFontSize11}" VerticalAlignment="Center" />
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </Grid>
+
+        <!-- Content. -->
+        <Grid x:Name="Pages" Grid.Row="1" HorizontalAlignment="Left">
+            <TextBlock Margin="24,20" Text="{x:Bind ViewModel.Message, Mode=OneWay}" TextWrapping="Wrap" Style="{StaticResource VigoSecondaryText}"
+                       IsHitTestVisible="False" />
+
+            <ScrollViewer x:Name="ContentScroll" HorizontalAlignment="Left" HorizontalScrollMode="Disabled" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                <StackPanel x:Name="ContentColumn" Padding="24,16" Spacing="12" HorizontalAlignment="Left">
+                    <InfoBar x:Uid="WorkItemTruncated" IsOpen="{x:Bind ViewModel.IsTruncated, Mode=OneWay}" IsClosable="False" Severity="Informational" />
+
+                    <Grid x:Name="BodyGrid" ColumnSpacing="16" RowSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition x:Name="MainColumn" Width="*" />
+                            <ColumnDefinition x:Name="SideColumn" Width="340" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <!-- Main column: rich text fields, then the timeline. -->
+                        <StackPanel x:Name="MainPanel" Spacing="12">
+                            <ItemsControl ItemsSource="{x:Bind ViewModel.Texts, Mode=OneWay}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <StackPanel Spacing="12" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:WorkItemTextRow">
+                                        <Border Style="{StaticResource VigoCard}" Padding="14">
+                                            <StackPanel Spacing="8">
+                                                <TextBlock Text="{x:Bind Title}" Style="{StaticResource VigoStrongText}" />
+                                                <controls:MarkdownView Blocks="{x:Bind Blocks}" />
+                                            </StackPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <Border Style="{StaticResource VigoCard}" Padding="14"
+                                    Visibility="{x:Bind controls:WorkItemView.NoTexts(ViewModel.HasTexts, ViewModel.HasDetail), Mode=OneWay}">
+                                <TextBlock x:Uid="WorkItemNoDescription" Style="{StaticResource VigoSecondaryText}" FontSize="{ThemeResource VigoFontSize12}" />
+                            </Border>
+
+                            <TextBlock x:Uid="WorkItemTimelineTitle" Style="{StaticResource VigoStrongText}" Margin="2,6,0,0"
+                                       Visibility="{x:Bind ViewModel.HasTimeline, Mode=OneWay}" />
+                            <ItemsControl ItemsSource="{x:Bind ViewModel.Timeline, Mode=OneWay}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <StackPanel Spacing="8" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:TimelineRow">
+                                        <Border Style="{StaticResource VigoCard}" Padding="12,10">
+                                            <StackPanel Spacing="6">
+                                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                                    <Border Width="20" Height="20" CornerRadius="10" Background="{x:Bind controls:LaneBrushes.For(AuthorColorIndex)}">
+                                                        <TextBlock Text="{x:Bind AuthorInitials}" Foreground="White" FontSize="{ThemeResource VigoFontSize8}" FontWeight="SemiBold"
+                                                                   HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                    </Border>
+                                                    <TextBlock Text="{x:Bind Author}" Style="{StaticResource VigoStrongText}" FontSize="{ThemeResource VigoFontSize12}" VerticalAlignment="Center" />
+                                                    <TextBlock Text="{x:Bind Action}" FontSize="{ThemeResource VigoFontSize12}" Foreground="{ThemeResource VigoText2Brush}" VerticalAlignment="Center" TextWrapping="Wrap" />
+                                                    <TextBlock Text="{x:Bind DateText}" FontSize="{ThemeResource VigoFontSize11}" Foreground="{ThemeResource VigoText3Brush}" VerticalAlignment="Center" />
+                                                </StackPanel>
+                                                <controls:MarkdownView Blocks="{x:Bind Body}" Visibility="{x:Bind HasBody}" />
+                                            </StackPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+
+                        <!-- Side column: fields, links, attachments. -->
+                        <StackPanel x:Name="SidePanel" Grid.Column="1" Spacing="12">
+                            <ItemsControl ItemsSource="{x:Bind ViewModel.Sections, Mode=OneWay}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <StackPanel Spacing="12" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:WorkItemSectionRow">
+                                        <Border Style="{StaticResource VigoCard}" Padding="14,12">
+                                            <StackPanel Spacing="8">
+                                                <TextBlock Text="{x:Bind Title}" Style="{StaticResource VigoStrongText}" />
+                                                <ItemsControl ItemsSource="{x:Bind Fields}">
+                                                    <ItemsControl.ItemsPanel>
+                                                        <ItemsPanelTemplate>
+                                                            <StackPanel Spacing="6" />
+                                                        </ItemsPanelTemplate>
+                                                    </ItemsControl.ItemsPanel>
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate x:DataType="models:WorkItemField">
+                                                            <Grid ColumnSpacing="10">
+                                                                <Grid.ColumnDefinitions>
+                                                                    <ColumnDefinition Width="120" />
+                                                                    <ColumnDefinition Width="*" />
+                                                                </Grid.ColumnDefinitions>
+                                                                <TextBlock Text="{x:Bind Label}" FontSize="{ThemeResource VigoFontSize12}" Foreground="{ThemeResource VigoText3Brush}" TextWrapping="Wrap" />
+                                                                <TextBlock Grid.Column="1" Text="{x:Bind Value}" FontSize="{ThemeResource VigoFontSize12}" TextWrapping="Wrap" IsTextSelectionEnabled="True" />
+                                                            </Grid>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                            </StackPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+                            <!-- Links, grouped by kind; a work item opens in this screen, the rest in the browser. -->
+                            <Border Style="{StaticResource VigoCard}" Padding="14,12" Visibility="{x:Bind ViewModel.HasLinks, Mode=OneWay}">
+                                <StackPanel Spacing="10">
+                                    <TextBlock x:Uid="WorkItemLinksTitle" Style="{StaticResource VigoStrongText}" />
+                                    <ItemsControl ItemsSource="{x:Bind ViewModel.LinkGroups, Mode=OneWay}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <StackPanel Spacing="10" />
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="vm:WorkItemLinkGroup">
+                                                <StackPanel Spacing="2">
+                                                    <TextBlock Text="{x:Bind Title}" FontSize="{ThemeResource VigoFontSize11}" FontWeight="SemiBold" Foreground="{ThemeResource VigoText3Brush}" />
+                                                    <ItemsControl ItemsSource="{x:Bind Items}">
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate x:DataType="vm:WorkItemLinkRow">
+                                                                <Button Style="{StaticResource VigoSubtleButton}" Padding="6,4" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"
+                                                                        Click="OnLinkClick" ToolTipService.ToolTip="{x:Bind Title}" AutomationProperties.Name="{x:Bind Title}">
+                                                                    <Grid ColumnSpacing="8">
+                                                                        <Grid.ColumnDefinitions>
+                                                                            <ColumnDefinition Width="Auto" />
+                                                                            <ColumnDefinition Width="*" />
+                                                                        </Grid.ColumnDefinitions>
+                                                                        <FontIcon Style="{StaticResource VigoIcon}" FontSize="14" VerticalAlignment="Top" Margin="0,1,0,0"
+                                                                                  Foreground="{ThemeResource VigoText2Brush}" Glyph="{x:Bind controls:WorkItemView.GlyphOf(Kind)}" />
+                                                                        <StackPanel Grid.Column="1">
+                                                                            <TextBlock Text="{x:Bind Title}" FontSize="{ThemeResource VigoFontSize12}" TextWrapping="Wrap" TextAlignment="Left" />
+                                                                            <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,2,0,0">
+                                                                                <Border Height="16" Padding="6,0" CornerRadius="8" VerticalAlignment="Center" Visibility="{x:Bind HasState}"
+                                                                                        Loaded="OnLinkStateLoaded">
+                                                                                    <TextBlock Text="{x:Bind StateText}" FontSize="{ThemeResource VigoFontSize10}" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                                                                </Border>
+                                                                                <TextBlock Text="{x:Bind Detail}" Visibility="{x:Bind HasDetail}" FontSize="{ThemeResource VigoFontSize11}" TextWrapping="Wrap"
+                                                                                           TextAlignment="Left" Foreground="{ThemeResource VigoText3Brush}" VerticalAlignment="Center" />
+                                                                            </StackPanel>
+                                                                        </StackPanel>
+                                                                    </Grid>
+                                                                </Button>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Style="{StaticResource VigoCard}" Padding="14,12" Visibility="{x:Bind ViewModel.HasAttachments, Mode=OneWay}">
+                                <StackPanel Spacing="6">
+                                    <TextBlock x:Uid="WorkItemAttachmentsTitle" Style="{StaticResource VigoStrongText}" />
+                                    <ItemsControl ItemsSource="{x:Bind ViewModel.Attachments, Mode=OneWay}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="vm:WorkItemAttachmentRow">
+                                                <Button Style="{StaticResource VigoSubtleButton}" Padding="6,4" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"
+                                                        Click="OnAttachmentClick" ToolTipService.ToolTip="{x:Bind Name}" AutomationProperties.Name="{x:Bind Name}">
+                                                    <Grid ColumnSpacing="8">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="Auto" />
+                                                            <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="Auto" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <FontIcon Style="{StaticResource VigoIcon}" FontSize="14" Foreground="{ThemeResource VigoText2Brush}"
+                                                                  Glyph="{x:Bind controls:FluentIcons.Document}" />
+                                                        <TextBlock Grid.Column="1" Text="{x:Bind Name}" FontSize="{ThemeResource VigoFontSize12}" TextTrimming="CharacterEllipsis" TextAlignment="Left" />
+                                                        <TextBlock Grid.Column="2" Text="{x:Bind SizeText}" FontSize="{ThemeResource VigoFontSize11}" Foreground="{ThemeResource VigoText3Brush}" />
+                                                    </Grid>
+                                                </Button>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </Grid>
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+    </Grid>
+</UserControl>

@@ -1,0 +1,15 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <!-- Everything is served from the app folder (virtual host https://vigo.editor/); nothing comes from the network. -->
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; worker-src 'self'; connect-src 'self'; img-src 'self' data:">
+  <link rel="stylesheet" href="editor.css">
+  <title>VIGO editor</title>
+</head>
+<body>
+  <div id="root"></div>
+  <script src="boot.js"></script>
+</body>
+</html>

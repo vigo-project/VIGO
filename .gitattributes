@@ -1,0 +1,12 @@
+* text=auto
+*.cs text eol=crlf
+*.xaml text eol=crlf
+*.csproj text eol=crlf
+*.props text eol=crlf
+*.slnx text eol=crlf
+*.md text eol=lf
+*.mjs text eol=lf
+*.ttf binary
+*.png binary
+# Code editor page bundled by tools/editor/build.mjs (ADR-038): kept byte for byte, not diffed.
+src/Vigo.App/Editor/** -text -diff linguist-generated=true

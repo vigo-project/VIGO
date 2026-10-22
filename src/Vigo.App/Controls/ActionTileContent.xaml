@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Action tile content: 36 badge + 20 icon, title, description, shortcut (kbd). -->
+<UserControl
+    x:Class="Vigo.App.Controls.ActionTileContent"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Vigo.App.Controls">
+    <StackPanel Spacing="10">
+        <Border Width="36" Height="36" CornerRadius="{StaticResource VigoRadiusTile}" HorizontalAlignment="Left"
+                Background="{ThemeResource VigoAccentSoftBrush}">
+            <FontIcon Style="{StaticResource VigoIcon}" FontSize="20" Glyph="{x:Bind controls:FluentIcons.FromName(Icon)}" Foreground="{ThemeResource VigoAccentTextBrush}" />
+        </Border>
+        <StackPanel Spacing="2">
+            <TextBlock Text="{x:Bind Title}" Style="{StaticResource VigoStrongText}" FontSize="{ThemeResource VigoFontSize14}" />
+            <TextBlock Text="{x:Bind Description}" FontSize="{ThemeResource VigoFontSize12}" LineHeight="{ThemeResource VigoLineHeight16}" TextWrapping="Wrap" Foreground="{ThemeResource VigoText2Brush}" />
+        </StackPanel>
+        <Border Style="{StaticResource VigoKbdBorder}">
+            <TextBlock Text="{x:Bind Shortcut}" FontSize="{ThemeResource VigoFontSize11}" LineHeight="{ThemeResource VigoLineHeight16}" Foreground="{ThemeResource VigoText3Brush}" />
+        </Border>
+    </StackPanel>
+</UserControl>

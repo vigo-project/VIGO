@@ -1,0 +1,1271 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+    "Préférences" tab (mockup VIGO Outils.dc.html#prefs): navigation on the left, settings of the section on the right.
+    Général (automatic fetch, checkout after creating a branch) and Apparence (theme, density, graph palette) are
+    active; the other sections arrive with their milestones. Every change applies at once and is saved.
+    Texts: x:Uid (Strings\*\Resources.resw, ADR-075), all sections.
+-->
+<UserControl
+    x:Class="Vigo.App.Views.PreferencesView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Vigo.App.Controls"
+    xmlns:local="using:Vigo.App.Views"
+    xmlns:services="using:Vigo.App.Services"
+    xmlns:model="using:Vigo.Core.Models"
+    xmlns:vm="using:Vigo.Core.ViewModels">
+
+    <UserControl.Resources>
+        <!-- One setting: title + description on the left, control on the right (mockup rows, 1px separator). -->
+        <Style x:Key="SettingRow" TargetType="Grid">
+            <Setter Property="Padding" Value="0,16" />
+            <Setter Property="ColumnSpacing" Value="24" />
+            <Setter Property="BorderBrush" Value="{ThemeResource VigoStrokeSubtleBrush}" />
+            <Setter Property="BorderThickness" Value="0,0,0,1" />
+        </Style>
+        <Style x:Key="SettingTitle" TargetType="TextBlock" BasedOn="{StaticResource VigoBodyText}" />
+        <Style x:Key="SettingDescription" TargetType="TextBlock" BasedOn="{StaticResource VigoCaptionText}">
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+        <!-- Theme card: preview (drawn in the theme it stands for) + name; the whole card is the radio button. -->
+        <Style x:Key="ThemeCard" TargetType="RadioButton">
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="MinWidth" Value="0" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="Card" Width="132" Padding="6" CornerRadius="8" BorderThickness="2"
+                                BorderBrush="{ThemeResource VigoStrokeBrush}" Background="{ThemeResource VigoCardBrush}">
+                            <ContentPresenter Content="{TemplateBinding Content}" />
+                            <VisualStateManager.VisualStateGroups>
+                                <VisualStateGroup x:Name="CheckStates">
+                                    <VisualState x:Name="Checked">
+                                        <VisualState.Setters>
+                                            <Setter Target="Card.BorderBrush" Value="{ThemeResource VigoAccentBrush}" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                    <VisualState x:Name="Unchecked" />
+                                    <VisualState x:Name="Indeterminate" />
+                                </VisualStateGroup>
+                                <VisualStateGroup x:Name="CommonStates">
+                                    <VisualState x:Name="Normal" />
+                                    <VisualState x:Name="PointerOver">
+                                        <VisualState.Setters>
+                                            <Setter Target="Card.Background" Value="{ThemeResource VigoSubHoverBrush}" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                    <VisualState x:Name="Pressed">
+                                        <VisualState.Setters>
+                                            <Setter Target="Card.Background" Value="{ThemeResource VigoSubPressBrush}" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                    <VisualState x:Name="Disabled" />
+                                </VisualStateGroup>
+                                <VisualStateGroup x:Name="FocusStates">
+                                    <VisualState x:Name="Focused" />
+                                    <VisualState x:Name="Unfocused" />
+                                    <VisualState x:Name="PointerFocused" />
+                                </VisualStateGroup>
+                            </VisualStateManager.VisualStateGroups>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <!-- Miniature window: title bar, accent line, two text lines. -->
+        <DataTemplate x:Key="ThemePreview">
+            <Grid Height="64" CornerRadius="4" Background="{ThemeResource VigoLayerBrush}" BorderBrush="{ThemeResource VigoStrokeSubtleBrush}" BorderThickness="1">
+                <StackPanel Margin="8" Spacing="6">
+                    <Border Width="40" Height="6" CornerRadius="3" HorizontalAlignment="Left" Background="{ThemeResource VigoAccentBrush}" />
+                    <Border Width="80" Height="5" CornerRadius="2" HorizontalAlignment="Left" Background="{ThemeResource VigoText3Brush}" />
+                    <Border Width="60" Height="5" CornerRadius="2" HorizontalAlignment="Left" Background="{ThemeResource VigoText3Brush}" />
+                </StackPanel>
+            </Grid>
+        </DataTemplate>
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="240" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <!-- Navigation -->
+        <Border Background="{ThemeResource VigoSunkenBrush}" BorderBrush="{ThemeResource VigoStrokeSubtleBrush}" BorderThickness="0,0,1,0" Padding="8,16">
+            <ListView x:Name="SectionList" ItemsSource="{x:Bind ViewModel.Sections}" SelectedItem="{x:Bind ViewModel.SelectedSection, Mode=TwoWay}"
+                      SelectionMode="Single" x:Uid="PrefSectionList">
+                <ListView.ItemTemplate>
+                    <DataTemplate x:DataType="vm:PreferencesSectionItem">
+                        <StackPanel Orientation="Horizontal" Spacing="10" Height="32" ToolTipService.ToolTip="{x:Bind Tooltip}">
+                            <FontIcon Style="{StaticResource VigoIcon}" Glyph="{x:Bind controls:FluentIcons.FromName(IconName)}" VerticalAlignment="Center" />
+                            <TextBlock Text="{x:Bind Label}" VerticalAlignment="Center" FontSize="{ThemeResource VigoFontSize13}" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </Border>
+
+        <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel MaxWidth="760" Margin="40,28,40,40" HorizontalAlignment="Left">
+                <TextBlock Text="{x:Bind ViewModel.SelectedSectionTitle, Mode=OneWay}" Style="{StaticResource VigoTitleText}" Margin="0,0,0,8" />
+
+                <!-- Général -->
+                <StackPanel Visibility="{x:Bind ViewModel.IsGeneral, Mode=OneWay}">
+                    <Grid Style="{StaticResource SettingRow}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock x:Uid="PrefAutoFetchTitle" Style="{StaticResource SettingTitle}" />
+                            <TextBlock x:Uid="PrefAutoFetchDescription" Style="{StaticResource SettingDescription}" />
+                        </StackPanel>
+                        <ComboBox x:Uid="PrefAutoFetchCombo" Grid.Column="1" MinWidth="200" VerticalAlignment="Center"
+                                  ItemsSource="{x:Bind ViewModel.AutoFetchOptions}" SelectedItem="{x:Bind ViewModel.AutoFetch, Mode=TwoWay}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate x:DataType="vm:AutoFetchOption">
+                                    <TextBlock Text="{x:Bind Label}" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                    </Grid>
+                    <Grid Style="{StaticResource SettingRow}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock x:Uid="PrefCheckoutTitle" Style="{StaticResource SettingTitle}" />
+                            <TextBlock x:Uid="PrefCheckoutDescription" Style="{StaticResource SettingDescription}" />
+                        </StackPanel>
+                        <ToggleSwitch x:Uid="PrefCheckoutSwitch" Grid.Column="1" VerticalAlignment="Center" MinWidth="0"
+                                      IsOn="{x:Bind ViewModel.CheckoutNewBranch, Mode=TwoWay}" />
+                    </Grid>
+                    <Grid Style="{StaticResource SettingRow}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock x:Uid="PrefAutoPruneTitle" Style="{StaticResource SettingTitle}" />
+                            <TextBlock x:Uid="PrefAutoPruneDescription" Style="{StaticResource SettingDescription}" />
+                        </StackPanel>
+                        <ToggleSwitch x:Uid="PrefAutoPruneSwitch" Grid.Column="1" VerticalAlignment="Center" MinWidth="0"
+                                      IsOn="{x:Bind ViewModel.AutoPrune, Mode=TwoWay}" />
+                    </Grid>
+                    <Grid Style="{StaticResource SettingRow}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock x:Uid="PrefKeepSubmodulesTitle" Style="{StaticResource SettingTitle}" />
+                            <TextBlock x:Uid="PrefKeepSubmodulesDescription" Style="{StaticResource SettingDescription}" />
+                        </StackPanel>
+                        <ToggleSwitch x:Uid="PrefKeepSubmodulesSwitch" Grid.Column="1" VerticalAlignment="Center" MinWidth="0"
+                                      IsOn="{x:Bind ViewModel.KeepSubmodulesUpToDate, Mode=TwoWay}" />
+                    </Grid>
+                    <Grid Style="{StaticResource SettingRow}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock x:Uid="PrefGraphInitialTitle" Style="{StaticResource SettingTitle}" />
+                            <TextBlock x:Uid="PrefGraphInitialDescription" Style="{StaticResource SettingDescription}" />
+                        </StackPanel>
+                        <NumberBox x:Uid="PrefGraphInitialBox" Grid.Column="1" VerticalAlignment="Center" MinWidth="140"
+                                   Minimum="500" Maximum="100000" SmallChange="500" LargeChange="5000" SpinButtonPlacementMode="Inline"
+                                   Value="{x:Bind ViewModel.GraphInitialCommits, Mode=TwoWay}" />
+                    </Grid>
+                    <Grid Style="{StaticResource SettingRow}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock x:Uid="PrefGraphLazyTitle" Style="{StaticResource SettingTitle}" />
+                            <TextBlock x:Uid="PrefGraphLazyDescription" Style="{StaticResource SettingDescription}" />
+                        </StackPanel>
+                        <ToggleSwitch x:Uid="PrefGraphLazySwitch" Grid.Column="1" VerticalAlignment="Center" MinWidth="0"
+                                      IsOn="{x:Bind ViewModel.GraphLazyLoad, Mode=TwoWay}" />
+                    </Grid>
+                    <Grid Style="{StaticResource SettingRow}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock x:Uid="PrefLanguageTitle" Style="{StaticResource SettingTitle}" />
+                            <TextBlock x:Uid="PrefLanguageDescription" Style="{StaticResource SettingDescription}" />
+                            <TextBlock x:Uid="PrefLanguageRestart" Style="{StaticResource SettingDescription}" Margin="0,4,0,0"
+                                       Foreground="{ThemeResource VigoAccentBrush}" Visibility="{x:Bind ViewModel.NeedsRestart, Mode=OneWay}" />
+                        </StackPanel>
+                        <ComboBox x:Uid="PrefLanguageCombo" Grid.Column="1" MinWidth="200" VerticalAlignment="Center"
+                                  ItemsSource="{x:Bind ViewModel.LanguageOptions}" SelectedItem="{x:Bind ViewModel.Language, Mode=TwoWay}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate x:DataType="vm:LanguageOption">
+                                    <TextBlock Text="{x:Bind Label}" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                    </Grid>
+                </StackPanel>
+
+                <!-- Dépôt en cours (J7.29): settings of the repository's own git config -->
+                <StackPanel Visibility="{x:Bind ViewModel.IsRepository, Mode=OneWay}">
+                    <Grid Style="{StaticResource SettingRow}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock x:Uid="PrefRepoEncodingTitle" Style="{StaticResource SettingTitle}" />
+                            <TextBlock x:Uid="PrefRepoEncodingDescription" Style="{StaticResource SettingDescription}" />
+                        </StackPanel>
+                        <ComboBox x:Uid="PrefRepoEncodingCombo" Grid.Column="1" MinWidth="200" VerticalAlignment="Center"
+                                  ItemsSource="{x:Bind ViewModel.Repository.EncodingOptions, Mode=OneWay}"
+                                  SelectedItem="{x:Bind ViewModel.Repository.SelectedEncoding, Mode=TwoWay}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate x:DataType="vm:EncodingOption">
+                                    <TextBlock Text="{x:Bind Label}" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                    </Grid>
+
+                    <!-- Git Flow (J7.30) -->
+                    <Grid Style="{StaticResource SettingRow}">
+                    <StackPanel Spacing="8">
+                        <TextBlock x:Uid="PrefRepoFlowTitle" Style="{StaticResource SettingTitle}" />
+                        <TextBlock x:Uid="PrefRepoFlowDescription" Style="{StaticResource SettingDescription}" />
+                        <Button x:Uid="PrefRepoFlowInit" Command="{x:Bind ViewModel.Repository.InitializeGitFlowCommand}"
+                                Visibility="{x:Bind ViewModel.Repository.CanInitializeGitFlow, Mode=OneWay}" />
+                        <StackPanel Spacing="8" Visibility="{x:Bind ViewModel.Repository.IsGitFlowInitialized, Mode=OneWay}">
+                            <Grid ColumnSpacing="12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <TextBox x:Uid="PrefRepoFlowMain" Text="{x:Bind ViewModel.Repository.FlowMain, Mode=TwoWay}" />
+                                <TextBox x:Uid="PrefRepoFlowDevelop" Grid.Column="1" Text="{x:Bind ViewModel.Repository.FlowDevelop, Mode=TwoWay}" />
+                            </Grid>
+                            <Grid ColumnSpacing="12" RowSpacing="8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <TextBox x:Uid="PrefRepoFlowFeature" Text="{x:Bind ViewModel.Repository.FlowFeature, Mode=TwoWay}" />
+                                <TextBox x:Uid="PrefRepoFlowRelease" Grid.Column="1" Text="{x:Bind ViewModel.Repository.FlowRelease, Mode=TwoWay}" />
+                                <TextBox x:Uid="PrefRepoFlowHotfix" Grid.Row="1" Text="{x:Bind ViewModel.Repository.FlowHotfix, Mode=TwoWay}" />
+                                <TextBox x:Uid="PrefRepoFlowVersionTag" Grid.Row="1" Grid.Column="1" Text="{x:Bind ViewModel.Repository.FlowVersionTag, Mode=TwoWay}" />
+                            </Grid>
+                            <TextBlock Text="{x:Bind ViewModel.Repository.FlowMessage, Mode=OneWay}" TextWrapping="Wrap"
+                                       Foreground="{ThemeResource VigoDangerBrush}" />
+                            <Button x:Uid="PrefRepoFlowSave" Command="{x:Bind ViewModel.Repository.SaveGitFlowCommand}" />
+                        </StackPanel>
+                    </StackPanel>
+                    </Grid>
+
+                    <!-- Hooks Git (J7.31) -->
+                    <Grid Style="{StaticResource SettingRow}">
+                        <StackPanel Spacing="8">
+                            <TextBlock x:Uid="PrefRepoHooksTitle" Style="{StaticResource SettingTitle}" />
+                            <TextBlock x:Uid="PrefRepoHooksDescription" Style="{StaticResource SettingDescription}" />
+                            <Grid ColumnSpacing="8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBox x:Uid="PrefRepoHooksPath" Text="{x:Bind ViewModel.Repository.HooksPath, Mode=TwoWay}" />
+                                <Button x:Uid="PrefRepoHooksBrowse" Grid.Column="1" VerticalAlignment="Bottom"
+                                        Command="{x:Bind ViewModel.Repository.BrowseHooksPathCommand}" />
+                                <Button x:Uid="PrefRepoHooksApply" Grid.Column="2" VerticalAlignment="Bottom"
+                                        Command="{x:Bind ViewModel.Repository.SaveHooksPathCommand}" />
+                                <Button x:Uid="PrefRepoHooksReset" Grid.Column="3" VerticalAlignment="Bottom"
+                                        Command="{x:Bind ViewModel.Repository.ResetHooksPathCommand}" />
+                            </Grid>
+                            <TextBlock x:Uid="PrefRepoHooksNone" Style="{StaticResource SettingDescription}"
+                                       Visibility="{x:Bind ViewModel.Repository.HasNoHooks, Mode=OneWay}" />
+                            <ItemsControl ItemsSource="{x:Bind ViewModel.Repository.Hooks, Mode=OneWay}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:HookItem">
+                                        <Grid ColumnSpacing="12">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="{x:Bind Name}" VerticalAlignment="Center" />
+                                            <ToggleSwitch x:Uid="PrefRepoHookSwitch" Grid.Column="1" MinWidth="0"
+                                                          IsOn="{x:Bind IsEnabled, Mode=TwoWay}" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- Ignorer les hooks (J7.31) -->
+                    <Grid Style="{StaticResource SettingRow}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock x:Uid="PrefRepoSkipHooksTitle" Style="{StaticResource SettingTitle}" />
+                            <TextBlock x:Uid="PrefRepoSkipHooksDescription" Style="{StaticResource SettingDescription}" />
+                        </StackPanel>
+                        <ToggleSwitch x:Uid="PrefRepoSkipHooksSwitch" Grid.Column="1" VerticalAlignment="Center" MinWidth="0"
+                                      IsOn="{x:Bind ViewModel.Repository.SkipHooks, Mode=TwoWay}" />
+                    </Grid>
+                </StackPanel>
+
+                <!-- Apparence -->
+                <StackPanel Visibility="{x:Bind ViewModel.IsAppearance, Mode=OneWay}">
+                    <Grid Style="{StaticResource SettingRow}" RowSpacing="12">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <StackPanel>
+                            <TextBlock x:Uid="PrefThemeTitle" Style="{StaticResource SettingTitle}" />
+                            <TextBlock x:Uid="PrefThemeDescription" Style="{StaticResource SettingDescription}" />
+                        </StackPanel>
+                        <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="12">
+                            <RadioButton x:Uid="PrefThemeSystemCard" GroupName="Theme" Style="{StaticResource ThemeCard}"
+                                         IsChecked="{x:Bind ViewModel.IsSystemTheme, Mode=TwoWay}">
+                                <StackPanel Spacing="6">
+                                    <Grid ColumnSpacing="0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <ContentPresenter RequestedTheme="Light" ContentTemplate="{StaticResource ThemePreview}" Content="" />
+                                        <ContentPresenter Grid.Column="1" RequestedTheme="Dark" ContentTemplate="{StaticResource ThemePreview}" Content="" />
+                                    </Grid>
+                                    <TextBlock x:Uid="PrefThemeSystemLabel" FontSize="{ThemeResource VigoFontSize12}" HorizontalAlignment="Center" />
+                                </StackPanel>
+                            </RadioButton>
+                            <RadioButton x:Uid="PrefThemeLightCard" GroupName="Theme" Style="{StaticResource ThemeCard}"
+                                         IsChecked="{x:Bind ViewModel.IsLightTheme, Mode=TwoWay}">
+                                <StackPanel Spacing="6">
+                                    <ContentPresenter RequestedTheme="Light" ContentTemplate="{StaticResource ThemePreview}" Content="" />
+                                    <TextBlock x:Uid="PrefThemeLightLabel" FontSize="{ThemeResource VigoFontSize12}" HorizontalAlignment="Center" />
+                                </StackPanel>
+                            </RadioButton>
+                            <RadioButton x:Uid="PrefThemeDarkCard" GroupName="Theme" Style="{StaticResource ThemeCard}"
+                                         IsChecked="{x:Bind ViewModel.IsDarkTheme, Mode=TwoWay}">
+                                <StackPanel Spacing="6">
+                                    <ContentPresenter RequestedTheme="Dark" ContentTemplate="{StaticResource ThemePreview}" Content="" />
+                                    <TextBlock x:Uid="PrefThemeDarkLabel" FontSize="{ThemeResource VigoFontSize12}" HorizontalAlignment="Center" />
+                                </StackPanel>
+                            </RadioButton>
+                        </StackPanel>
+                    </Grid>
+                    <Grid Style="{StaticResource SettingRow}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock x:Uid="PrefDensityTitle" Style="{StaticResource SettingTitle}" />
+                            <TextBlock x:Uid="PrefDensityDescription" Style="{StaticResource SettingDescription}" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="16" VerticalAlignment="Center">
+                            <RadioButton x:Uid="PrefDensityNormal" GroupName="Density" MinWidth="0" IsChecked="{x:Bind ViewModel.IsNormal, Mode=TwoWay}" />
+                            <RadioButton x:Uid="PrefDensityCompact" GroupName="Density" MinWidth="0" IsChecked="{x:Bind ViewModel.IsCompact, Mode=TwoWay}" />
+                        </StackPanel>
+                    </Grid>
+                    <Grid Style="{StaticResource SettingRow}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock x:Uid="PrefPaletteTitle" Style="{StaticResource SettingTitle}" />
+                            <TextBlock x:Uid="PrefPaletteDescription" Style="{StaticResource SettingDescription}" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Spacing="8" VerticalAlignment="Center">
+                            <ItemsControl x:Uid="PrefPaletteList" ItemsSource="{x:Bind ViewModel.LaneColorItems}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <StackPanel Orientation="Horizontal" Spacing="4" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:LaneColorItem">
+                                        <Button Style="{StaticResource VigoSubtleButton}" Width="28" Height="28" MinWidth="0" Padding="0"
+                                                x:Uid="PrefPaletteSwatch" AutomationProperties.Name="{x:Bind Label}">
+                                            <Border Width="16" Height="16" CornerRadius="8" Background="{x:Bind services:Appearance.LaneBrush(Index, Hex), Mode=OneWay}" />
+                                            <Button.Flyout>
+                                                <Flyout Placement="BottomEdgeAlignedRight">
+                                                    <StackPanel Spacing="8">
+                                                        <ColorPicker Tag="{x:Bind}" IsAlphaEnabled="False" IsMoreButtonVisible="False"
+                                                                     IsColorSliderVisible="True" IsColorChannelTextInputVisible="False"
+                                                                     Loaded="OnLaneColorPickerLoaded" ColorChanged="OnLaneColorChanged"
+                                                                     AutomationProperties.Name="{x:Bind Label}" />
+                                                        <Button x:Uid="PrefPaletteSwatchReset" Style="{StaticResource VigoStandardButton}"
+                                                                Tag="{x:Bind}" Click="OnLaneColorResetClick"
+                                                                Visibility="{x:Bind IsCustomized, Mode=OneWay}" />
+                                                    </StackPanel>
+                                                </Flyout>
+                                            </Button.Flyout>
+                                        </Button>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <Button x:Uid="PrefPaletteReset" Style="{StaticResource VigoStandardButton}" HorizontalAlignment="Right"
+                                    Command="{x:Bind ViewModel.ResetLaneColorsCommand}" IsEnabled="{x:Bind ViewModel.HasCustomLaneColors, Mode=OneWay}" />
+                        </StackPanel>
+                    </Grid>
+                    <TextBlock x:Uid="PrefTextFormatTitle" Style="{StaticResource VigoStrongText}" Margin="0,24,0,8" />
+                    <Expander HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+                        <Expander.Header>
+                            <StackPanel Orientation="Horizontal" Spacing="12" Padding="0,12">
+                                <TextBlock Text="Aa" VerticalAlignment="Center" FontSize="{ThemeResource VigoFontSize16}" />
+                                <TextBlock x:Uid="PrefUiFontHeader" Style="{StaticResource SettingTitle}" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Expander.Header>
+                        <StackPanel Spacing="4">
+                            <Grid ColumnSpacing="24">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock x:Uid="PrefUiFontFamilyTitle" Style="{StaticResource SettingTitle}" VerticalAlignment="Center" />
+                                <ComboBox x:Uid="PrefUiFontCombo" Grid.Column="1" MinWidth="240"
+                                          ItemsSource="{x:Bind ViewModel.UiFontOptions}" SelectedItem="{x:Bind ViewModel.UiFont, Mode=TwoWay}">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate x:DataType="vm:FontOption">
+                                            <TextBlock Text="{x:Bind Label}" />
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                            </Grid>
+                            <Grid ColumnSpacing="24">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock x:Uid="PrefUiTextSizeTitle" Style="{StaticResource SettingTitle}" VerticalAlignment="Center" />
+                                <ComboBox x:Uid="PrefUiTextSizeCombo" Grid.Column="1" MinWidth="240"
+                                          ItemsSource="{x:Bind ViewModel.UiTextScaleOptions}" SelectedItem="{x:Bind ViewModel.UiTextScale, Mode=TwoWay}">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate x:DataType="vm:TextScaleOption">
+                                            <TextBlock Text="{x:Bind Label}" />
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                            </Grid>
+                            <TextBlock x:Uid="PrefUiFontRestart" Style="{StaticResource SettingDescription}"
+                                       Visibility="{x:Bind ViewModel.UiFontNeedsRestart, Mode=OneWay}" />
+                        </StackPanel>
+                    </Expander>
+                </StackPanel>
+
+                <!-- Raccourcis (J7.3, ADR-054): a click on the gesture waits for the next key combination. -->
+                <StackPanel Visibility="{x:Bind ViewModel.IsShortcuts, Mode=OneWay}" Spacing="8" Margin="0,8,0,0">
+                    <TextBlock Style="{StaticResource SettingDescription}" Margin="0,0,0,8"
+                               x:Uid="PrefShortcutsIntro" />
+
+                    <ItemsControl ItemsSource="{x:Bind ViewModel.ShortcutItems}" x:Uid="PrefShortcutsList">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Spacing="0" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:ShortcutItem">
+                                <Grid Padding="0,10" RowSpacing="4" ColumnSpacing="8" BorderThickness="0,0,0,1" BorderBrush="{ThemeResource VigoStrokeSubtleBrush}"
+                                      AutomationProperties.Name="{x:Bind Label}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+                                    <StackPanel VerticalAlignment="Center">
+                                        <TextBlock Text="{x:Bind Label}" Style="{StaticResource SettingTitle}" />
+                                        <TextBlock Text="{x:Bind ScopeLabel}" Style="{StaticResource SettingDescription}" />
+                                    </StackPanel>
+                                    <Button Grid.Column="1" Style="{StaticResource VigoStandardButton}" MinWidth="170" VerticalAlignment="Center"
+                                            Tag="{x:Bind}" Click="OnShortcutCaptureClick" LostFocus="OnShortcutCaptureLostFocus"
+                                            PreviewKeyDown="OnShortcutCapturePreviewKeyDown" ProcessKeyboardAccelerators="OnShortcutCaptureProcessAccelerators"
+                                            AutomationProperties.Name="{x:Bind Label}" x:Uid="PrefShortcutChange">
+                                        <TextBlock Text="{x:Bind ButtonText, Mode=OneWay}" FontFamily="{StaticResource VigoMonoFont}" />
+                                    </Button>
+                                    <Button Grid.Column="2" Style="{StaticResource VigoSubtleButton}" Width="32" Height="32" Padding="0" VerticalAlignment="Center"
+                                            Tag="{x:Bind}" Click="OnShortcutClearClick"
+                                            Visibility="{x:Bind HasShortcut, Mode=OneWay}" x:Uid="PrefShortcutClear">
+                                        <FontIcon Style="{StaticResource VigoIcon}" FontSize="14" Glyph="{x:Bind controls:FluentIcons.FromName('dismiss')}" />
+                                    </Button>
+                                    <Button Grid.Column="3" Style="{StaticResource VigoSubtleButton}" Width="32" Height="32" Padding="0" VerticalAlignment="Center"
+                                            Visibility="{x:Bind IsCustomized, Mode=OneWay}" x:Uid="PrefShortcutReset" Tag="{x:Bind}" Click="OnShortcutResetClick">
+                                        <FontIcon Style="{StaticResource VigoIcon}" FontSize="14" Glyph="{x:Bind controls:FluentIcons.FromName('arrow_reset')}" />
+                                    </Button>
+                                    <TextBlock Grid.Row="1" Grid.ColumnSpan="4" Text="{x:Bind Message, Mode=OneWay}" TextWrapping="Wrap" FontSize="{ThemeResource VigoFontSize12}"
+                                               Foreground="{ThemeResource VigoDangerBrush}" Visibility="{x:Bind HasMessage, Mode=OneWay}" />
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <Button Style="{StaticResource VigoStandardButton}" x:Uid="PrefShortcutsResetAll" Click="OnShortcutResetAllClick" HorizontalAlignment="Left" Margin="0,8,0,0" />
+                </StackPanel>
+
+                <!-- Clés SSH (mockup VIGO Outils, pSsh): key cards, Windows agent switch, Générer / Importer. -->
+                <StackPanel Visibility="{x:Bind ViewModel.IsSshKeys, Mode=OneWay}" Spacing="8" Margin="0,8,0,0">
+                    <TextBlock Style="{StaticResource SettingDescription}" Margin="0,0,0,8"
+                               x:Uid="PrefSshIntro" />
+                    <TextBlock Style="{StaticResource SettingDescription}" Visibility="{x:Bind ViewModel.HasNoDefaultSshKey, Mode=OneWay}"
+                               x:Uid="PrefSshNoDefault" />
+                    <TextBlock Style="{StaticResource SettingDescription}" Visibility="{x:Bind ViewModel.HasNoSshKey, Mode=OneWay}"
+                               x:Uid="PrefSshNoKey" />
+
+                    <ItemsControl ItemsSource="{x:Bind ViewModel.SshKeys}" x:Uid="PrefSshList">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Spacing="8" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:SshKeyItem">
+                                <Grid MinHeight="68" Padding="16,10" ColumnSpacing="14" CornerRadius="6" BorderThickness="1"
+                                      BorderBrush="{ThemeResource VigoStrokeSubtleBrush}" Background="{ThemeResource VigoCardBrush}"
+                                      AutomationProperties.Name="{x:Bind Key.Name}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <FontIcon Style="{StaticResource VigoIcon}" FontSize="20" Foreground="{ThemeResource VigoText2Brush}"
+                                              Glyph="{x:Bind controls:FluentIcons.FromName('key')}" VerticalAlignment="Center" />
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <TextBlock Text="{x:Bind Key.Name}" FontSize="{ThemeResource VigoFontSize13}" ToolTipService.ToolTip="{x:Bind Key.PrivateKeyPath}" />
+                                            <Border Height="18" Padding="6,0" CornerRadius="4" Background="{ThemeResource VigoLayer2Brush}" VerticalAlignment="Center">
+                                                <TextBlock Text="{x:Bind Key.Type}" FontSize="{ThemeResource VigoFontSize11}" Foreground="{ThemeResource VigoText2Brush}" VerticalAlignment="Center" />
+                                            </Border>
+                                        </StackPanel>
+                                        <TextBlock Text="{x:Bind Key.Fingerprint}" Style="{StaticResource VigoMonoCaptionText}" FontSize="{ThemeResource VigoFontSize11}"
+                                                   Foreground="{ThemeResource VigoText3Brush}" TextTrimming="CharacterEllipsis" IsTextSelectionEnabled="True" />
+                                        <TextBlock Text="{x:Bind Usage, Mode=OneWay}" FontSize="{ThemeResource VigoFontSize12}" Foreground="{ThemeResource VigoText3Brush}" />
+                                    </StackPanel>
+                                    <Button Grid.Column="2" Style="{StaticResource VigoStandardButton}" VerticalAlignment="Center"
+                                            Tag="{x:Bind}" Click="OnCopyPublicKeyClick" x:Uid="PrefSshCopy">
+                                        <StackPanel Orientation="Horizontal" Spacing="6">
+                                            <FontIcon Style="{StaticResource VigoIcon}" FontSize="14" Glyph="{x:Bind controls:FluentIcons.FromName('copy')}" />
+                                            <TextBlock x:Uid="PrefSshCopyText" />
+                                        </StackPanel>
+                                    </Button>
+                                    <Button Grid.Column="3" Style="{StaticResource VigoSubtleButton}" Width="32" Height="32" Padding="0" VerticalAlignment="Center"
+                                            x:Uid="PrefSshMore">
+                                        <FontIcon Style="{StaticResource VigoIcon}" FontSize="16" Glyph="{x:Bind controls:FluentIcons.FromName('more_horizontal')}" />
+                                        <Button.Flyout>
+                                            <MenuFlyout Placement="BottomEdgeAlignedRight">
+                                                <MenuFlyoutItem Text="{x:Bind DefaultActionLabel, Mode=OneWay}" Tag="{x:Bind}" Click="OnToggleDefaultClick" />
+                                                <MenuFlyoutItem x:Uid="PrefSshRemove" Tag="{x:Bind}" Click="OnRemoveKeyClick"
+                                                                Visibility="{x:Bind IsImported}" />
+                                                <MenuFlyoutItem x:Uid="PrefSshDelete" Tag="{x:Bind}" Click="OnDeleteKeyClick"
+                                                                Foreground="{ThemeResource VigoDangerBrush}" />
+                                            </MenuFlyout>
+                                        </Button.Flyout>
+                                    </Button>
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <Grid MinHeight="68" Padding="16,10" ColumnSpacing="14" CornerRadius="6" BorderThickness="1"
+                          BorderBrush="{ThemeResource VigoStrokeSubtleBrush}" Background="{ThemeResource VigoCardBrush}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <FontIcon Style="{StaticResource VigoIcon}" FontSize="20" Foreground="{ThemeResource VigoText2Brush}"
+                                  Glyph="{x:Bind controls:FluentIcons.FromName('shield_checkmark')}" VerticalAlignment="Center" />
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                            <TextBlock x:Uid="PrefSshAgentTitle" FontSize="{ThemeResource VigoFontSize13}" />
+                            <TextBlock x:Uid="PrefSshAgentDescription" FontSize="{ThemeResource VigoFontSize12}"
+                                       Foreground="{ThemeResource VigoText3Brush}" TextWrapping="Wrap" />
+                        </StackPanel>
+                        <TextBlock Grid.Column="2" Text="{x:Bind ViewModel.SshAgentStatus, Mode=OneWay}" FontSize="{ThemeResource VigoFontSize12}"
+                                   Foreground="{ThemeResource VigoText2Brush}" VerticalAlignment="Center" />
+                        <ToggleSwitch Grid.Column="3" MinWidth="0" OnContent="" OffContent="" VerticalAlignment="Center"
+                                      x:Uid="PrefSshAgentToggle"
+                                      IsOn="{x:Bind ViewModel.UseWindowsSshAgent, Mode=TwoWay}" />
+                    </Grid>
+                    <InfoBar IsOpen="{x:Bind ViewModel.HasSshAgentWarning, Mode=OneWay}" IsClosable="False" Severity="Warning"
+                             Message="{x:Bind ViewModel.SshAgentWarning, Mode=OneWay}" />
+
+                    <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,8,0,0">
+                        <Button Style="{StaticResource VigoAccentButton}" x:Uid="PrefSshGenerate"
+                                Command="{x:Bind ViewModel.GenerateSshKeyCommand}" />
+                        <Button Style="{StaticResource VigoStandardButton}" x:Uid="PrefSshImport" Click="OnImportKeyClick" />
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- Profils Git (J6.7, mockup pProfiles): identity, signing and folder rules; accounts and session follow the profile. -->
+                <StackPanel Visibility="{x:Bind ViewModel.IsProfiles, Mode=OneWay}" Spacing="8" Margin="0,8,0,0">
+                    <TextBlock Style="{StaticResource SettingDescription}" Margin="0,0,0,8"
+                               x:Uid="PrefProfilesIntro" />
+
+                    <TextBlock Style="{StaticResource SettingDescription}" Visibility="{x:Bind ViewModel.HasNoProfile, Mode=OneWay}"
+                               x:Uid="PrefProfilesNone" />
+
+                    <ItemsControl ItemsSource="{x:Bind ViewModel.Profiles}" x:Uid="PrefProfilesList">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Spacing="8" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:GitProfileItem">
+                                <StackPanel CornerRadius="6" BorderThickness="1" BorderBrush="{ThemeResource VigoStrokeSubtleBrush}"
+                                            Background="{ThemeResource VigoCardBrush}">
+                                    <Grid MinHeight="68" Padding="16,10" ColumnSpacing="14">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <Border Width="32" Height="32" CornerRadius="16" Background="{ThemeResource VigoLane5Brush}" VerticalAlignment="Center">
+                                            <TextBlock Text="{x:Bind Initials, Mode=OneWay}" FontSize="{ThemeResource VigoFontSize12}" FontWeight="SemiBold" Foreground="White"
+                                                       HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                        </Border>
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                                <TextBlock Text="{x:Bind Label, Mode=OneWay}" FontSize="{ThemeResource VigoFontSize13}" />
+                                                <Border Height="18" Padding="6,0" CornerRadius="4" Background="{ThemeResource VigoAccentSoftBrush}"
+                                                        Visibility="{x:Bind IsActive, Mode=OneWay}" VerticalAlignment="Center">
+                                                    <TextBlock x:Uid="PrefProfileActive" FontSize="{ThemeResource VigoFontSize11}" VerticalAlignment="Center" Foreground="{ThemeResource VigoAccentTextBrush}" />
+                                                </Border>
+                                            </StackPanel>
+                                            <TextBlock Text="{x:Bind Summary, Mode=OneWay}" FontSize="{ThemeResource VigoFontSize12}" Foreground="{ThemeResource VigoText3Brush}"
+                                                       TextTrimming="CharacterEllipsis" />
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                            <Button Style="{StaticResource VigoStandardButton}" x:Uid="PrefProfileUse" Tag="{x:Bind}" Click="OnProfileActivateClick"
+                                                    Visibility="{x:Bind CanActivate, Mode=OneWay}" />
+                                            <Button Style="{StaticResource VigoStandardButton}" x:Uid="PrefProfileEdit" Tag="{x:Bind}" Click="OnProfileToggleClick" />
+                                        </StackPanel>
+                                    </Grid>
+                                    <Grid Visibility="{x:Bind IsOpen, Mode=OneWay}" Padding="62,14,16,16" RowSpacing="14" ColumnSpacing="14"
+                                          BorderThickness="0,1,0,0" BorderBrush="{ThemeResource VigoStrokeSubtleBrush}">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                        </Grid.RowDefinitions>
+                                        <TextBox x:Uid="PrefProfileLabel" Text="{x:Bind Label, Mode=TwoWay}" />
+                                        <TextBox Grid.Column="1" x:Uid="PrefProfileName" Text="{x:Bind Name, Mode=TwoWay}" />
+                                        <TextBox Grid.Row="1" x:Uid="PrefProfileEmail" Text="{x:Bind Email, Mode=TwoWay}" />
+                                        <TextBox Grid.Row="1" Grid.Column="1" x:Uid="PrefProfileKey" Text="{x:Bind SigningKey, Mode=TwoWay}"
+                                                 FontFamily="{StaticResource VigoMonoFont}" />
+                                        <ComboBox Grid.Row="2" x:Uid="PrefProfileFormat" HorizontalAlignment="Stretch"
+                                                  SelectedIndex="{x:Bind SigningFormatIndex, Mode=TwoWay}">
+                                            <ComboBoxItem x:Uid="PrefProfileFormatDefault" />
+                                            <ComboBoxItem Content="OpenPGP (GPG)" />
+                                            <ComboBoxItem Content="SSH" />
+                                            <ComboBoxItem Content="X.509" />
+                                        </ComboBox>
+                                        <Button Grid.Row="2" Grid.Column="1" VerticalAlignment="Bottom" Style="{StaticResource VigoStandardButton}"
+                                                x:Uid="PrefProfileChooseKey" Tag="{x:Bind}" Click="OnProfileSigningKeyClick" />
+                                        <ToggleSwitch Grid.Row="3" Grid.ColumnSpan="2" x:Uid="PrefProfileSign" IsOn="{x:Bind SignCommits, Mode=TwoWay}" />
+                                        <TextBox Grid.Row="4" Grid.ColumnSpan="2" x:Uid="PrefProfileFolders"
+                                                 Text="{x:Bind FolderRulesText, Mode=TwoWay}" AcceptsReturn="True" TextWrapping="NoWrap" MinHeight="64" MaxHeight="140"
+                                                 FontFamily="{StaticResource VigoMonoFont}" PlaceholderText="C:\dev\atlas\**" />
+                                        <StackPanel Grid.Row="5" Grid.ColumnSpan="2" Orientation="Horizontal">
+                                            <Button Style="{StaticResource VigoStandardButton}" x:Uid="PrefProfileRemove" Tag="{x:Bind}" Click="OnProfileRemoveClick" />
+                                        </StackPanel>
+                                    </Grid>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <Button Style="{StaticResource VigoStandardButton}" x:Uid="PrefProfileAdd" Command="{x:Bind ViewModel.AddProfileCommand}" HorizontalAlignment="Left" />
+                </StackPanel>
+
+                <!-- Projets d'onglets (J7.6, ADR-058): name and color of the groups of repository tabs. -->
+                <StackPanel Visibility="{x:Bind ViewModel.IsProjects, Mode=OneWay}" Spacing="8" Margin="0,8,0,0">
+                    <TextBlock Style="{StaticResource SettingDescription}" Margin="0,0,0,8"
+                               x:Uid="PrefProjectsIntro" />
+                    <TextBlock Style="{StaticResource SettingDescription}" Visibility="{x:Bind ViewModel.HasNoProject, Mode=OneWay}"
+                               x:Uid="PrefProjectsNone" />
+
+                    <ItemsControl ItemsSource="{x:Bind ViewModel.Projects}" x:Uid="PrefProjectsList">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Spacing="8" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:TabProjectItem">
+                                <Grid MinHeight="68" Padding="16,10" ColumnSpacing="14" CornerRadius="6" BorderThickness="1"
+                                      BorderBrush="{ThemeResource VigoStrokeSubtleBrush}" Background="{ThemeResource VigoCardBrush}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <!-- One color, shown on a swatch: a click opens the picker of the graph palette. -->
+                                    <Button Style="{StaticResource VigoSubtleButton}" Width="32" Height="32" MinWidth="0" Padding="0" VerticalAlignment="Center"
+                                            x:Uid="PrefProjectColor">
+                                        <Border Width="20" Height="20" CornerRadius="10"
+                                                Background="{x:Bind services:ProjectBrushes.For(ColorIndex, Color), Mode=OneWay}" />
+                                        <Button.Flyout>
+                                            <Flyout Placement="BottomEdgeAlignedLeft">
+                                                <StackPanel Spacing="8">
+                                                    <ColorPicker Tag="{x:Bind}" IsAlphaEnabled="False" IsMoreButtonVisible="False"
+                                                                 IsColorSliderVisible="True" IsColorChannelTextInputVisible="False"
+                                                                 Loaded="OnProjectColorPickerLoaded" ColorChanged="OnProjectColorChanged" />
+                                                    <Button x:Uid="PrefProjectColorReset" Style="{StaticResource VigoStandardButton}"
+                                                            Tag="{x:Bind}" Click="OnProjectColorResetClick"
+                                                            Visibility="{x:Bind IsCustomColor, Mode=OneWay}" />
+                                                </StackPanel>
+                                            </Flyout>
+                                        </Button.Flyout>
+                                    </Button>
+                                    <StackPanel Grid.Column="1" Spacing="6" VerticalAlignment="Center">
+                                        <TextBox Text="{x:Bind Name, Mode=TwoWay}" x:Uid="PrefProjectName" MaxWidth="320" HorizontalAlignment="Left" />
+                                        <TextBlock Text="{x:Bind Summary, Mode=OneWay}" FontSize="{ThemeResource VigoFontSize12}" Foreground="{ThemeResource VigoText3Brush}" />
+                                    </StackPanel>
+                                    <Button Grid.Column="2" Style="{StaticResource VigoStandardButton}" x:Uid="PrefProjectRemove" Tag="{x:Bind}"
+                                            Click="OnProjectRemoveClick" VerticalAlignment="Center" />
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <Button Style="{StaticResource VigoStandardButton}" x:Uid="PrefProjectAdd" Command="{x:Bind ViewModel.AddProjectCommand}" HorizontalAlignment="Left" />
+                </StackPanel>
+
+                <!-- Intégrations (J6.1, ADR-044): hosting accounts, OAuth device flow or personal access token. -->
+                <StackPanel Visibility="{x:Bind ViewModel.IsIntegrations, Mode=OneWay}" Spacing="8" Margin="0,8,0,0">
+                    <TextBlock Text="{x:Bind ViewModel.ActiveProfileLabel, Mode=OneWay}" Visibility="{x:Bind ViewModel.HasActiveProfile, Mode=OneWay}"
+                               FontSize="{ThemeResource VigoFontSize13}" FontWeight="SemiBold" />
+                    <TextBlock Style="{StaticResource SettingDescription}" Margin="0,0,0,8"
+                               x:Uid="PrefIntegrationsIntro" />
+
+                    <ItemsControl ItemsSource="{x:Bind ViewModel.Hosts}" x:Uid="PrefHostsList">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Spacing="8" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:HostConnectionItem">
+                                <Grid MinHeight="68" Padding="16,10" ColumnSpacing="14" CornerRadius="6" BorderThickness="1"
+                                      BorderBrush="{ThemeResource VigoStrokeSubtleBrush}" Background="{ThemeResource VigoCardBrush}"
+                                      AutomationProperties.Name="{x:Bind Name}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <Grid Width="36" Height="36" VerticalAlignment="Center">
+                                        <Border CornerRadius="18">
+                                            <Border.Background>
+                                                <SolidColorBrush Color="{x:Bind Color}" />
+                                            </Border.Background>
+                                            <TextBlock Text="{x:Bind Initials}" FontSize="{ThemeResource VigoFontSize12}" FontWeight="Bold" Foreground="White"
+                                                       HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                        </Border>
+                                        <Border CornerRadius="18" Visibility="{x:Bind HasAvatar, Mode=OneWay}">
+                                            <Image Stretch="UniformToFill">
+                                                <Image.Source>
+                                                    <BitmapImage UriSource="{x:Bind AvatarUri, Mode=OneWay}" DecodePixelWidth="72" />
+                                                </Image.Source>
+                                            </Image>
+                                        </Border>
+                                    </Grid>
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock Text="{x:Bind Name}" FontSize="{ThemeResource VigoFontSize13}" />
+                                        <TextBlock Text="{x:Bind Status, Mode=OneWay}" FontSize="{ThemeResource VigoFontSize12}" Foreground="{ThemeResource VigoText3Brush}"
+                                                   TextTrimming="CharacterEllipsis" />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                        <Button Style="{StaticResource VigoAccentButton}" x:Uid="PrefHostSignIn" Tag="{x:Bind}" Click="OnSignInBrowserClick"
+                                                Visibility="{x:Bind CanSignInWithBrowser, Mode=OneWay}"
+                                                AutomationProperties.Name="{x:Bind Name}" />
+                                        <Button Style="{StaticResource VigoStandardButton}" x:Uid="PrefHostToken" Tag="{x:Bind}" Click="OnTokenEntryClick"
+                                                Visibility="{x:Bind CanSignIn, Mode=OneWay}" />
+                                        <Button Style="{StaticResource VigoStandardButton}" x:Uid="PrefHostSignOut" Tag="{x:Bind}" Click="OnSignOutClick"
+                                                Visibility="{x:Bind IsConnected, Mode=OneWay}" />
+                                    </StackPanel>
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <!-- OAuth device flow: the code to type on the service's page. -->
+                    <Grid Visibility="{x:Bind ViewModel.HasPendingCode, Mode=OneWay}" Padding="16" RowSpacing="10" CornerRadius="6"
+                          BorderThickness="1" BorderBrush="{ThemeResource VigoAccentBrush}" Background="{ThemeResource VigoCardBrush}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <TextBlock x:Uid="PrefAuthTitle" FontSize="{ThemeResource VigoFontSize13}" FontWeight="SemiBold" />
+                        <StackPanel Grid.Row="1" Spacing="4">
+                            <TextBlock x:Uid="PrefAuthInstruction" FontSize="{ThemeResource VigoFontSize12}" Foreground="{ThemeResource VigoText3Brush}" />
+                            <TextBlock x:Name="UserCodeText" Text="{x:Bind ViewModel.PendingCode.UserCode, Mode=OneWay}" FontFamily="{StaticResource VigoMonoFont}"
+                                       FontSize="{ThemeResource VigoFontSize24}" FontWeight="SemiBold" IsTextSelectionEnabled="True" x:Uid="PrefAuthCode" />
+                            <TextBlock x:Uid="PrefAuthWaiting" FontSize="{ThemeResource VigoFontSize12}" Foreground="{ThemeResource VigoText3Brush}" />
+                        </StackPanel>
+                        <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="8">
+                            <Button Style="{StaticResource VigoAccentButton}" x:Uid="PrefAuthOpen" Click="OnOpenVerificationClick" />
+                            <Button Style="{StaticResource VigoStandardButton}" x:Uid="PrefAuthCopy" Click="OnCopyUserCodeClick" />
+                            <Button Style="{StaticResource VigoStandardButton}" x:Uid="PrefAuthCancel" Command="{x:Bind ViewModel.CancelSignInCommand}" />
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- Personal access token. -->
+                    <Grid Visibility="{x:Bind ViewModel.IsEnteringToken, Mode=OneWay}" Padding="16" RowSpacing="10" CornerRadius="6"
+                          BorderThickness="1" BorderBrush="{ThemeResource VigoStrokeSubtleBrush}" Background="{ThemeResource VigoCardBrush}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <TextBlock Text="{x:Bind ViewModel.TokenTarget.Name, Mode=OneWay}" FontSize="{ThemeResource VigoFontSize13}" FontWeight="SemiBold" />
+                        <StackPanel Grid.Row="1" Spacing="6" Visibility="{x:Bind ViewModel.IsTokenTargetOther, Mode=OneWay}">
+                            <TextBlock TextWrapping="Wrap" FontSize="{ThemeResource VigoFontSize12}" Foreground="{ThemeResource VigoText3Brush}"
+                                       x:Uid="PrefTokenOtherIntro" />
+                            <TextBlock TextWrapping="Wrap" FontSize="{ThemeResource VigoFontSize12}" Foreground="{ThemeResource VigoText3Brush}" Margin="12,0,0,0"
+                                       Text="•  repo&#x0A;•  read:user" />
+                            <TextBlock FontSize="{ThemeResource VigoFontSize12}" Foreground="{ThemeResource VigoText3Brush}" x:Uid="PrefTokenPaste" />
+                        </StackPanel>
+                        <StackPanel Grid.Row="2" Spacing="8">
+                            <!-- Azure DevOps: the organization first ("Créer un jeton" opens its token page), then the token and its scopes. -->
+                            <StackPanel Spacing="6" Visibility="{x:Bind ViewModel.IsTokenTargetAzureDevOps, Mode=OneWay}">
+                                <TextBlock TextWrapping="Wrap" FontSize="{ThemeResource VigoFontSize12}" Foreground="{ThemeResource VigoText3Brush}"
+                                           x:Uid="PrefAzureOrgIntro" />
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBox x:Uid="PrefAzureOrgBox" Width="480"
+                                             Text="{x:Bind ViewModel.OrganizationInput, Mode=TwoWay}" />
+                                    <Button Style="{StaticResource VigoStandardButton}" x:Uid="PrefAzureCreateToken" Command="{x:Bind ViewModel.OpenTokenPageCommand}" />
+                                </StackPanel>
+                            </StackPanel>
+                            <PasswordBox x:Uid="PrefTokenBox" MaxWidth="480" HorizontalAlignment="Left" Width="480"
+                                         Password="{x:Bind ViewModel.TokenInput, Mode=TwoWay}" />
+                            <StackPanel Spacing="6" Visibility="{x:Bind ViewModel.IsTokenTargetAzureDevOps, Mode=OneWay}">
+                                <TextBlock TextWrapping="Wrap" FontSize="{ThemeResource VigoFontSize12}" Foreground="{ThemeResource VigoText3Brush}"
+                                           x:Uid="PrefAzureScopesIntro" />
+                                <TextBlock TextWrapping="Wrap" FontSize="{ThemeResource VigoFontSize12}" Foreground="{ThemeResource VigoText3Brush}" Margin="12,0,0,0"
+                                           x:Uid="PrefAzureScopes" />
+                            </StackPanel>
+                        </StackPanel>
+                        <StackPanel Grid.Row="3" Spacing="8">
+                            <TextBlock Text="{x:Bind ViewModel.TokenError, Mode=OneWay}" TextWrapping="Wrap" FontSize="{ThemeResource VigoFontSize12}" Foreground="{ThemeResource VigoDangerBrush}"
+                                       Visibility="{x:Bind ViewModel.HasTokenError, Mode=OneWay}" />
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <Button Style="{StaticResource VigoAccentButton}" x:Uid="PrefTokenConnect" Command="{x:Bind ViewModel.ConnectWithTokenCommand}" />
+                                <Button Style="{StaticResource VigoStandardButton}" x:Uid="PrefTokenCancel" Command="{x:Bind ViewModel.CancelTokenEntryCommand}" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Grid>
+
+                    <InfoBar IsOpen="{x:Bind ViewModel.BrowserSignInUnavailable, Mode=OneWay}" IsClosable="False" Severity="Informational"
+                             x:Uid="PrefBrowserUnavailable" />
+                </StackPanel>
+
+                <!-- Éditeur et outils (J5.4: merge tool; external editor, diff tool and terminal come later) -->
+                <StackPanel Visibility="{x:Bind ViewModel.IsTools, Mode=OneWay}">
+                    <Grid Style="{StaticResource SettingRow}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock x:Uid="PrefMergeToolTitle" Style="{StaticResource SettingTitle}" />
+                            <TextBlock x:Uid="PrefMergeToolDescription"
+                                       Style="{StaticResource SettingDescription}" />
+                        </StackPanel>
+                        <ComboBox Grid.Column="1" MinWidth="240" VerticalAlignment="Center" x:Uid="PrefMergeToolCombo"
+                                  ItemsSource="{x:Bind ViewModel.MergeToolOptions}" SelectedItem="{x:Bind ViewModel.MergeTool, Mode=TwoWay}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate x:DataType="vm:MergeToolOption">
+                                    <TextBlock Text="{x:Bind Label}" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                    </Grid>
+
+                    <Expander HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Margin="0,12,0,0">
+                        <Expander.Header>
+                            <StackPanel Orientation="Horizontal" Spacing="12" Padding="0,12">
+                                <FontIcon Style="{StaticResource VigoIcon}" FontSize="18" Glyph="{x:Bind controls:FluentIcons.FromName('document_edit')}" />
+                                <TextBlock x:Uid="PrefEditorHeader" Style="{StaticResource SettingTitle}" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Expander.Header>
+                        <StackPanel>
+                    <Grid Style="{StaticResource SettingRow}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock x:Uid="PrefEditorFontTitle" Style="{StaticResource SettingTitle}" />
+                            <TextBlock x:Uid="PrefEditorFontDescription" Style="{StaticResource SettingDescription}" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Spacing="6" VerticalAlignment="Center">
+                            <ComboBox x:Uid="PrefEditorFontCombo" MinWidth="240" HorizontalAlignment="Right"
+                                      ItemsSource="{x:Bind ViewModel.EditorFontOptions}" SelectedItem="{x:Bind ViewModel.EditorFont, Mode=TwoWay}">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:FontOption">
+                                        <TextBlock Text="{x:Bind Label}" />
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                            <CheckBox x:Uid="PrefEditorFontMono" MinWidth="0" HorizontalAlignment="Right" IsChecked="{x:Bind ViewModel.EditorMonospaceOnly, Mode=TwoWay}" />
+                        </StackPanel>
+                    </Grid>
+                    <Grid Style="{StaticResource SettingRow}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock x:Uid="PrefEditorSizeTitle" Style="{StaticResource SettingTitle}" />
+                            <TextBlock x:Uid="PrefEditorSizeDescription" Style="{StaticResource SettingDescription}" />
+                        </StackPanel>
+                        <NumberBox x:Uid="PrefEditorSizeBox" Grid.Column="1" VerticalAlignment="Center" MinWidth="140"
+                                   Minimum="8" Maximum="32" SmallChange="1" SpinButtonPlacementMode="Inline"
+                                   Value="{x:Bind ViewModel.EditorFontSize, Mode=TwoWay}" />
+                    </Grid>
+                    <Grid Style="{StaticResource SettingRow}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock x:Uid="PrefEditorTabTitle" Style="{StaticResource SettingTitle}" />
+                            <TextBlock x:Uid="PrefEditorTabDescription" Style="{StaticResource SettingDescription}" />
+                        </StackPanel>
+                        <NumberBox x:Uid="PrefEditorTabBox" Grid.Column="1" VerticalAlignment="Center" MinWidth="140"
+                                   Minimum="1" Maximum="8" SmallChange="1" SpinButtonPlacementMode="Inline"
+                                   Value="{x:Bind ViewModel.EditorTabSize, Mode=TwoWay}" />
+                    </Grid>
+                    <Grid Style="{StaticResource SettingRow}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock x:Uid="PrefEditorEolTitle" Style="{StaticResource SettingTitle}" />
+                            <TextBlock x:Uid="PrefEditorEolDescription" Style="{StaticResource SettingDescription}" />
+                        </StackPanel>
+                        <ComboBox x:Uid="PrefEditorEolCombo" Grid.Column="1" MinWidth="160" VerticalAlignment="Center"
+                                  ItemsSource="{x:Bind ViewModel.EndOfLineOptions}" SelectedItem="{x:Bind ViewModel.EditorEol, Mode=TwoWay}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate x:DataType="vm:EndOfLineOption">
+                                    <TextBlock Text="{x:Bind Label}" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                    </Grid>
+                    <Grid Style="{StaticResource SettingRow}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock x:Uid="PrefEditorSyntaxTitle" Style="{StaticResource SettingTitle}" />
+                            <TextBlock x:Uid="PrefEditorSyntaxDescription" Style="{StaticResource SettingDescription}" />
+                        </StackPanel>
+                        <ToggleSwitch x:Uid="PrefEditorSyntaxSwitch" Grid.Column="1" VerticalAlignment="Center" MinWidth="0"
+                                      IsOn="{x:Bind ViewModel.EditorSyntaxHighlighting, Mode=TwoWay}" />
+                    </Grid>
+                    <Grid Style="{StaticResource SettingRow}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock x:Uid="PrefEditorLineNumbersTitle" Style="{StaticResource SettingTitle}" />
+                            <TextBlock x:Uid="PrefEditorLineNumbersDescription" Style="{StaticResource SettingDescription}" />
+                        </StackPanel>
+                        <ToggleSwitch x:Uid="PrefEditorLineNumbersSwitch" Grid.Column="1" VerticalAlignment="Center" MinWidth="0"
+                                      IsOn="{x:Bind ViewModel.EditorLineNumbers, Mode=TwoWay}" />
+                    </Grid>
+                    <Grid Style="{StaticResource SettingRow}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock x:Uid="PrefEditorWrapTitle" Style="{StaticResource SettingTitle}" />
+                            <TextBlock x:Uid="PrefEditorWrapDescription" Style="{StaticResource SettingDescription}" />
+                        </StackPanel>
+                        <ToggleSwitch x:Uid="PrefEditorWrapSwitch" Grid.Column="1" VerticalAlignment="Center" MinWidth="0"
+                                      IsOn="{x:Bind ViewModel.EditorWordWrap, Mode=TwoWay}" />
+                    </Grid>
+                    <Grid Style="{StaticResource SettingRow}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock x:Uid="PrefEditorLigaturesTitle" Style="{StaticResource SettingTitle}" />
+                            <TextBlock x:Uid="PrefEditorLigaturesDescription" Style="{StaticResource SettingDescription}" />
+                        </StackPanel>
+                        <ToggleSwitch x:Uid="PrefEditorLigaturesSwitch" Grid.Column="1" VerticalAlignment="Center" MinWidth="0"
+                                      IsOn="{x:Bind ViewModel.EditorLigatures, Mode=TwoWay}" />
+                    </Grid>
+                        </StackPanel>
+                    </Expander>
+
+                    <!-- Terminal intégré (J7.10): shell of a new terminal and its command line -->
+                    <Expander HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Margin="0,12,0,0" Visibility="{x:Bind ViewModel.HasTerminal}">
+                        <Expander.Header>
+                            <StackPanel Orientation="Horizontal" Spacing="12" Padding="0,12">
+                                <FontIcon Style="{StaticResource VigoIcon}" FontSize="18" Glyph="{x:Bind controls:FluentIcons.FromName('window_console')}" />
+                                <TextBlock x:Uid="PrefTermHeader" Style="{StaticResource SettingTitle}" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Expander.Header>
+                        <StackPanel>
+                        <Grid Style="{StaticResource SettingRow}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock x:Uid="PrefTermShellTitle" Style="{StaticResource SettingTitle}" />
+                                <TextBlock x:Uid="PrefTermShellDescription"
+                                           Style="{StaticResource SettingDescription}" />
+                            </StackPanel>
+                            <ComboBox Grid.Column="1" MinWidth="240" VerticalAlignment="Center" x:Uid="PrefTermShellCombo"
+                                      ItemsSource="{x:Bind ViewModel.TerminalShellOptions}" SelectedItem="{x:Bind ViewModel.TerminalShellChoice, Mode=TwoWay}">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate x:DataType="model:TerminalShell">
+                                        <TextBlock Text="{x:Bind Name}" />
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </Grid>
+                        <Grid Style="{StaticResource SettingRow}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock x:Uid="PrefTermCommandTitle" Style="{StaticResource SettingTitle}" />
+                                <TextBlock x:Uid="PrefTermCommandDescription"
+                                           Style="{StaticResource SettingDescription}" />
+                            </StackPanel>
+                            <TextBox Grid.Column="1" Width="320" VerticalAlignment="Center" x:Uid="PrefTermCommandBox"
+                                     PlaceholderText="{x:Bind ViewModel.TerminalCommandPlaceholder, Mode=OneWay}"
+                                     Text="{x:Bind ViewModel.TerminalCommandText, Mode=TwoWay}" />
+                        </Grid>
+                        <Grid Style="{StaticResource SettingRow}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock x:Uid="PrefTermFontTitle" Style="{StaticResource SettingTitle}" />
+                                <TextBlock x:Uid="PrefTermFontDescription" Style="{StaticResource SettingDescription}" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Spacing="6" VerticalAlignment="Center">
+                                <ComboBox x:Uid="PrefTermFontCombo" MinWidth="240" HorizontalAlignment="Right"
+                                          ItemsSource="{x:Bind ViewModel.TerminalFontOptions}" SelectedItem="{x:Bind ViewModel.TerminalFont, Mode=TwoWay}">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate x:DataType="vm:FontOption">
+                                            <TextBlock Text="{x:Bind Label}" />
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                                <CheckBox x:Uid="PrefTermFontMono" MinWidth="0" HorizontalAlignment="Right" IsChecked="{x:Bind ViewModel.TerminalMonospaceOnly, Mode=TwoWay}" />
+                            </StackPanel>
+                        </Grid>
+                        <Grid Style="{StaticResource SettingRow}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock x:Uid="PrefTermSizeTitle" Style="{StaticResource SettingTitle}" />
+                                <TextBlock x:Uid="PrefTermSizeDescription" Style="{StaticResource SettingDescription}" />
+                            </StackPanel>
+                            <NumberBox x:Uid="PrefTermSizeBox" Grid.Column="1" VerticalAlignment="Center" MinWidth="140"
+                                       Minimum="8" Maximum="32" SmallChange="1" SpinButtonPlacementMode="Inline"
+                                       Value="{x:Bind ViewModel.TerminalFontSize, Mode=TwoWay}" />
+                        </Grid>
+                        <Grid Style="{StaticResource SettingRow}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock x:Uid="PrefTermLineHeightTitle" Style="{StaticResource SettingTitle}" />
+                                <TextBlock x:Uid="PrefTermLineHeightDescription" Style="{StaticResource SettingDescription}" />
+                            </StackPanel>
+                            <NumberBox x:Uid="PrefTermLineHeightBox" Grid.Column="1" VerticalAlignment="Center" MinWidth="140"
+                                       Minimum="1" Maximum="2" SmallChange="0.05" SpinButtonPlacementMode="Inline"
+                                       Value="{x:Bind ViewModel.TerminalLineHeight, Mode=TwoWay}" />
+                        </Grid>
+                        <Grid Style="{StaticResource SettingRow}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock x:Uid="PrefTermCursorTitle" Style="{StaticResource SettingTitle}" />
+                                <TextBlock x:Uid="PrefTermCursorDescription" Style="{StaticResource SettingDescription}" />
+                            </StackPanel>
+                            <ComboBox x:Uid="PrefTermCursorCombo" Grid.Column="1" MinWidth="160" VerticalAlignment="Center"
+                                      ItemsSource="{x:Bind ViewModel.CursorOptions}" SelectedItem="{x:Bind ViewModel.TerminalCursor, Mode=TwoWay}">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:CursorOption">
+                                        <TextBlock Text="{x:Bind Label}" />
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </Grid>
+                        <Grid Style="{StaticResource SettingRow}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock x:Uid="PrefTermDimTitle" Style="{StaticResource SettingTitle}" />
+                                <TextBlock x:Uid="PrefTermDimDescription" Style="{StaticResource SettingDescription}" />
+                            </StackPanel>
+                            <ToggleSwitch x:Uid="PrefTermDimSwitch" Grid.Column="1" VerticalAlignment="Center" MinWidth="0"
+                                          IsOn="{x:Bind ViewModel.TerminalDimWhenUnfocused, Mode=TwoWay}" />
+                        </Grid>
+                        </StackPanel>
+                    </Expander>
+
+                    <!-- Message de commit IA (J7.9): CLI on this machine or Anthropic API; off by default -->
+                    <StackPanel Visibility="{x:Bind ViewModel.HasAi}">
+                        <Grid Style="{StaticResource SettingRow}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock x:Uid="PrefAiTitle" Style="{StaticResource SettingTitle}" />
+                                <TextBlock x:Uid="PrefAiDescription"
+                                           Style="{StaticResource SettingDescription}" />
+                            </StackPanel>
+                            <ComboBox Grid.Column="1" MinWidth="240" VerticalAlignment="Center" x:Uid="PrefAiProviderCombo"
+                                      ItemsSource="{x:Bind ViewModel.AiProviderOptions}" SelectedItem="{x:Bind ViewModel.AiProviderChoice, Mode=TwoWay}">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:AiProviderOption">
+                                        <TextBlock Text="{x:Bind Label}" />
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </Grid>
+
+                        <Grid Style="{StaticResource SettingRow}" Visibility="{x:Bind ViewModel.IsAiCli, Mode=OneWay}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock x:Uid="PrefAiToolTitle" Style="{StaticResource SettingTitle}" />
+                                <TextBlock x:Uid="PrefAiToolDescription"
+                                           Style="{StaticResource SettingDescription}" />
+                            </StackPanel>
+                            <ComboBox Grid.Column="1" MinWidth="240" VerticalAlignment="Center" x:Uid="PrefAiToolCombo"
+                                      ItemsSource="{x:Bind ViewModel.AiCliToolOptions}" SelectedItem="{x:Bind ViewModel.AiCliToolChoice, Mode=TwoWay}">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:AiCliToolOption">
+                                        <TextBlock Text="{x:Bind Label}" />
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </Grid>
+
+                        <Grid Style="{StaticResource SettingRow}" Visibility="{x:Bind ViewModel.IsAiCli, Mode=OneWay}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock x:Uid="PrefAiCommandTitle" Style="{StaticResource SettingTitle}" />
+                                <TextBlock Text="{x:Bind ViewModel.AiCliCommandHint, Mode=OneWay}" Style="{StaticResource SettingDescription}" />
+                            </StackPanel>
+                            <TextBox Grid.Column="1" Width="240" VerticalAlignment="Center" x:Uid="PrefAiCommandBox"
+                                     PlaceholderText="{x:Bind ViewModel.AiCliCommandPlaceholder, Mode=OneWay}"
+                                     Text="{x:Bind ViewModel.AiCliCommandText, Mode=TwoWay}" />
+                        </Grid>
+
+                        <Grid Style="{StaticResource SettingRow}" Visibility="{x:Bind ViewModel.IsAiOn, Mode=OneWay}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock x:Uid="PrefAiModelTitle" Style="{StaticResource SettingTitle}" />
+                                <TextBlock x:Uid="PrefAiModelDescription" Style="{StaticResource SettingDescription}" />
+                            </StackPanel>
+                            <TextBox Grid.Column="1" Width="240" VerticalAlignment="Center" x:Uid="PrefAiModelBox"
+                                     PlaceholderText="{x:Bind vm:PreferencesTabViewModel.AiModelPlaceholder}"
+                                     Text="{x:Bind ViewModel.AiModelText, Mode=TwoWay}" />
+                        </Grid>
+
+                        <Grid Style="{StaticResource SettingRow}" Visibility="{x:Bind ViewModel.IsAiApi, Mode=OneWay}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock x:Uid="PrefAiKeyTitle" Style="{StaticResource SettingTitle}" />
+                                <TextBlock Text="{x:Bind ViewModel.AiApiKeyState, Mode=OneWay}" Style="{StaticResource SettingDescription}" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                <PasswordBox Width="200" PlaceholderText="sk-ant-…" x:Uid="PrefAiKeyBox"
+                                             Password="{x:Bind ViewModel.AiApiKeyInput, Mode=TwoWay}" />
+                                <Button x:Uid="PrefAiKeySave" Command="{x:Bind ViewModel.SaveAiApiKeyCommand}" />
+                                <Button x:Uid="PrefAiKeyRemove" Command="{x:Bind ViewModel.RemoveAiApiKeyCommand}"
+                                        IsEnabled="{x:Bind ViewModel.HasAiApiKey, Mode=OneWay}" />
+                            </StackPanel>
+                        </Grid>
+
+                        <StackPanel Orientation="Horizontal" Spacing="12" Margin="0,4,0,0" Visibility="{x:Bind ViewModel.IsAiOn, Mode=OneWay}">
+                            <Button x:Uid="PrefAiTest" Command="{x:Bind ViewModel.TestAiCommand}" />
+                            <TextBlock Text="{x:Bind ViewModel.AiStatus, Mode=OneWay}" Style="{StaticResource SettingDescription}" VerticalAlignment="Center"
+                                       IsTextSelectionEnabled="True" />
+                        </StackPanel>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- À propos -->
+                <StackPanel Visibility="{x:Bind ViewModel.IsAbout, Mode=OneWay}" Spacing="4" Margin="0,8,0,0">
+                    <TextBlock Text="{x:Bind vm:PreferencesTabViewModel.AboutName}" Style="{StaticResource SettingTitle}" FontSize="{ThemeResource VigoFontSize20}" />
+                    <TextBlock Text="{x:Bind vm:PreferencesTabViewModel.AboutMeaning}" Style="{StaticResource SettingDescription}" />
+                    <TextBlock Text="{x:Bind vm:PreferencesTabViewModel.AboutVersion}" Style="{StaticResource SettingDescription}"
+                               IsTextSelectionEnabled="True" />
+                    <TextBlock x:Uid="PrefAboutChangelog" Style="{StaticResource SettingTitle}" Margin="0,16,0,0" />
+                    <controls:MarkdownView Blocks="{x:Bind vm:PreferencesTabViewModel.Changelog}" />
+                </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

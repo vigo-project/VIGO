@@ -1,0 +1,46 @@
+html, body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: var(--vg-background, #1c1c1c);
+}
+
+/* Room around the text, inside the page: the fit addon measures #root, so the padding belongs to the body. */
+body {
+  box-sizing: border-box;
+  padding: 6px 2px 0 12px;
+}
+
+#root {
+  height: 100%;
+}
+
+.xterm {
+  height: 100%;
+}
+
+/* The viewport paints its own background: keep it the page's one (theme changes at run time). */
+.xterm .xterm-viewport {
+  background-color: transparent !important;
+}
+
+.xterm-viewport::-webkit-scrollbar {
+  width: 10px;
+}
+
+.xterm-viewport::-webkit-scrollbar-thumb {
+  background: var(--vg-scrollbar, rgba(128, 128, 128, 0.35));
+  border-radius: 5px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+.xterm-viewport::-webkit-scrollbar-thumb:hover {
+  background: var(--vg-scrollbar-hover, rgba(128, 128, 128, 0.55));
+  background-clip: content-box;
+}
+
+/* "Atténuer le terminal sans focus" (preferences): the page lost the focus. */
+html.vg-dim.vg-blurred #root {
+  opacity: 0.6;
+}

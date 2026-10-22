@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    "Git" tab of the terminal panel: the git.exe commands VIGO runs in the repository (command line, duration, exit code,
+    output), newest at the bottom. Reads are listed only with "Show all". Read-only; the code-behind keeps the list
+    scrolled to the end.
+    Texts: x:Uid (ADR-075).
+-->
+<UserControl
+    x:Class="Vigo.App.Views.GitCommandLogView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Vigo.App.Controls"
+    xmlns:vm="using:Vigo.Core.ViewModels">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Grid Height="30" Padding="10,0,6,0" BorderBrush="{ThemeResource VigoStrokeSubtleBrush}" BorderThickness="0,0,0,1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBlock x:Uid="GitLogTitle" FontSize="{ThemeResource VigoFontSize11}" VerticalAlignment="Center"
+                       Foreground="{ThemeResource VigoText3Brush}" TextTrimming="CharacterEllipsis" />
+            <CheckBox Grid.Column="1" x:Uid="GitLogShowAll" MinWidth="0" MinHeight="0" Height="26" Padding="6,0,0,0" FontSize="{ThemeResource VigoFontSize12}"
+                      VerticalAlignment="Center" VerticalContentAlignment="Center"
+                      IsChecked="{x:Bind ViewModel.ShowAll, Mode=TwoWay}" />
+            <Button Grid.Column="2" Style="{StaticResource VigoSubtleButton}" Width="26" Height="26" Margin="4,0,0,0"
+                    Command="{x:Bind ViewModel.ClearCommand}"
+                    x:Uid="GitLogClear">
+                <FontIcon Style="{StaticResource VigoIcon}" FontSize="14" Foreground="{ThemeResource VigoText2Brush}" Glyph="{x:Bind controls:FluentIcons.Delete}" />
+            </Button>
+        </Grid>
+
+        <ScrollViewer x:Name="Scroller" Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"
+                      ViewChanged="OnScrollViewChanged">
+            <!-- Not an ItemsRepeater: it estimates the height of the rows it has not realized, so the end of the list keeps moving and cannot be followed. At most 1000 rows. -->
+            <ItemsControl x:Name="EntriesList" ItemsSource="{x:Bind ViewModel.Entries}" Margin="10,6,10,8" SizeChanged="OnContentSizeChanged" x:Uid="GitLogList">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Vertical" Spacing="6" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:GitCommandEntryViewModel">
+                        <StackPanel Spacing="2">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <TextBlock Text="{x:Bind Time}" FontFamily="{StaticResource VigoMonoFont}" FontSize="{ThemeResource VigoFontSize12}"
+                                           Foreground="{ThemeResource VigoText3Brush}" VerticalAlignment="Center" />
+                                <TextBlock Text="{x:Bind CommandLine}" FontFamily="{StaticResource VigoMonoFont}" FontSize="{ThemeResource VigoFontSize12}"
+                                           Foreground="{ThemeResource VigoTextBrush}" IsTextSelectionEnabled="True" VerticalAlignment="Center" />
+                                <Ellipse Width="7" Height="7" Fill="{ThemeResource VigoSuccessBrush}" VerticalAlignment="Center"
+                                         Visibility="{x:Bind IsSucceeded, Mode=OneWay}" />
+                                <Ellipse Width="7" Height="7" Fill="{ThemeResource VigoDangerBrush}" VerticalAlignment="Center"
+                                         Visibility="{x:Bind IsFailed, Mode=OneWay}" />
+                                <TextBlock Text="{x:Bind Summary, Mode=OneWay}" FontSize="{ThemeResource VigoFontSize11}" Foreground="{ThemeResource VigoText3Brush}"
+                                           VerticalAlignment="Center" />
+                            </StackPanel>
+                            <TextBlock Text="{x:Bind Output, Mode=OneWay}" Visibility="{x:Bind HasOutput, Mode=OneWay}" Margin="62,0,0,0"
+                                       FontFamily="{StaticResource VigoMonoFont}" FontSize="{ThemeResource VigoFontSize11}" LineHeight="{ThemeResource VigoLineHeight16}"
+                                       Foreground="{ThemeResource VigoText2Brush}" IsTextSelectionEnabled="True" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+
+        <TextBlock Grid.Row="1" Margin="10,12,10,0" FontSize="{ThemeResource VigoFontSize12}" TextWrapping="Wrap" Foreground="{ThemeResource VigoText3Brush}"
+                   x:Uid="GitLogEmpty"
+                   Visibility="{x:Bind ViewModel.IsEmpty, Mode=OneWay}" IsHitTestVisible="False" />
+    </Grid>
+</UserControl>
