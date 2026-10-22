@@ -23,11 +23,11 @@ jobs:
       # with "Contents: read and write" on it, stored as a secret of this repository.
       INSTALLER_REPO: https://github.com/adgranger/vigo-installer
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v5
         with:
           global-json-file: global.json
 
