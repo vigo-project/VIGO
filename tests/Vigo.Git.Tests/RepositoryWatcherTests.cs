@@ -219,10 +219,18 @@ public sealed class RepositoryWatcherTests
             Interlocked.Increment(ref changes);
             changed.Release();
         };
-        // The list of ignored directories is read in the background.
-        await Task.Delay(TimeSpan.FromSeconds(2), TestContext.Current.CancellationToken);
+        // The list of ignored directories is read in the background by a git process (its duration depends on the machine
+        // load): write under bin/ until an event no longer comes, which means the list is loaded.
+        for (var attempt = 0; attempt < 15; attempt++)
+        {
+            Interlocked.Exchange(ref changes, 0);
+            repo.WriteFile($"bin/out{attempt}.dll", "x\n");
+            await Task.Delay(RepositoryWatcher.QuietPeriod * 4, TestContext.Current.CancellationToken);
+            if (Volatile.Read(ref changes) == 0) break;
+        }
 
-        repo.WriteFile("bin/out.dll", "x\n");
+        Assert.Equal(0, Volatile.Read(ref changes));
+        repo.WriteFile("bin/last.dll", "x\n");
         await Task.Delay(RepositoryWatcher.QuietPeriod * 4, TestContext.Current.CancellationToken);
         Assert.Equal(0, Volatile.Read(ref changes));
 
