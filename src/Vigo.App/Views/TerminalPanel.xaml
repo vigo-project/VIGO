@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
     Integrated terminal panel of a repository tab (mockup VIGO.dc.html, termOpen): a header with one tab per terminal, "+"
-    (menu of the shells found on the machine) and a hide button, then the terminal itself (xterm.js, TerminalView). The
-    terminals are created by the code-behind as the view model adds or removes tabs. J7.10, ADR-071.
+    (menu of the shells found on the machine) and a hide button, then the terminal itself (LoomTerminal control, TerminalView). The
+    terminals are created by the code-behind as the view model adds or removes tabs. J7.10, ADR-071, ADR-076.
     Texts: x:Uid (ADR-075).
 -->
 <UserControl

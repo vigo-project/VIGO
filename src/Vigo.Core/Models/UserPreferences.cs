@@ -315,7 +315,7 @@ public sealed record EditorSettings(
     public static EditorSettings Default { get; } = new UserPreferences().Editor;
 }
 
-/// <summary>Terminal preferences handed to the xterm.js page (family null: the page's default monospace fonts).</summary>
+/// <summary>Terminal preferences handed to the terminal control (family null: the default monospace fonts list).</summary>
 public sealed record TerminalSettings(string? FontFamily, int FontSize, double LineHeight, TerminalCursorStyle Cursor, bool DimWhenUnfocused)
 {
     public static TerminalSettings Default { get; } = new UserPreferences().Terminal;

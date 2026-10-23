@@ -45,8 +45,7 @@ description du paquet MSIX).
   expire). Avant tout `SendKeys` / clic réel, vérifier `GetForegroundWindow()` == VIGO (sinon les touches partent dans
   une autre application) ; quand Windows refuse le premier plan, ne pas forcer. Si le VIGO de l’utilisateur tourne, donner à l’instance de test
   son propre profil WebView2 (`VIGO_WEBVIEW2_USER_DATA=<dossier>`, sinon les arguments du navigateur diffèrent et le démarrage échoue) ; en Debug la page du
-  terminal expose `window.vigoTerminal` (tampon lisible par DevTools). Un shell lancé derrière ConPTY doit recevoir `STARTF_USESTDHANDLES` (handles à 0) : sinon
-  il hérite de la sortie redirigée de son parent (ADR-071).
+  terminal intégré (natif depuis ADR-076, plus de WebView2) se rejoue au clavier / à la souris réels (`SendKeys`, `mouse_event`) : jamais `Ctrl+Shift+S` (stash !) ni de caractère AltGr (antislash…) avec `SendKeys`.
 - Instance unique (J9.5) : un second lancement passe sa ligne de commande à la première instance et sort. Pour lancer une instance de test à côté
   de celle de l'utilisateur, poser `VIGO_ALLOW_MULTIPLE=1` pour ce processus (la sonde `--startup-probe` y échappe seule).
 - MCP projet : `mslearn` (doc Microsoft : WinUI, Windows App SDK, .NET) et `context7` (bibliothèques tierces).
@@ -73,9 +72,9 @@ src/Vigo.App           WinUI 3 : shell (MainWindow, onglets en barre de titre), 
                        par la page (CodeEditor mode `blame`)
   Controls/PullRequestView, MarkdownView  écran d'une pull request GitHub en lecture seule, à la place du graphe (J6.9a, ADR-056) ;
                        `MarkdownView` dessine le modèle `Vigo.Core.Markdown` (Markdig) en XAML natif
-  Controls/TerminalView, Views/TerminalPanel  terminal intégré (J7.10, ADR-071) : xterm.js (page terminal.html du même bundle) dans WebView2,
-                       un shell par onglet du panneau bas, derrière une pseudo console ConPTY (session : Vigo.Git/Terminal)
-  Editor/              GÉNÉRÉ (tools/editor/build.mjs) : page Monaco et page xterm.js du terminal, servies sur https://vigo.editor/
+  Controls/TerminalView, Views/TerminalPanel  terminal intégré (J7.10, ADR-071, ADR-076) : contrôle natif LoomTerminal.WinUI (Win2D, sans WebView2),
+                       un shell par onglet du panneau bas, derrière ConPTY (paquets LoomTerminal.Pty / .Presentation / .Core)
+  Editor/              GÉNÉRÉ (tools/editor/build.mjs) : page Monaco, servie sur https://vigo.editor/
   Services/KeyboardShortcuts  raccourcis de l'app (accélérateurs XAML + table relayée depuis l'éditeur)
 src/Vigo.Core          ViewModels, modèles, IGitService, unions GitResult — aucune dépendance UI
                        (dont `WorktreeActionsViewModel`, J7.1, ADR-049 : worktrees liés, section du panneau gauche ;
@@ -85,7 +84,7 @@ src/Vigo.Git           GitService (LibGit2Sharp lecture, git.exe réseau/écritu
                        Log/CommitLogReader (git log streamé via PipeReader), Refs/RefReader (libgit2 + repli for-each-ref),
                        Conflicts/ConflictReader (étages ls-files -u, sortie de merge-file --zdiff3),
                        History/FileHistoryReader (log --follow streamé), History/BlameReader (blame --incremental),
-                       Terminal/ConPtySession + WindowsShellLocator (shells du terminal intégré, J7.10, ADR-071),
+                       Terminal/WindowsShellLocator (shells du terminal intégré, J7.10, ADR-071),
                        Status/StatusReader (status porcelain v2), Status/OperationReader
                        (merge / rebase en cours, lus dans le répertoire git), Watching/RepositoryWatcher (FileSystemWatcher + debounce,
                        signaux « status » et « refs » distincts)

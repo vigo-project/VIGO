@@ -15,6 +15,7 @@ its own license. Full texts that are not reproduced here ship in the NuGet / npm
 | Markdig | BSD-2-Clause, Copyright (c) Alexandre Mutel |
 | Serilog, Serilog.Extensions.Hosting, Serilog.Sinks.File | Apache-2.0, Copyright (c) Serilog Contributors |
 | Velopack | MIT |
+| LoomTerminal.WinUI, .Presentation, .Core, .Pty (integrated terminal) | MIT, Copyright (c) LoomTerminal contributors; `Core` and `Presentation` contain code ported from xterm.js (MIT, Copyright (c) The xterm.js authors, SourceLair Private Company, Christopher Jeffrey) |
 | LibGit2Sharp | MIT, Copyright (c) LibGit2Sharp contributors |
 | libgit2 (native, via `LibGit2Sharp.NativeBinaries`) | GPL-2.0 **with linking exception**: see [third-party/libgit2.license.txt](third-party/libgit2.license.txt) |
 
@@ -31,7 +32,6 @@ BenchmarkDotNet (MIT), Microsoft.Windows.SDK.BuildTools (Microsoft license).
 |---|---|
 | Monaco Editor 0.56.0 | MIT, Copyright (c) Microsoft Corporation: see `src/Vigo.App/Editor/LICENSE-monaco.txt`; third-party parts: [third-party/monaco-ThirdPartyNotices.txt](third-party/monaco-ThirdPartyNotices.txt) |
 | Codicons font (`codicon.ttf`, shipped with Monaco) | CC-BY-4.0, Copyright (c) Microsoft Corporation (icons); code MIT |
-| xterm.js 6.0.0 and addons (fit, unicode11, web-links, webgl) | MIT, Copyright (c) The xterm.js authors |
 | markdown-it 15.0.2, linkify-it, mdurl, uc.micro, punycode.js | MIT |
 | entities | BSD-2-Clause |
 | DOMPurify 3.4.17 | used under Apache-2.0 (dual-licensed MPL-2.0 OR Apache-2.0), Copyright (c) Cure53 and contributors |
