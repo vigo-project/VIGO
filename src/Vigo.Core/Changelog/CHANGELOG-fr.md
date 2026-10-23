@@ -1,4 +1,5 @@
 ## 0.27.1 — 2026-10-23
+- Préférences › À propos : nouvelle option « Recevoir les versions bêta » pour recevoir aussi les pré-releases comme mises à jour (désactivée par défaut : seulement les versions stables).
 - Les versions sont désormais construites et publiées automatiquement depuis le dépôt public github.com/vigo-project/vigo ; aucun changement fonctionnel.
 
 ## 0.27.0 — 2026-10-22

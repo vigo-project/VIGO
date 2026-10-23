@@ -119,6 +119,9 @@ public sealed record UserPreferences
     /// <summary>Every fetch passes <c>--prune</c> (J7.25); off leaves it to <c>fetch.prune</c> in the git config.</summary>
     public bool AutoPrune { get; init; } = true;
 
+    /// <summary>Updates also offer pre-releases (betas); stable releases only by default.</summary>
+    public bool UpdatePreReleases { get; init; }
+
     /// <summary>Folder the last clone went into: the next one is proposed there.</summary>
     public string? LastCloneParent { get; init; }
 

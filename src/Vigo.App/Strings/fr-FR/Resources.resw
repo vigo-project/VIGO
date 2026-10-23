@@ -2539,4 +2539,9 @@ Stocké par Git LFS (déclaré dans {1}).</value></data>
   <data name="PrefUiTextSizeCombo.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Taille du texte de l'interface</value></data>
   <data name="Preferences.TextSize.Default" xml:space="preserve"><value>{0} % (par défaut)</value></data>
   <data name="Preferences.TextSize.Percent" xml:space="preserve"><value>{0} %</value></data>
+  <data name="PrefUpdatePreReleasesDescription.Text" xml:space="preserve"><value>Propose aussi les versions bêta comme mises à jour. Désactivé : seulement les versions stables. Pris en compte à la prochaine vérification.</value></data>
+  <data name="PrefUpdatePreReleasesSwitch.OffContent" xml:space="preserve"><value>Non</value></data>
+  <data name="PrefUpdatePreReleasesSwitch.OnContent" xml:space="preserve"><value>Oui</value></data>
+  <data name="PrefUpdatePreReleasesSwitch.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Recevoir les versions bêta</value></data>
+  <data name="PrefUpdatePreReleasesTitle.Text" xml:space="preserve"><value>Recevoir les versions bêta</value></data>
 </root>

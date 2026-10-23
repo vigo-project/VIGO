@@ -234,6 +234,11 @@ public sealed partial class PreferencesTabViewModel : TabViewModel, IDisposable
     partial void OnAutoPruneChanged(bool value) => Update(p => p with { AutoPrune = value });
 
     [ObservableProperty]
+    public partial bool UpdatePreReleases { get; set; }
+
+    partial void OnUpdatePreReleasesChanged(bool value) => Update(p => p with { UpdatePreReleases = value });
+
+    [ObservableProperty]
     public partial bool KeepSubmodulesUpToDate { get; set; }
 
     partial void OnKeepSubmodulesUpToDateChanged(bool value) => Update(p => p with { KeepSubmodulesUpToDate = value });
@@ -547,6 +552,7 @@ public sealed partial class PreferencesTabViewModel : TabViewModel, IDisposable
             AutoFetch = option;
             CheckoutNewBranch = current.CheckoutNewBranch;
             AutoPrune = current.AutoPrune;
+            UpdatePreReleases = current.UpdatePreReleases;
             KeepSubmodulesUpToDate = current.KeepSubmodulesUpToDate;
             GraphInitialCommits = current.GraphInitialCommits;
             GraphLazyLoad = current.GraphLazyLoad;

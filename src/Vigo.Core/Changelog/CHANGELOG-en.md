@@ -1,4 +1,5 @@
 ## 0.27.1 — 2026-10-23
+- Preferences › About: new "Receive pre-release versions" option to also get pre-releases as updates (off by default: stable releases only).
 - Releases are now built and published automatically from the public repository github.com/vigo-project/vigo; no functional change.
 
 ## 0.27.0 — 2026-10-22

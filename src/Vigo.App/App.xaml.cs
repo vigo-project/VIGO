@@ -141,7 +141,7 @@ public partial class App : Application
         builder.Services.AddSingleton<HostAccounts>();
         builder.Services.AddSingleton<IGitHttpCredentials>(sp => sp.GetRequiredService<HostAccounts>());
         builder.Services.AddSingleton<IUrlLauncher, UrlLauncher>();
-        builder.Services.AddSingleton<IAppUpdater, VelopackUpdater>();
+        builder.Services.AddSingleton<IAppUpdater>(sp => new VelopackUpdater(() => sp.GetRequiredService<Preferences>().Current.UpdatePreReleases));
         builder.Services.AddSingleton<AppUpdates>();
         builder.Services.AddSingleton<WindowManager>();
         return builder.Build();
