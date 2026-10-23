@@ -1,5 +1,5 @@
 # Beta deployment: pushing a tag "v<version>" (e.g. v0.1.0-beta.2) builds the Native AOT app, packs the installer and the
-# update packages with Velopack and publishes them as a pre-release of adgranger/vigo-installer. Installed copies update themselves from it.
+# update packages with Velopack and publishes them as a release of this repository (a pre-release when the version has a suffix, e.g. 0.28.0-beta.1). Installed copies update themselves from it.
 name: release
 
 on:
@@ -19,9 +19,7 @@ jobs:
     runs-on: windows-latest
     env:
       VERSION: ${{ github.event.inputs.version || github.ref_name }}
-      # Repository that receives the installers. INSTALLER_REPO_TOKEN: fine-grained token
-      # with "Contents: read and write" on it, stored as a secret of this repository.
-      INSTALLER_REPO: https://github.com/adgranger/vigo-installer
+      INSTALLER_REPO: ${{ github.server_url }}/${{ github.repository }}
     steps:
       - uses: actions/checkout@v5
         with:
@@ -60,14 +58,18 @@ jobs:
       # Previous releases give the delta packages (updates download only what changed).
       - name: Download previous releases
         continue-on-error: true
-        run: vpk download github --repoUrl ${{ env.INSTALLER_REPO }} --pre --token ${{ secrets.INSTALLER_REPO_TOKEN }}
+        run: vpk download github --repoUrl ${{ env.INSTALLER_REPO }} --pre --token ${{ secrets.GITHUB_TOKEN }}
 
       - name: Pack
         run: >
           vpk pack --packId VIGO --packTitle "VIGO" --packAuthors "VIGO" --packVersion ${{ env.PACK_VERSION }}
           --packDir artifacts/publish/aot-x64 --mainExe Vigo.exe --icon src/Vigo.App/Assets/Vigo.ico --outputDir Releases
 
-      - name: Upload (pre-release)
-        run: >
-          vpk upload github --repoUrl ${{ env.INSTALLER_REPO }} --outputDir Releases
-          --token ${{ secrets.INSTALLER_REPO_TOKEN }} --tag v${{ env.PACK_VERSION }} --releaseName "VIGO ${{ env.PACK_VERSION }}" --pre --publish
+      # A version with a SemVer suffix (0.28.0-beta.1) is published as a pre-release, a plain one (0.28.0) as a stable release.
+      - name: Upload
+        shell: pwsh
+        run: |
+          $pre = @(); if ($env:PACK_VERSION.Contains('-')) { $pre = @('--pre') }
+          vpk upload github --repoUrl $env:INSTALLER_REPO --outputDir Releases --token ${{ secrets.GITHUB_TOKEN }} `
+            --tag "v$env:PACK_VERSION" --releaseName "VIGO $env:PACK_VERSION" @pre --publish
+          if ($LASTEXITCODE -ne 0) { throw "vpk upload failed (exit code $LASTEXITCODE)" }

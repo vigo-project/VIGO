@@ -1,3 +1,11 @@
+## 0.27.1 — 2026-10-23
+- Les versions sont désormais construites et publiées automatiquement depuis le dépôt public github.com/vigo-project/vigo ; aucun changement fonctionnel.
+
+## 0.27.0 — 2026-10-22
+- VIGO est désormais open source (licence MIT) : le code et les versions sont publiés sur github.com/vigo-project/vigo, et les mises à jour automatiques viennent de ce dépôt à partir de cette version.
+- GitHub : la connexion par navigateur utilise une nouvelle application OAuth ; si l'autorisation est refusée, reconnectez le compte dans Préférences › Intégrations.
+- Azure DevOps : la connexion par navigateur n'est plus proposée par défaut ; utilisez un jeton d'accès personnel.
+
 ## 0.26.1 — 2026-10-22
 - Création, renommage de branche, tag, remote, worktree et Git Flow : une espace tapée ou collée dans le nom devient « - » au lieu d'afficher une erreur.
 

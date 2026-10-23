@@ -1,11 +1,11 @@
 <#
 .SYNOPSIS
-  Local beta release: Native AOT publish, Velopack pack, upload as a pre-release of adgranger/vigo-installer.
+  Local release: Native AOT publish, Velopack pack, upload to vigo-project/vigo (pre-release when the version has a suffix).
   Same steps as .github/workflows/release.yml, run on this machine instead of a GitHub runner.
 .PARAMETER Version
   SemVer, with or without a leading "v" (e.g. 0.14.1 or v0.15.0-beta.1).
 .PARAMETER Token
-  Token with "Contents: read and write" on the installer repository. Defaults to $env:INSTALLER_REPO_TOKEN.
+  Token with "Contents: read and write" on the installer repository. Defaults to $env:GITHUB_TOKEN.
 .PARAMETER SkipTests
   Do not run the unit tests before publishing.
 .PARAMETER NoUpload
@@ -13,7 +13,7 @@
 #>
 param(
     [Parameter(Mandatory = $true)][string]$Version,
-    [string]$Token = $env:INSTALLER_REPO_TOKEN,
+    [string]$Token = $env:GITHUB_TOKEN,
     [switch]$SkipTests,
     [switch]$NoUpload
 )
@@ -21,14 +21,14 @@ param(
 $ErrorActionPreference = 'Stop'
 Set-Location (Split-Path -Parent $PSScriptRoot)
 
-$installerRepo = 'https://github.com/adgranger/vigo-installer'
+$installerRepo = 'https://github.com/vigo-project/vigo'
 $v = $Version.TrimStart('v')
 if ($v -notmatch '^\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?$') { throw "Invalid version '$v'" }
 # The "What's new" dialog shows the section titled with this exact version: none means no dialog.
 foreach ($f in 'src/Vigo.Core/Changelog/CHANGELOG-fr.md', 'src/Vigo.Core/Changelog/CHANGELOG-en.md') {
     if (-not (Select-String -Path $f -Pattern "^## $([regex]::Escape($v))( |$)" -Quiet)) { throw "No '## $v' section in $f" }
 }
-if (-not $NoUpload -and -not $Token) { throw 'Missing token: pass -Token or set INSTALLER_REPO_TOKEN (or use -NoUpload).' }
+if (-not $NoUpload -and -not $Token) { throw 'Missing token: pass -Token or set GITHUB_TOKEN (or use -NoUpload).' }
 
 function Invoke-Native {
     param([string]$Label, [scriptblock]$Command)
@@ -67,8 +67,9 @@ Invoke-Native 'Pack' {
 
 if ($NoUpload) { Write-Host "Packed in Releases/ (not uploaded)." -ForegroundColor Green; return }
 
-Invoke-Native 'Upload (pre-release)' {
+$pre = @(); if ($v.Contains('-')) { $pre = @('--pre') }
+Invoke-Native 'Upload' {
     vpk upload github --repoUrl $installerRepo --outputDir Releases --token $Token `
-        --tag "v$v" --releaseName "VIGO $v" --pre --publish
+        --tag "v$v" --releaseName "VIGO $v" @pre --publish
 }
 Write-Host "Released VIGO $v to $installerRepo" -ForegroundColor Green
