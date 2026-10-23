@@ -1,96 +1,89 @@
-using System.Buffers;
 using System.ComponentModel;
 using System.Globalization;
-using System.Text;
-using System.Text.Encodings.Web;
-using System.Text.Json;
+using LoomTerminal.Presentation.Session;
+using LoomTerminal.Presentation.Theming;
+using LoomTerminal.Pty;
+using LoomTerminal.WinUI.Controls;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.Web.WebView2.Core;
+using Microsoft.UI.Xaml.Media;
 using Vigo.App.Services;
 using Vigo.App.Themes;
 using Vigo.Core.Models;
 using Vigo.Core.Services;
 using Vigo.Core.ViewModels;
-using Windows.ApplicationModel.DataTransfer;
 using Windows.System;
 using Windows.UI;
+using LoomCursor = LoomTerminal.Presentation.Session.TerminalCursorStyle;
+using VigoCursor = Vigo.Core.Models.TerminalCursorStyle;
 
 namespace Vigo.App.Controls;
 
 /// <summary>
-/// One terminal of the integrated terminal panel (J7.10, ADR-071): a shell behind a pseudo console (ConPTY), drawn by
-/// xterm.js in a WebView2 (page <c>terminal.html</c> of the editor bundle, same virtual host and WebView2 environment as
-/// <see cref="CodeEditor"/>). The shell starts when the page reports its size; its output is sent to the page in
-/// batches with a limit on what the page has not drawn yet (flow control). When the shell exits the terminal stays,
-/// shows the exit code, and Enter starts the shell again. A later native control (second step of ADR-071) can replace
-/// the page without changing this contract.
+/// One terminal of the integrated terminal panel (J7.10, ADR-071, ADR-076): a shell behind a ConPTY pseudo console,
+/// drawn by the native LoomTerminal control (Win2D, no WebView2). The package owns the VT engine, the selection, the
+/// copy / paste and the links; this class starts the shell of the tab, applies the VIGO theme and preferences, relays the
+/// app shortcuts and keeps the end-of-shell behavior: the terminal stays, shows the exit code, and Enter starts the
+/// shell again.
 /// </summary>
 public sealed partial class TerminalView : UserControl, IDisposable
 {
-    private const string HostName = "vigo.editor";
+    private const int Scrollback = 10_000;
 
-    // Characters sent to the page and not yet acknowledged: the pump waits above the high mark.
-    private const int HighWater = 512 * 1024;
-    private const int BatchChars = 64 * 1024;
+    // Nerd Fonts after Cascadia: prompts (oh-my-posh, starship) draw their icons with them, per glyph, when installed.
+    private const string DefaultFonts =
+        "Cascadia Mono, Cascadia Code, CaskaydiaCove NFM, CaskaydiaCove NF, MesloLGM Nerd Font Mono, MesloLGS Nerd Font Mono, " +
+        "JetBrainsMono Nerd Font Mono, FiraCode Nerd Font Mono, Hack Nerd Font Mono, Consolas, Courier New";
 
     private readonly TerminalTabViewModel _tab;
-    private readonly ITerminalSessionFactory _sessions;
-#if DEBUG
-    private const string PageFlags = "&debug=1";
-#else
-    private const string PageFlags = "";
-#endif
-    private readonly string _pageUri = $"https://{HostName}/terminal.html?build={Environment.OSVersion.Version.Build.ToString(CultureInfo.InvariantCulture)}{PageFlags}";
-    private readonly CancellationTokenSource _closed = new();
-    private WebView2? _view;
-    private ITerminalSession? _session;
-    private bool _starting;
-    private bool _ready;
+    private readonly TerminalControl _terminal = new();
+    private readonly TextBlock _failure = new() { Visibility = Visibility.Collapsed, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(12) };
+    private TerminalSession? _session;
+    private bool _started;
     private bool _released;
     private bool _wantsFocus;
     private bool _exited;
-    private int _columns = 80;
-    private int _rows = 24;
-    private long _inFlight;
-    private TaskCompletionSource? _drained;
+    private bool _focused;
 
-    public TerminalView(TerminalTabViewModel tab, ITerminalSessionFactory sessions)
+    public TerminalView(TerminalTabViewModel tab)
     {
         _tab = tab;
-        _sessions = sessions;
         IsTabStop = false;
+        _failure.FontSize = Appearance.Scaled(12);
+        var grid = new Grid();
+        grid.Children.Add(_terminal);
+        grid.Children.Add(_failure);
+        Content = grid;
+
+        _terminal.UseSystemFocusVisuals = false;
+        // Margin (the grid paints the background): the text is not glued to the edges of the panel.
+        _terminal.Margin = new Thickness(10, 6, 4, 6);
+        _terminal.Exited += OnExited;
+        _terminal.KeyPreview += OnKeyPreview;
+        _terminal.LinkActivated += OnLinkActivated;
+        _terminal.GotFocus += (_, _) => { _focused = true; UpdateDim(); };
+        _terminal.LostFocus += (_, _) => { _focused = false; UpdateDim(); };
         Loaded += (_, _) =>
         {
-            Start();
-            SendTheme();
+            ApplyTheme();
+            StartShell();
         };
-        ActualThemeChanged += (_, _) => SendTheme();
-        ShortcutMap.Current.Changed += OnShortcutsChanged;
+        ActualThemeChanged += (_, _) => ApplyTheme();
         Appearance.Current.PropertyChanged += OnAppearanceChanged;
     }
 
-    private void OnAppearanceChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    private void OnAppearanceChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName == nameof(Appearance.Terminal)) SendTheme();
+        if (e.PropertyName == nameof(Appearance.Terminal)) ApplyTheme();
     }
 
-    /// <summary>A link was clicked with Ctrl: https only (the owner opens it).</summary>
+    /// <summary>A link was activated with Ctrl+click: https only (the owner opens it).</summary>
     public event EventHandler<Uri>? LinkClicked;
-
-    /// <summary>The WebView2 runtime could not start (missing runtime, broken install).</summary>
-    public event EventHandler<Exception>? Failed;
 
     /// <summary>Log of the terminals (set once at startup).</summary>
     public static ILogger Logger { get; set; } = NullLogger.Instance;
-
-    [LoggerMessage(Level = LogLevel.Error, Message = "The terminal page (WebView2) could not start")]
-    private static partial void LogStartFailed(ILogger logger, Exception exception);
-
-    [LoggerMessage(Level = LogLevel.Warning, Message = "Terminal page error: {Message}")]
-    private static partial void LogPageError(ILogger logger, string message);
 
     [LoggerMessage(Level = LogLevel.Warning, Message = "The shell of a terminal could not start ({Shell})")]
     private static partial void LogShellFailed(ILogger logger, Exception exception, string shell);
@@ -102,327 +95,163 @@ public sealed partial class TerminalView : UserControl, IDisposable
     public void FocusTerminal()
     {
         _wantsFocus = true;
-        _view?.Focus(FocusState.Programmatic);
-        if (_ready) Post(w => w.WriteString("type", "focus"));
+        _terminal.Focus(FocusState.Programmatic);
     }
 
-    /// <summary>Ends the shell and closes the page when the terminal is closed for good.</summary>
+    /// <summary>Ends the shell when the terminal is closed for good.</summary>
     public void Release()
     {
         if (_released) return;
         _released = true;
-        ShortcutMap.Current.Changed -= OnShortcutsChanged;
         Appearance.Current.PropertyChanged -= OnAppearanceChanged;
-        _closed.Cancel();
-        _drained?.TrySetResult();
-        _session?.Dispose();
-        _session = null;
-        _view?.Close();
-        _closed.Dispose();
+        _terminal.Session = null;
+        DisposeSession();
     }
 
     public void Dispose() => Release();
 
-    private async void Start()
+    private void DisposeSession()
     {
-        if (_starting || _released || !IsLoaded) return;
-        _starting = true;
-        // No white flash while the page loads: the page background until then.
-        var view = _view = new WebView2 { DefaultBackgroundColor = PageBackground() };
-        Content = view;
-        try
-        {
-            await view.EnsureCoreWebView2Async(await CodeEditor.EnvironmentAsync());
-        }
-        catch (Exception ex) when (ex is System.Runtime.InteropServices.COMException or InvalidOperationException or ArgumentException
-            or FileNotFoundException or UnauthorizedAccessException)
-        {
-            // Closed while starting (tab closed at once): not a failure.
-            if (_released) return;
-            LogStartFailed(Logger, ex);
-            Failed?.Invoke(this, ex);
-            return;
-        }
-        if (_released) return;
-
-        var core = view.CoreWebView2;
-        var settings = core.Settings;
-        settings.AreDefaultContextMenusEnabled = false;
-        settings.AreBrowserAcceleratorKeysEnabled = false;
-        settings.IsStatusBarEnabled = false;
-        settings.IsZoomControlEnabled = false;
-        settings.IsPinchZoomEnabled = false;
-        settings.IsSwipeNavigationEnabled = false;
-        settings.IsGeneralAutofillEnabled = false;
-        settings.IsPasswordAutosaveEnabled = false;
-        settings.AreHostObjectsAllowed = false;
-#if !DEBUG
-        settings.AreDevToolsEnabled = false;
-#endif
-        core.SetVirtualHostNameToFolderMapping(HostName, Path.Combine(AppContext.BaseDirectory, "Editor"), CoreWebView2HostResourceAccessKind.DenyCors);
-        // Only the terminal page: links and drops never navigate away.
-        core.NavigationStarting += (_, args) =>
-        {
-            if (!args.Uri.StartsWith($"https://{HostName}/", StringComparison.OrdinalIgnoreCase)) args.Cancel = true;
-        };
-        core.NewWindowRequested += (_, args) => args.Handled = true;
-        core.WebMessageReceived += OnWebMessageReceived;
-        core.Navigate(_pageUri);
-    }
-
-    private void OnWebMessageReceived(CoreWebView2 sender, CoreWebView2WebMessageReceivedEventArgs args)
-    {
-        // Only the page of the virtual host talks to the app.
-        if (!args.Source.StartsWith($"https://{HostName}/", StringComparison.OrdinalIgnoreCase)) return;
-
-        using var json = JsonDocument.Parse(args.WebMessageAsJson);
-        var message = json.RootElement;
-        if (message.ValueKind != JsonValueKind.Object || !message.TryGetProperty("type", out var type)) return;
-
-        switch (type.GetString())
-        {
-            case "ready":
-                _ready = true;
-                _columns = message.GetProperty("cols").GetInt32();
-                _rows = message.GetProperty("rows").GetInt32();
-                SendTheme();
-                SendAppKeys();
-                StartShell();
-                if (_wantsFocus) Post(w => w.WriteString("type", "focus"));
-                break;
-            case "input":
-                OnInput(message.GetProperty("data").GetString() ?? string.Empty, message.GetProperty("binary").GetBoolean());
-                break;
-            case "resize":
-                _columns = message.GetProperty("cols").GetInt32();
-                _rows = message.GetProperty("rows").GetInt32();
-                _session?.Resize(_columns, _rows);
-                break;
-            case "ack":
-                if (Interlocked.Add(ref _inFlight, -message.GetProperty("length").GetInt64()) <= HighWater) _drained?.TrySetResult();
-                break;
-            case "key":
-                KeyboardShortcuts.TryInvoke(this, (VirtualKey)message.GetProperty("vk").GetInt32(), Modifiers(
-                    message.GetProperty("ctrl").GetBoolean(), message.GetProperty("shift").GetBoolean(), message.GetProperty("alt").GetBoolean()));
-                break;
-            case "copy":
-                Copy(message.GetProperty("text").GetString() ?? string.Empty);
-                break;
-            case "pasteRequest":
-                _ = PasteAsync();
-                break;
-            case "link":
-                // The page only reports the click: the scheme is checked here (and again by the launcher).
-                if (Uri.TryCreate(message.GetProperty("url").GetString(), UriKind.Absolute, out var uri) && uri.Scheme == Uri.UriSchemeHttps)
-                    LinkClicked?.Invoke(this, uri);
-                break;
-            case "error":
-                LogPageError(Logger, message.GetProperty("message").GetString() ?? string.Empty);
-                break;
-        }
-    }
-
-    private static VirtualKeyModifiers Modifiers(bool control, bool shift, bool alt) =>
-        (control ? VirtualKeyModifiers.Control : 0) | (shift ? VirtualKeyModifiers.Shift : 0) | (alt ? VirtualKeyModifiers.Menu : 0);
-
-    private void OnInput(string data, bool binary)
-    {
-        if (_exited)
-        {
-            // The shell is gone: Enter starts it again, anything else is ignored.
-            if (data.Contains('\r', StringComparison.Ordinal)) StartShell();
-            return;
-        }
-        // Binary input (old mouse encodings) is one byte per character.
-        _session?.Write(binary ? Encoding.Latin1.GetBytes(data) : Encoding.UTF8.GetBytes(data));
+        var session = _session;
+        _session = null;
+        // Disposing the session kills the shell: off the UI thread (it waits for the reader thread).
+        if (session is not null) _ = Task.Run(session.Dispose);
     }
 
     private async void StartShell()
     {
-        if (_released) return;
-        _session?.Dispose();
-        _session = null;
+        if (_released || (_started && !_exited)) return;
+        _started = true;
         _exited = false;
+        _failure.Visibility = Visibility.Collapsed;
+        _terminal.Session = null;
+        DisposeSession();
         try
         {
             // Creating the pipes, the pseudo console and the process is I/O: off the UI thread.
-            var (command, directory, columns, rows) = (_tab.CommandLine, _tab.WorkingDirectory, _columns, _rows);
-            var session = await Task.Run(() => _sessions.Start(command, directory, columns, rows));
+            var (command, directory, theme) = (_tab.CommandLine, _tab.WorkingDirectory, BuildTheme());
+            var terminal = Appearance.Current.Terminal;
+            var options = new TerminalSessionOptions
+            {
+                Scrollback = Scrollback,
+                Theme = theme,
+                CursorStyle = CursorOf(terminal.Cursor),
+                CursorBlink = true,
+                TermProgram = "VIGO",
+                WindowsPtyBuildNumber = Environment.OSVersion.Version.Build,
+            };
+            var session = await Task.Run(() => TerminalSession.Start(new PtyStartOptions(command) { WorkingDirectory = directory, Columns = 80, Rows = 24 }, options));
             if (_released)
             {
-                session.Dispose();
+                _ = Task.Run(session.Dispose);
                 return;
             }
             _session = session;
-            _ = PumpAsync(session);
+            _terminal.Session = session;
+            if (_wantsFocus) _terminal.Focus(FocusState.Programmatic);
         }
-        catch (Exception ex) when (ex is IOException or System.ComponentModel.Win32Exception or ArgumentException)
+        catch (Exception ex) when (ex is IOException or Win32Exception or ArgumentException or InvalidOperationException)
         {
             LogShellFailed(Logger, ex, _tab.Shell.Name);
             _exited = true;
-            SendData($"\u001b[31m{Loc.Format("Terminal.ShellFailed", _tab.Shell.Name, ex.Message)}\u001b[0m\r\n");
+            _failure.Text = Loc.Format("Terminal.ShellFailed", _tab.Shell.Name, ex.Message);
+            _failure.Visibility = Visibility.Visible;
         }
     }
 
-    /// <summary>Sends the output of the shell to the page, then reports the end of the shell.</summary>
-    private async Task PumpAsync(ITerminalSession session)
+    private void OnExited(object? sender, int code)
     {
-        // The token itself (not the source): still usable after Release disposed the source.
-        var closed = _closed.Token;
-        var decoder = Encoding.UTF8.GetDecoder();
-        var text = new StringBuilder();
-        var reader = session.Output;
-        try
-        {
-            // Back on the UI thread after each await: the WebView2 is used from it only.
-            while (await reader.WaitToReadAsync(closed))
-            {
-                text.Clear();
-                while (text.Length < BatchChars && reader.TryRead(out var chunk))
-                {
-                    var chars = ArrayPool<char>.Shared.Rent(Encoding.UTF8.GetMaxCharCount(chunk.Length));
-                    try
-                    {
-                        text.Append(chars, 0, decoder.GetChars(chunk, 0, chunk.Length, chars, 0));
-                    }
-                    finally
-                    {
-                        ArrayPool<char>.Shared.Return(chars);
-                    }
-                }
-                if (text.Length == 0 || !ReferenceEquals(session, _session)) continue;
-                SendData(text.ToString());
-
-                // The page is behind (a huge output): wait for it before reading more; the shell waits in turn.
-                while (Interlocked.Read(ref _inFlight) > HighWater && !closed.IsCancellationRequested)
-                {
-                    _drained = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-                    if (Interlocked.Read(ref _inFlight) <= HighWater) break;
-                    await _drained.Task.WaitAsync(closed);
-                }
-            }
-            var code = await session.Exited.WaitAsync(closed);
-            if (!ReferenceEquals(session, _session)) return;
-            LogShellExited(Logger, _tab.Shell.Name, code);
-            _exited = true;
-            SendData($"\r\n\u001b[2m[{Loc.Format("Terminal.Exited", code)}]\u001b[0m\r\n");
-        }
-        catch (OperationCanceledException)
-        {
-            // The terminal was closed.
-        }
+        if (_released || _session is not { } session) return;
+        LogShellExited(Logger, _tab.Shell.Name, code);
+        _exited = true;
+        session.WriteToDisplay($"\r\n\u001b[2m[{Loc.Format("Terminal.Exited", code)}]\u001b[0m\r\n");
     }
-
-    private void SendData(string text)
-    {
-        Interlocked.Add(ref _inFlight, text.Length);
-        Post(w =>
-        {
-            w.WriteString("type", "data");
-            w.WriteString("text", text);
-        });
-    }
-
-    private static void Copy(string text)
-    {
-        if (text.Length == 0) return;
-        var package = new DataPackage();
-        package.SetText(text);
-        Clipboard.SetContent(package);
-    }
-
-    private async Task PasteAsync()
-    {
-        try
-        {
-            var content = Clipboard.GetContent();
-            if (!content.Contains(StandardDataFormats.Text)) return;
-            var text = await content.GetTextAsync();
-            if (!_released && text.Length > 0)
-                Post(w =>
-                {
-                    w.WriteString("type", "paste");
-                    w.WriteString("text", text);
-                });
-        }
-        catch (Exception ex) when (ex is System.Runtime.InteropServices.COMException or InvalidOperationException)
-        {
-            // Clipboard held by another application: nothing is pasted.
-        }
-    }
-
-    private void OnShortcutsChanged(object? sender, EventArgs e) => SendAppKeys();
 
     /// <summary>
     /// App shortcuts that still work with the terminal focused: the toggle of the terminal and the Ctrl+Shift
-    /// combinations (the shell keeps every other key: Ctrl+C, Ctrl+P, Ctrl+W…). Ctrl+Shift+C / V are copy and paste.
+    /// combinations (the shell keeps every other key: Ctrl+C, Ctrl+P, Ctrl+W…). Ctrl+Shift+C / V are copy and paste
+    /// (handled by the control). Once the shell is gone, Enter starts it again and the other keys are ignored.
     /// </summary>
-    private void SendAppKeys()
+    private void OnKeyPreview(object? sender, LoomTerminal.Presentation.Input.KeyPreviewEventArgs e)
     {
-        if (!_ready || _released) return;
-        Post(w =>
+        var key = e.Key;
+        if (key.Type != LoomTerminal.Presentation.Input.TerminalKeyEventType.KeyDown) return;
+        var modifiers = (key.Ctrl ? VirtualKeyModifiers.Control : 0) | (key.Shift ? VirtualKeyModifiers.Shift : 0) | (key.Alt ? VirtualKeyModifiers.Menu : 0);
+        foreach (var definition in ShortcutCatalog.All)
         {
-            w.WriteString("type", "appKeys");
-            w.WriteStartArray("keys");
-            foreach (var definition in ShortcutCatalog.All)
+            if (ShortcutMap.Current.Get(definition.Id) is not { } gesture || gesture.Key != key.KeyCode) continue;
+            var control = (gesture.Modifiers & GestureModifiers.Ctrl) != 0;
+            var shift = (gesture.Modifiers & GestureModifiers.Shift) != 0;
+            var relayed = definition.Id == ShortcutIds.Terminal || (control && shift && gesture.Key is not ('C' or 'V'));
+            if (!relayed) continue;
+            if (KeyboardShortcuts.TryInvoke(this, (VirtualKey)key.KeyCode, modifiers))
             {
-                if (ShortcutMap.Current.Get(definition.Id) is not { } gesture) continue;
-                var control = (gesture.Modifiers & GestureModifiers.Ctrl) != 0;
-                var shift = (gesture.Modifiers & GestureModifiers.Shift) != 0;
-                var relayed = definition.Id == ShortcutIds.Terminal || (control && shift && gesture.Key is not ('C' or 'V'));
-                if (!relayed) continue;
-                w.WriteStartObject();
-                w.WriteNumber("vk", gesture.Key);
-                w.WriteBoolean("ctrl", control);
-                w.WriteBoolean("shift", shift);
-                w.WriteBoolean("alt", (gesture.Modifiers & GestureModifiers.Alt) != 0);
-                w.WriteEndObject();
+                e.Handled = true;
+                return;
             }
-            w.WriteEndArray();
-        });
+        }
+        if (_exited && !key.Ctrl && !key.Alt)
+        {
+            e.Handled = true;
+            if (key.Key == "Enter") StartShell();
+        }
     }
 
-    /// <summary>Colors of the current theme (design tokens, ANSI palette of the shell programs).</summary>
-    private void SendTheme()
+    private void OnLinkActivated(object? sender, LinkActivatedEventArgs e)
     {
-        if (!_ready || _released) return;
+        // Only https is opened (and checked again by the launcher).
+        e.Handled = true;
+        if (e.Uri.Scheme == Uri.UriSchemeHttps) LinkClicked?.Invoke(this, e.Uri);
+    }
+
+    private void UpdateDim() => _terminal.Opacity = Appearance.Current.Terminal.DimWhenUnfocused && !_focused ? 0.6 : 1;
+
+    private static LoomCursor CursorOf(VigoCursor style) => style switch
+    {
+        VigoCursor.Block => LoomCursor.Block,
+        VigoCursor.Underline => LoomCursor.Underline,
+        _ => LoomCursor.Bar,
+    };
+
+    /// <summary>Theme (design tokens), font and cursor of the preferences, applied live to the control.</summary>
+    private void ApplyTheme()
+    {
+        var terminal = Appearance.Current.Terminal;
+        var background = SunkenColor();
+        _failure.Foreground = new SolidColorBrush(ActualTheme == ElementTheme.Light ? DesignTokens.Light.Text : DesignTokens.Dark.Text);
+        ((Grid)Content).Background = new SolidColorBrush(background);
+        _terminal.Theme = BuildTheme();
+        _terminal.FontFamily = new FontFamily(terminal.FontFamily is { Length: > 0 } family ? $"{family.Replace(",", string.Empty, StringComparison.Ordinal)}, {DefaultFonts}" : DefaultFonts);
+        _terminal.FontSize = terminal.FontSize;
+        _terminal.LineHeight = terminal.LineHeight;
+        _terminal.CursorStyle = CursorOf(terminal.Cursor);
+        _terminal.CursorBlink = true;
+        UpdateDim();
+    }
+
+    private Color SunkenColor() => ActualTheme == ElementTheme.Light ? DesignTokens.Light.Sunken : DesignTokens.Dark.Sunken;
+
+    private TerminalTheme BuildTheme()
+    {
         var dark = ActualTheme != ElementTheme.Light;
-        _view!.DefaultBackgroundColor = PageBackground();
-        var background = PageBackground();
+        var background = SunkenColor();
         var text = dark ? DesignTokens.Dark.Text : DesignTokens.Light.Text;
         var accent = dark ? DesignTokens.Dark.Accent : DesignTokens.Light.Accent;
-        var scrollbar = dark ? DesignTokens.Dark.SubPress : DesignTokens.Light.SubPress;
-        var terminal = Appearance.Current.Terminal;
-        Post(w =>
+        var ansi = dark ? DarkAnsi : LightAnsi;
+        return new TerminalTheme
         {
-            w.WriteString("type", "theme");
-            w.WriteNumber("fontSize", terminal.FontSize);
-            if (terminal.FontFamily is { } family) w.WriteString("fontFamily", family);
-            w.WriteNumber("lineHeight", terminal.LineHeight);
-            w.WriteString("cursorStyle", terminal.Cursor switch { TerminalCursorStyle.Block => "block", TerminalCursorStyle.Underline => "underline", _ => "bar" });
-            w.WriteBoolean("dimWhenUnfocused", terminal.DimWhenUnfocused);
-            w.WriteString("scrollbar", Hex(scrollbar));
-            w.WriteString("scrollbarHover", Hex(scrollbar));
-            w.WriteStartObject("colors");
-            w.WriteString("background", Hex(background));
-            w.WriteString("foreground", Hex(text));
-            w.WriteString("cursor", Hex(text));
-            w.WriteString("cursorAccent", Hex(background));
-            w.WriteString("selectionBackground", Hex(Color.FromArgb(0x66, accent.R, accent.G, accent.B)));
-            w.WriteString("selectionInactiveBackground", Hex(Color.FromArgb(0x40, accent.R, accent.G, accent.B)));
-            var palette = dark ? DarkAnsi : LightAnsi;
-            for (var i = 0; i < palette.Length; i++) w.WriteString(AnsiNames[i], palette[i]);
-            w.WriteEndObject();
-        });
+            Background = Hex(background),
+            Foreground = Hex(text),
+            Cursor = Hex(text),
+            CursorAccent = Hex(background),
+            SelectionBackground = Hex(Color.FromArgb(0x66, accent.R, accent.G, accent.B)),
+            SelectionInactiveBackground = Hex(Color.FromArgb(0x40, accent.R, accent.G, accent.B)),
+            Black = ansi[0], Red = ansi[1], Green = ansi[2], Yellow = ansi[3],
+            Blue = ansi[4], Magenta = ansi[5], Cyan = ansi[6], White = ansi[7],
+            BrightBlack = ansi[8], BrightRed = ansi[9], BrightGreen = ansi[10], BrightYellow = ansi[11],
+            BrightBlue = ansi[12], BrightMagenta = ansi[13], BrightCyan = ansi[14], BrightWhite = ansi[15],
+        };
     }
-
-    private Color PageBackground() => ActualTheme == ElementTheme.Light ? DesignTokens.Light.Sunken : DesignTokens.Dark.Sunken;
-
-    private static readonly string[] AnsiNames =
-    [
-        "black", "red", "green", "yellow", "blue", "magenta", "cyan", "white",
-        "brightBlack", "brightRed", "brightGreen", "brightYellow", "brightBlue", "brightMagenta", "brightCyan", "brightWhite",
-    ];
 
     // VS Code's default terminal palettes (Dark+ / Light+): well known, readable on the dark and light backgrounds.
     private static readonly string[] DarkAnsi =
@@ -439,24 +268,4 @@ public sealed partial class TerminalView : UserControl, IDisposable
 
     /// <summary>CSS color: <c>#RRGGBBAA</c>.</summary>
     private static string Hex(Color c) => string.Create(CultureInfo.InvariantCulture, $"#{c.R:X2}{c.G:X2}{c.B:X2}{c.A:X2}");
-
-    // Read by JSON.parse in the page, never inserted as HTML: shell output (escape sequences, accents) is sent as is.
-    private static readonly JsonWriterOptions WriterOptions = new() { Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping };
-
-    private static string Serialize(Action<Utf8JsonWriter> write)
-    {
-        var buffer = new ArrayBufferWriter<byte>();
-        using (var writer = new Utf8JsonWriter(buffer, WriterOptions))
-        {
-            writer.WriteStartObject();
-            write(writer);
-            writer.WriteEndObject();
-        }
-        return Encoding.UTF8.GetString(buffer.WrittenSpan);
-    }
-
-    private void Post(Action<Utf8JsonWriter> write)
-    {
-        if (!_released && _view?.CoreWebView2 is { } core) core.PostWebMessageAsJson(Serialize(write));
-    }
 }

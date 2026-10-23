@@ -55,9 +55,6 @@ public sealed partial class TerminalPanelViewModel(TerminalService? service, str
 
     public void Dispose() => GitLog.Dispose();
 
-    /// <summary>Starts the shells (ConPTY); null when the terminal is not available.</summary>
-    public ITerminalSessionFactory? Sessions => service?.Sessions;
-
     /// <summary>Shells found on this machine, for the "+" menu.</summary>
     public IReadOnlyList<TerminalShell> Shells => service?.Shells ?? [];
 

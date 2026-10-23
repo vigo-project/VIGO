@@ -18,16 +18,11 @@ public sealed class TerminalTests : IDisposable
 
     public void Dispose() => _preferences.Dispose();
 
-    private TerminalService Service(params TerminalShell[] shells) => new(new FixedShells(shells), new NoSessions(), _preferences);
+    private TerminalService Service(params TerminalShell[] shells) => new(new FixedShells(shells), _preferences);
 
     private sealed class FixedShells(TerminalShell[] shells) : ITerminalShellLocator
     {
         public IReadOnlyList<TerminalShell> Detect() => shells;
-    }
-
-    private sealed class NoSessions : ITerminalSessionFactory
-    {
-        public ITerminalSession Start(string commandLine, string workingDirectory, int columns, int rows) => throw new NotSupportedException();
     }
 
     private sealed class RecordingNotifier : IUserNotifier
@@ -129,7 +124,6 @@ public sealed class TerminalTests : IDisposable
 
         Assert.False(sut.IsAvailable);
         Assert.False(sut.IsOpen);
-        Assert.Null(sut.Sessions);
     }
 
     [Fact]

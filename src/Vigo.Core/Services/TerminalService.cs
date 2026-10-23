@@ -7,15 +7,13 @@ namespace Vigo.Core.Services;
 /// Shells of the integrated terminal (J7.10): detected once, the default one coming from the preferences (first
 /// detected shell when none is chosen or the chosen one is gone).
 /// </summary>
-public sealed class TerminalService(ITerminalShellLocator locator, ITerminalSessionFactory sessions, Preferences preferences, GitCommandLog? commands = null)
+public sealed class TerminalService(ITerminalShellLocator locator, Preferences preferences, GitCommandLog? commands = null)
 {
     /// <summary>Commands run by git.exe, listed in the Git tab of the panel (travels with the terminal services).</summary>
     public GitCommandLog? Commands => commands;
 
     // Detected in the background from the creation of the service: the first use rarely waits.
     private readonly Task<ImmutableArray<TerminalShell>> _shells = Task.Run(() => ImmutableArray.CreateRange(locator.Detect()));
-
-    public ITerminalSessionFactory Sessions => sessions;
 
     public ImmutableArray<TerminalShell> Shells => _shells.GetAwaiter().GetResult();
 

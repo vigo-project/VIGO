@@ -40,9 +40,6 @@ public sealed partial class TerminalPanel : UserControl
         }
     } = null!;
 
-    /// <summary>Starts the shells (ConPTY); set with <see cref="ViewModel"/>.</summary>
-    public ITerminalSessionFactory? Sessions { get; set; }
-
     public static FontWeight WeightOf(bool selected) => selected ? FontWeights.SemiBold : FontWeights.Normal;
 
     private void OnShortcutsChanged(object? sender, EventArgs e) => UpdateHint();
@@ -87,11 +84,11 @@ public sealed partial class TerminalPanel : UserControl
                 view.Release();
             }
         }
-        if (e.NewItems is not null && Sessions is { } sessions)
+        if (e.NewItems is not null && ViewModel.IsAvailable)
         {
             foreach (var tab in e.NewItems.OfType<TerminalTabViewModel>())
             {
-                var view = new TerminalView(tab, sessions) { Visibility = Visibility.Collapsed };
+                var view = new TerminalView(tab) { Visibility = Visibility.Collapsed };
                 view.LinkClicked += OnLinkClicked;
                 _views[tab] = view;
                 Host.Children.Add(view);

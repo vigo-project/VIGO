@@ -130,9 +130,8 @@ public partial class App : Application
         builder.Services.AddSingleton<IAiBackend>(sp => new AnthropicApiBackend(
             sp.GetRequiredService<HttpClient>(), sp.GetRequiredService<ISecretVault>()));
         builder.Services.AddSingleton<CommitMessageGenerator>();
-        // Integrated terminal (J7.10, ADR-071): shells behind a ConPTY pseudo console, drawn by xterm.js.
+        // Integrated terminal (J7.10, ADR-071): shells behind a ConPTY pseudo console, drawn by the native LoomTerminal control (ADR-076).
         builder.Services.AddSingleton<ITerminalShellLocator, Vigo.Git.Terminal.WindowsShellLocator>();
-        builder.Services.AddSingleton<ITerminalSessionFactory, Vigo.Git.Terminal.ConPtySessionFactory>();
         builder.Services.AddSingleton<TerminalService>();
         // Git tab of the terminal panel: the git.exe commands VIGO runs (read by GitCli, shown by the panel).
         builder.Services.AddSingleton<GitCommandLog>();

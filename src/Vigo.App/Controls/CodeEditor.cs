@@ -82,7 +82,7 @@ public sealed partial class CodeEditor : UserControl
     /// <summary>Starts the browser process in the background, so that the first editor opens at once.</summary>
     public static void Prewarm() => _ = EnvironmentAsync();
 
-    /// <summary>The WebView2 environment shared by the editors and the terminals of the app.</summary>
+    /// <summary>The WebView2 environment shared by the editors of the app.</summary>
     internal static Task<CoreWebView2Environment> EnvironmentAsync() => s_environment ??= CreateEnvironmentAsync();
 
     private static async Task<CoreWebView2Environment> CreateEnvironmentAsync()

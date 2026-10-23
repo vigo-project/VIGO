@@ -43,7 +43,6 @@ public sealed partial class RepositoryView : UserControl
         RightSplitter.DragCompleted += (_, _) => _ = layout.SaveAsync();
 
         // Integrated terminal (J7.10, ADR-071): panel height saved with the layout, resized from its top edge.
-        TerminalPanel.Sessions = viewModel.Terminal.Sessions;
         TerminalPanel.ViewModel = viewModel.Terminal;
         TerminalSplitter.DragStarted += (_, _) => _dragStartTerminalHeight = TerminalPanel.ActualHeight;
         TerminalSplitter.DragDelta += (_, delta) => layout.TerminalHeight = _dragStartTerminalHeight - delta;

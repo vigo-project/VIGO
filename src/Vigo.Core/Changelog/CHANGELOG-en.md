@@ -1,3 +1,6 @@
+## 0.28.0 — 2026-10-23
+- Integrated terminal: new native engine (no WebView2), lighter; same features (shells, theme, font, copy and paste, links, shortcuts), with a small margin around the text.
+
 ## 0.27.1 — 2026-10-23
 - Preferences › About: new "Receive pre-release versions" option to also get pre-releases as updates (off by default: stable releases only).
 - Releases are now built and published automatically from the public repository github.com/vigo-project/vigo; no functional change.
