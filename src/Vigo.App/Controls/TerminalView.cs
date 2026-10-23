@@ -58,6 +58,8 @@ public sealed partial class TerminalView : UserControl, IDisposable
         Content = grid;
 
         _terminal.UseSystemFocusVisuals = false;
+        // Margin (the grid paints the background): the text is not glued to the edges of the panel.
+        _terminal.Margin = new Thickness(10, 6, 4, 6);
         _terminal.Exited += OnExited;
         _terminal.KeyPreview += OnKeyPreview;
         _terminal.LinkActivated += OnLinkActivated;
@@ -134,6 +136,7 @@ public sealed partial class TerminalView : UserControl, IDisposable
                 Scrollback = Scrollback,
                 Theme = theme,
                 CursorStyle = CursorOf(terminal.Cursor),
+                CursorBlink = true,
                 TermProgram = "VIGO",
                 WindowsPtyBuildNumber = Environment.OSVersion.Version.Build,
             };
@@ -222,6 +225,7 @@ public sealed partial class TerminalView : UserControl, IDisposable
         _terminal.FontSize = terminal.FontSize;
         _terminal.LineHeight = terminal.LineHeight;
         _terminal.CursorStyle = CursorOf(terminal.Cursor);
+        _terminal.CursorBlink = true;
         UpdateDim();
     }
 
