@@ -13,9 +13,33 @@ on:
 
 permissions:
   contents: write
+  checks: read
 
 jobs:
+  # The tests run in the ci workflow: wait for it to finish on this commit (the tag may be pushed before) and require success.
+  ci-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for a green ci
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          missing=0
+          for i in $(seq 1 90); do
+            run=$(gh api "repos/${{ github.repository }}/commits/${{ github.sha }}/check-runs" \
+              --jq '[.check_runs[] | select(.name == "build")] | first // empty | "\(.status) \(.conclusion)"')
+            case "$run" in
+              "completed success") echo "ci is green on ${{ github.sha }}"; exit 0 ;;
+              "completed "*) echo "::error::ci finished with '${run#completed }' on ${{ github.sha }}"; exit 1 ;;
+              "") missing=$((missing + 1)); if [ "$missing" -ge 10 ]; then echo "::error::no ci run found for ${{ github.sha }}: push it to main first"; exit 1; fi ;;
+            esac
+            sleep 30
+          done
+          echo "::error::ci did not finish within 45 minutes"; exit 1
+
   release:
+    needs: ci-gate
     runs-on: windows-latest
     env:
       VERSION: ${{ github.event.inputs.version || github.ref_name }}
@@ -43,11 +67,6 @@ jobs:
             if (-not (Select-String -Path $f -Pattern "^## $([regex]::Escape($v))( |$)" -Quiet)) { throw "No '## $v' section in $f" }
           }
           "PACK_VERSION=$v" | Out-File -Append -FilePath $env:GITHUB_ENV
-
-      - name: Tests
-        run: |
-          dotnet test --project tests/Vigo.Core.Tests -p:Platform=x64
-          dotnet test --project tests/Vigo.Git.Tests -p:Platform=x64
 
       - name: Publish (Native AOT)
         run: dotnet publish src/Vigo.App -c Release -r win-x64 -p:Platform=x64 -p:Version=${{ env.PACK_VERSION }} -o artifacts/publish/aot-x64
