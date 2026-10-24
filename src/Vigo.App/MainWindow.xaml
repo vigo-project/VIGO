@@ -141,7 +141,13 @@
             </StackPanel>
             <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6">
                 <Button x:Uid="StatusProfileButton" Style="{StaticResource VigoStatusBarButton}" Click="OnStatusProfileClick"
-                        Content="{x:Bind ViewModel.StatusBar.ProfileText, Mode=OneWay}" />
+                        AutomationProperties.Name="{x:Bind ViewModel.StatusBar.ProfileText, Mode=OneWay}">
+                    <StackPanel Orientation="Horizontal" Spacing="4">
+                        <FontIcon Style="{StaticResource VigoIcon}" FontSize="12" Glyph="{x:Bind controls:FluentIcons.FromName(ViewModel.StatusBar.ProfileIcon), Mode=OneWay}"
+                                  Visibility="{x:Bind ViewModel.StatusBar.HasProfileIcon, Mode=OneWay}" />
+                        <TextBlock Text="{x:Bind ViewModel.StatusBar.ProfileText, Mode=OneWay}" />
+                    </StackPanel>
+                </Button>
                 <Button x:Uid="StatusDensityButton" Style="{StaticResource VigoStatusBarButton}" Command="{x:Bind ViewModel.ToggleDensityCommand}"
                         Content="{x:Bind ViewModel.StatusBar.DensityLabel, Mode=OneWay}" />
                 <Button x:Uid="StatusThemeButton" Style="{StaticResource VigoStatusBarButton}" Command="{x:Bind ViewModel.ToggleThemeCommand}"

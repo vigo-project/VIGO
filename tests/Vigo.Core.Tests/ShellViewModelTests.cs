@@ -58,7 +58,7 @@ public sealed class ShellViewModelTests
         await sut.SwitchProfileAsync(perso.Id);
 
         Assert.Equal(perso.Id, requested);
-        Assert.Equal([(work.Id, "Work", true), (perso.Id, "Perso", false)], sut.ProfileChoices);
+        Assert.Equal([(work.Id, "Work", true, (string?)null), (perso.Id, "Perso", false, (string?)null)], sut.ProfileChoices);
     }
 
     [Fact]

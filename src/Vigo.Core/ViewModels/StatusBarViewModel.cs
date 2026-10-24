@@ -64,7 +64,17 @@ public sealed partial class StatusBarViewModel : ObservableObject
     [RelayCommand]
     private void RestartToUpdate() => _updates?.RestartToUpdate();
 
-    private void OnProfilesChanged(object? sender, EventArgs e) => OnPropertyChanged(nameof(ProfileText));
+    private void OnProfilesChanged(object? sender, EventArgs e)
+    {
+        OnPropertyChanged(nameof(ProfileText));
+        OnPropertyChanged(nameof(ProfileIcon));
+        OnPropertyChanged(nameof(HasProfileIcon));
+    }
+
+    /// <summary>Icon of the active profile (a Fluent System Icons name); null when it has none.</summary>
+    public string? ProfileIcon => _profiles?.Active?.Icon;
+
+    public bool HasProfileIcon => !string.IsNullOrEmpty(ProfileIcon);
 
     /// <summary>The selected tab is a repository: the left part (branch, sync, info) is shown.</summary>
     public bool IsRepository => _tab is not null;

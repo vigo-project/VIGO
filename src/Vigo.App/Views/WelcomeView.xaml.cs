@@ -37,14 +37,12 @@ public sealed partial class WelcomeView : UserControl
     {
         if (sender is not FrameworkElement anchor) return;
         var menu = new MenuFlyout();
-        foreach (var (id, label, isActive) in ViewModel.ProfileChoices)
+        foreach (var (id, label, isActive, icon) in ViewModel.ProfileChoices)
         {
-            var item = new ToggleMenuFlyoutItem { Text = label, IsChecked = isActive };
-            item.Click += (_, _) =>
+            menu.Items.Add(ProfileMenuItems.Create(label, isActive, icon, () =>
             {
                 if (!isActive) _ = ViewModel.SwitchProfileAsync(id);
-            };
-            menu.Items.Add(item);
+            }));
         }
         menu.ShowAt(anchor);
     }

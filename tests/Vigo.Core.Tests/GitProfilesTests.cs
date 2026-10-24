@@ -149,7 +149,7 @@ public sealed class GitProfilesTests
         {
             var store = new JsonGitProfileStore(path, NullLogger<JsonGitProfileStore>.Instance);
             var written = new GitProfileSet(
-                [new GitProfile("default", "Travail", "Camille", "c@atlas.dev", "4AEE", true, [@"C:\dev\atlas\**", @"D:\work"]), new GitProfile("p2", "Perso", "C", "c@x")],
+                [new GitProfile("default", "Travail", "Camille", "c@atlas.dev", "4AEE", true, [@"C:\dev\atlas\**", @"D:\work"]), new GitProfile("p2", "Perso", "C", "c@x", Icon: "rocket")],
                 "p2");
 
             await store.SaveAsync(written, Ct);
@@ -161,6 +161,8 @@ public sealed class GitProfilesTests
             Assert.True(read.Profiles[0].SignCommits);
             Assert.Equal([@"C:\dev\atlas\**", @"D:\work"], read.Profiles[0].FolderRules);
             Assert.True(read.Profiles[1].FolderRules.IsEmpty);
+            Assert.Equal("rocket", read.Profiles[1].Icon);
+            Assert.Null(read.Profiles[0].Icon);
         }
         finally
         {

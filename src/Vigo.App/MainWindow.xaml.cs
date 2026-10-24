@@ -434,6 +434,14 @@ public sealed partial class MainWindow : Window, IDisposable
         move.Click += (_, _) => ViewModel.MoveTabToNewWindowCommand.Execute(tab);
         menu.Items.Add(move);
 
+        if (tab is RepositoryTabViewModel repoTab)
+        {
+            menu.Items.Add(new MenuFlyoutSeparator());
+            var icon = new MenuFlyoutItem { Text = Loc.Get("Shell.TabMenu.ChangeIcon") };
+            icon.Click += async (_, _) => await ChooseTabIconAsync(repoTab);
+            menu.Items.Add(icon);
+        }
+
         if (tab is RepositoryTabViewModel && ViewModel.HasProjects)
         {
             menu.Items.Add(new MenuFlyoutSeparator());
@@ -545,12 +553,12 @@ public sealed partial class MainWindow : Window, IDisposable
         }
     }
 
-    /// <summary>First launch of a new version: its release notes, once (recorded just before showing, so a crash never loops).</summary>
+    /// <summary>First launch of a new version: the release notes of every version since the last one seen, once (recorded just before showing, so a crash never loops).</summary>
     private async Task ShowWhatsNewAsync()
     {
         var version = AppVersion.Current;
         if (_preferences.Current.LastSeenVersion == version) return;
-        if (Changelog.SectionOf(Changelog.Text, version) is not { Length: > 0 } notes)
+        if (Changelog.NotesSince(Changelog.Text, version, _preferences.Current.LastSeenVersion) is not { Length: > 0 } notes)
         {
             _ = _preferences.UpdateAsync(p => p with { LastSeenVersion = version });
             return;
@@ -571,6 +579,21 @@ public sealed partial class MainWindow : Window, IDisposable
         try
         {
             await dialog.ShowAsync();
+        }
+        finally
+        {
+            _context.IsDialogOpen = false;
+        }
+    }
+
+    /// <summary>Dialog to pick the icon of a repository tab among all the Fluent icons; the secondary button restores the folder.</summary>
+    private async Task ChooseTabIconAsync(RepositoryTabViewModel tab)
+    {
+        if (_context.IsDialogOpen || _context.XamlRoot is not { } root) return;
+        _context.IsDialogOpen = true;
+        try
+        {
+            if (await TabIconPicker.ShowDialogAsync(root, Loc.Get("TabIcon.Title")) is { } pick) ViewModel.SetTabIcon(tab, pick.Name);
         }
         finally
         {
@@ -712,18 +735,16 @@ public sealed partial class MainWindow : Window, IDisposable
         }
 
         var menu = new MenuFlyout();
-        foreach (var (id, label, isActive) in choices)
+        foreach (var (id, label, isActive, icon) in choices)
         {
-            var item = new ToggleMenuFlyoutItem { Text = label, IsChecked = isActive };
-            item.Click += (_, _) =>
+            menu.Items.Add(ProfileMenuItems.Create(label, isActive, icon, () =>
             {
                 if (!isActive) _ = ViewModel.SwitchProfileAsync(id);
-            };
-            menu.Items.Add(item);
+            }));
         }
         menu.Items.Add(new MenuFlyoutSeparator());
         var manage = new MenuFlyoutItem { Text = Loc.Get("Shell.ProfileMenu.Manage") };
-        manage.Click += (_, _) => ViewModel.OpenPreferencesCommand.Execute(null);
+        manage.Click += (_, _) => ViewModel.OpenProfiles();
         menu.Items.Add(manage);
         menu.ShowAt(anchor);
     }

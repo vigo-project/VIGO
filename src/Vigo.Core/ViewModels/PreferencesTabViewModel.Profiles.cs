@@ -74,6 +74,18 @@ public sealed partial class GitProfileItem : ObservableObject
 
     private static readonly string?[] s_formats = [null, SigningFormats.OpenPgp, SigningFormats.Ssh, SigningFormats.X509];
 
+    /// <summary>Fluent System Icons name shown instead of the initials; null: the initials.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasIcon), nameof(HasNoIcon), nameof(IconOrPlaceholder))]
+    public partial string? Icon { get; set; }
+
+    public bool HasIcon => !string.IsNullOrEmpty(Icon);
+
+    public bool HasNoIcon => !HasIcon;
+
+    /// <summary>Icon of the "Icône" button: the chosen one, or a placeholder that invites to pick.</summary>
+    public string IconOrPlaceholder => HasIcon ? Icon! : "emoji_add";
+
     /// <summary>Folder patterns, one per line (<c>C:\dev\atlas\**</c>).</summary>
     [ObservableProperty]
     public partial string FolderRulesText { get; set; } = string.Empty;
@@ -85,7 +97,7 @@ public sealed partial class GitProfileItem : ObservableObject
     internal GitProfile ToProfile() => new(
         Id, Label.Trim(), Name.Trim(), Email.Trim(), string.IsNullOrWhiteSpace(SigningKey) ? null : SigningKey.Trim(), SignCommits,
         [.. FolderRulesText.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Where(r => r.Length > 0)],
-        SigningFormat);
+        SigningFormat, string.IsNullOrEmpty(Icon) ? null : Icon);
 
     /// <summary>Shows the stored profile (changed elsewhere) without saving it again.</summary>
     internal void Load(GitProfile profile)
@@ -100,6 +112,7 @@ public sealed partial class GitProfileItem : ObservableObject
             if (SigningKey != key) SigningKey = key;
             if (SignCommits != profile.SignCommits) SignCommits = profile.SignCommits;
             if (SigningFormat != SigningFormats.Normalize(profile.SigningFormat)) SigningFormat = profile.SigningFormat;
+            if (Icon != profile.Icon) Icon = profile.Icon;
             // The text box keeps what is typed: only a different rule list replaces it.
             if (!ToProfile().FolderRules.SequenceEqual(profile.FolderRules)) FolderRulesText = string.Join('\n', profile.FolderRules);
         }
@@ -112,7 +125,7 @@ public sealed partial class GitProfileItem : ObservableObject
     protected override void OnPropertyChanged(System.ComponentModel.PropertyChangedEventArgs e)
     {
         base.OnPropertyChanged(e);
-        if (!_syncing && e.PropertyName is nameof(Label) or nameof(Name) or nameof(Email) or nameof(SigningKey) or nameof(SignCommits) or nameof(SigningFormatIndex) or nameof(FolderRulesText))
+        if (!_syncing && e.PropertyName is nameof(Label) or nameof(Name) or nameof(Email) or nameof(SigningKey) or nameof(SignCommits) or nameof(SigningFormatIndex) or nameof(FolderRulesText) or nameof(Icon))
             _changed(this);
     }
 

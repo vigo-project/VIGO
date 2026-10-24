@@ -18,6 +18,7 @@ public enum PreferencesSection
     Shortcuts,
     Profiles,
     Projects,
+    Icons,
     SshKeys,
     Integrations,
     Tools,
@@ -96,6 +97,7 @@ public sealed partial class PreferencesTabViewModel : TabViewModel, IDisposable
             new(PreferencesSection.Shortcuts, Loc.Get("Preferences.Section.Shortcuts"), "keyboard", shortcuts is null ? "J7" : null),
             new(PreferencesSection.Profiles, Loc.Get("Preferences.Section.Profiles"), "person", profiles is null ? "J6" : null),
             new(PreferencesSection.Projects, Loc.Get("Preferences.Section.Projects"), "folder", projects is null ? "J7" : null),
+            new(PreferencesSection.Icons, Loc.Get("Preferences.Section.Icons"), "emoji", null),
             new(PreferencesSection.SshKeys, Loc.Get("Preferences.Section.SshKeys"), "key", sshKeys is null ? "J7" : null),
             new(PreferencesSection.Integrations, Loc.Get("Preferences.Section.Integrations"), "plug_connected", accounts is null ? "J6" : null),
             new(PreferencesSection.Tools, Loc.Get("Preferences.Section.Tools"), "document_edit", null),
@@ -200,6 +202,8 @@ public sealed partial class PreferencesTabViewModel : TabViewModel, IDisposable
         OnPropertyChanged(nameof(IsIntegrations));
         OnPropertyChanged(nameof(IsProfiles));
         OnPropertyChanged(nameof(IsProjects));
+        OnPropertyChanged(nameof(IsIcons));
+        OnPropertyChanged(nameof(IsNotIcons));
         // Keys may have been added in ~/.ssh meanwhile: read again each time the section is shown.
         if (IsSshKeys) _ = LoadSshKeysAsync(_lifetime.Token);
     }

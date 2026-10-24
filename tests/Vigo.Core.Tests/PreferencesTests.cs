@@ -52,4 +52,16 @@ public sealed class PreferencesTests : IDisposable
         Assert.Null(loaded.LastCloneParent);
         Assert.Null((loaded with { AutoFetchIntervalMinutes = 0 }).AutoFetchInterval);
     }
+
+    [Fact]
+    public async Task Repository_icons_are_saved_and_read_back()
+    {
+        using (var preferences = new Preferences(Store(), Store().Load()))
+        {
+            await preferences.UpdateAsync(p => p with { RepositoryIcons = p.RepositoryIcons.SetItem(@"D:\repo", "rocket") }, Ct);
+            await preferences.WhenSavedAsync();
+        }
+
+        Assert.Equal("rocket", Store().Load().RepositoryIcons[@"D:\repo"]);
+    }
 }

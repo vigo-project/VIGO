@@ -124,8 +124,8 @@ public sealed partial class WelcomeTabViewModel : TabViewModel, IDisposable
     public bool CanSwitchProfile => _switchProfile is not null && _profiles is { Profiles.Count: > 1 };
 
     /// <summary>Profiles to switch between, the active one flagged.</summary>
-    public IReadOnlyList<(string Id, string Label, bool IsActive)> ProfileChoices =>
-        _profiles is null ? [] : [.. _profiles.Profiles.Select(p => (p.Id, p.Label, p.Id == _profiles.Active?.Id))];
+    public IReadOnlyList<(string Id, string Label, bool IsActive, string? Icon)> ProfileChoices =>
+        _profiles is null ? [] : [.. _profiles.Profiles.Select(p => (p.Id, p.Label, p.Id == _profiles.Active?.Id, p.Icon))];
 
     public Task SwitchProfileAsync(string id) => _switchProfile?.Invoke(id) ?? Task.CompletedTask;
 
