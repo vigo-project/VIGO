@@ -1,6 +1,7 @@
 ## 0.28.1 — 2026-10-24
 - GitHub : la connexion par navigateur demande aussi l'autorisation « workflow », nécessaire pour pousser des fichiers de `.github/workflows/` ; reconnectez le compte dans Préférences › Intégrations pour en profiter.
 - Les identifiants OAuth des hébergeurs sont désormais fournis à la compilation au lieu d'être codés en dur dans le code source.
+- Résumé, pull requests, tickets : une image dans un lien (badge de README) ne fait plus planter l'application ; les badges SVG sont dessinés avec leurs couleurs et restent cliquables.
 
 ## 0.28.0 — 2026-10-23
 - Terminal intégré : nouveau moteur natif (sans WebView2), plus léger ; mêmes fonctions (shells, thème, police, copier-coller, liens, raccourcis), avec une petite marge autour du texte.

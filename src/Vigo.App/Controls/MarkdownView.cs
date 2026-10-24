@@ -149,7 +149,7 @@ public sealed partial class MarkdownView : UserControl
     }
 
     // The picture is downloaded by the Image (http / https only); when it cannot be, or the address is not one, a link to it is shown.
-    private void AddImage(InlineCollection target, MarkdownImage image, InlineStyle style)
+    private void AddImage(InlineCollection target, MarkdownImage image, InlineStyle style, Uri? linkUri = null)
     {
         MarkdownInline[] fallback = [new MarkdownText(image.Alt.Length > 0 ? $"[image : {image.Alt}]" : "[image]")];
         if (!Uri.TryCreate(image.Url, UriKind.Absolute, out var uri) || uri.Scheme is not ("http" or "https"))
@@ -168,15 +168,18 @@ public sealed partial class MarkdownView : UserControl
             Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(picture, image.Alt);
         }
 
-        var container = new InlineUIContainer { Child = picture };
+        var container = new InlineUIContainer
+        {
+            Child = linkUri is null ? picture : new HyperlinkButton { Content = picture, NavigateUri = linkUri, Padding = new Thickness(0) },
+        };
         target.Add(container);
-        _ = LoadImageAsync(picture, container, uri, fallback[0] is MarkdownText t ? t.Text : "[image]");
+        _ = LoadImageAsync(picture, container, uri, linkUri ?? uri, image.Alt.Length > 0 ? image.Alt : "image");
     }
 
     // The account's token first (pictures of a private repository answer 404 without it), then the plain address (https only).
-    private static async Task LoadImageAsync(Image picture, InlineUIContainer container, Uri uri, string linkText)
+    private static async Task LoadImageAsync(Image picture, InlineUIContainer container, Uri uri, Uri target, string linkText)
     {
-        BitmapImage? bitmap = null;
+        ImageSource? bitmap = null;
         try
         {
             var generation = _cacheGeneration;
@@ -192,11 +195,11 @@ public sealed partial class MarkdownView : UserControl
                 // Never in clear text: the author of the page would learn the reader's address and the time of reading.
                 if (uri.Scheme != Uri.UriSchemeHttps)
                 {
-                    ShowLink(container, uri, linkText);
+                    ShowLink(container, target, linkText);
                     return;
                 }
                 var direct = new BitmapImage(uri);
-                direct.ImageFailed += (_, _) => ShowLink(container, uri, linkText);
+                direct.ImageFailed += (_, _) => _ = ShowBadgeAsync(container, uri, target, linkText);
                 picture.Source = direct;
                 return;
             }
@@ -205,15 +208,83 @@ public sealed partial class MarkdownView : UserControl
         }
         catch (Exception ex) when (ex is not OutOfMemoryException)
         {
-            ShowLink(container, uri, linkText);
+            ShowLink(container, target, linkText);
         }
+    }
+
+    private static readonly HttpClient BadgeHttp = new() { Timeout = TimeSpan.FromSeconds(10) };
+
+    // An https picture BitmapImage cannot read is usually a shields-style SVG badge. Direct2D draws no SVG text, so the two
+    // coloured halves (label, message) are read from the file and drawn in XAML; anything else becomes a plain link.
+    private static async Task ShowBadgeAsync(InlineUIContainer container, Uri uri, Uri target, string linkText)
+    {
+        try
+        {
+            using var response = await BadgeHttp.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead);
+            if (!response.IsSuccessStatusCode || response.Content.Headers.ContentLength > 256 * 1024) throw new InvalidOperationException();
+            var svg = await response.Content.ReadAsStringAsync();
+            var settings = new System.Xml.XmlReaderSettings { DtdProcessing = System.Xml.DtdProcessing.Prohibit, XmlResolver = null };
+            using var reader = System.Xml.XmlReader.Create(new StringReader(svg), settings);
+            var doc = System.Xml.Linq.XDocument.Load(reader);
+
+            // Shields badges fill <rect>s with a colour; GitHub's workflow badges fill <path>s with a gradient (its first stop is taken).
+            string? FillOf(System.Xml.Linq.XElement e) => (string?)e.Attribute("fill") is { } f && f.StartsWith("url(#", StringComparison.Ordinal)
+                ? doc.Descendants().FirstOrDefault(g => (string?)g.Attribute("id") == f[5..^1])?.Descendants().Select(st => (string?)st.Attribute("stop-color")).FirstOrDefault()
+                : (string?)e.Attribute("fill");
+            var fills = doc.Descendants().Where(e => e.Name.LocalName is "rect" or "path" && e.Ancestors().All(a => a.Name.LocalName is not ("clipPath" or "defs")))
+                .Select(FillOf).Where(f => f is { Length: > 0 } && f[0] == '#' && f is not ("#fff" or "#ffffff"))
+                .Select(f => TryParseHex(f!)).OfType<Color>().Take(2).ToArray();
+            var texts = doc.Descendants().Where(e => e.Name.LocalName == "text").Select(e => e.Value.Trim())
+                .Where(t => t.Length > 0).Distinct().Take(2).ToArray();
+            if (fills.Length == 0 || texts.Length == 0) throw new InvalidOperationException();
+
+            var halves = new StackPanel { Orientation = Orientation.Horizontal };
+            for (var i = 0; i < texts.Length; i++)
+            {
+                halves.Children.Add(new Border
+                {
+                    Background = new SolidColorBrush(fills[Math.Min(i, fills.Length - 1)]),
+                    Padding = new Thickness(6, 1, 6, 1),
+                    Child = new TextBlock { Text = texts[i], FontSize = Appearance.Scaled(11), FontWeight = FontWeights.SemiBold, Foreground = new SolidColorBrush(Color.FromArgb(0xFF, 0xFF, 0xFF, 0xFF)) },
+                });
+            }
+            container.Child = new HyperlinkButton
+            {
+                Padding = new Thickness(0), NavigateUri = target,
+                Content = new Border { CornerRadius = new CornerRadius(4), Child = halves },
+            };
+        }
+        catch (Exception ex) when (ex is not OutOfMemoryException)
+        {
+            ShowLink(container, target, linkText);
+        }
+    }
+
+    private static Color? TryParseHex(string hex)
+    {
+        hex = hex.TrimStart('#');
+        if (hex.Length == 3) hex = string.Concat(hex.Select(c => new string(c, 2)));
+        return hex.Length == 6 && int.TryParse(hex, System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out var rgb)
+            ? Color.FromArgb(0xFF, (byte)(rgb >> 16), (byte)(rgb >> 8), (byte)rgb)
+            : null;
     }
 
     // Not readable (no access, gone, not a picture): back to a link the browser can open.
     private static void ShowLink(InlineUIContainer container, Uri uri, string text) =>
-        container.Child = new HyperlinkButton { Content = text, NavigateUri = uri, Padding = new Thickness(0) };
+        container.Child = new HyperlinkButton
+        {
+            Padding = new Thickness(0),
+            NavigateUri = uri,
+            Content = new Border
+            {
+                CornerRadius = new CornerRadius(4),
+                Padding = new Thickness(6, 1, 6, 1),
+                Background = new SolidColorBrush(Windows.UI.Color.FromArgb(0x40, 0x80, 0x80, 0x80)),
+                Child = new TextBlock { Text = text, FontSize = Appearance.Scaled(11) },
+            },
+        };
 
-    private static async Task<BitmapImage?> DecodeAsync(byte[] bytes)
+    private static async Task<ImageSource?> DecodeAsync(byte[] bytes)
     {
         try
         {
@@ -225,9 +296,21 @@ public sealed partial class MarkdownView : UserControl
                 writer.DetachStream();
             }
             stream.Seek(0);
-            var bitmap = new BitmapImage();
-            await bitmap.SetSourceAsync(stream);
-            return bitmap.PixelWidth > 0 && bitmap.PixelHeight > 0 ? bitmap : null;
+            try
+            {
+                var bitmap = new BitmapImage();
+                await bitmap.SetSourceAsync(stream);
+                if (bitmap.PixelWidth > 0 && bitmap.PixelHeight > 0) return bitmap;
+            }
+            catch (Exception ex) when (ex is not OutOfMemoryException)
+            {
+                // Not a raster picture: README badges are mostly SVG, which BitmapImage cannot read.
+            }
+            // Direct2D draws no <text> in SVG (shields.io badges would come out blank): only text-free SVG is drawn.
+            if (System.Text.Encoding.UTF8.GetString(bytes).Contains("<text", StringComparison.OrdinalIgnoreCase)) return null;
+            stream.Seek(0);
+            var svg = new SvgImageSource();
+            return await svg.SetSourceAsync(stream) == SvgImageSourceLoadStatus.Success ? svg : null;
         }
         catch (Exception ex) when (ex is not OutOfMemoryException)
         {
@@ -240,9 +323,19 @@ public sealed partial class MarkdownView : UserControl
     {
         if (Uri.TryCreate(url, UriKind.Absolute, out var uri) && uri.Scheme is "http" or "https" or "mailto")
         {
-            var link = new Hyperlink { NavigateUri = uri };
-            AddInlines(link.Inlines, content, style);
-            target.Add(link);
+            // A Hyperlink cannot hold an InlineUIContainer (E_INVALIDARG): the images of a link (README badges) go beside it and open the link themselves.
+            Hyperlink? link = null;
+            foreach (var part in content)
+            {
+                if (part is MarkdownImage image)
+                {
+                    link = null;
+                    AddImage(target, image, style, uri);
+                    continue;
+                }
+                if (link is null) target.Add(link = new Hyperlink { NavigateUri = uri });
+                AddInlines(link.Inlines, new MarkdownInline[] { part }, style);
+            }
         }
         else
         {
