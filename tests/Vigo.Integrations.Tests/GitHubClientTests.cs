@@ -113,7 +113,7 @@ public sealed class GitHubClientTests
         var (request, body) = Assert.Single(handler.Requests);
         Assert.Equal("https://github.com/login/device/code", request.RequestUri?.ToString());
         Assert.Contains("client_id=client-1", body, StringComparison.Ordinal);
-        Assert.Contains("scope=repo+read%3Auser", body, StringComparison.Ordinal);
+        Assert.Contains("scope=repo+workflow+read%3Auser", body, StringComparison.Ordinal);
     }
 
     [Fact]
