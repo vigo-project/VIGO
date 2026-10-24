@@ -162,7 +162,12 @@ public sealed partial class ShellViewModel : ObservableObject
         }
         var services = new TabServices(this);
         var tab = new PreferencesTabViewModel(_preferences, _sshKeys, services, _accounts, _profiles, services,
-            _workspace?.SwitchProfile is null ? null : SwitchProfileAsync, ShortcutMap.Current, _workspace?.Projects, _urlLauncher, _gpgKeys, _commitMessages, _terminal, _git, services) { Services = services };
+            _workspace?.SwitchProfile is null ? null : SwitchProfileAsync, ShortcutMap.Current, _workspace?.Projects, _urlLauncher, _gpgKeys, _commitMessages, _terminal, _git, services)
+        {
+            Services = services,
+            RecentRepositories = _recent,
+            AssignRepositoryIcon = SetRepositoryIcon,
+        };
         Tabs.Add(tab);
         SelectedTab = tab;
     }
@@ -175,8 +180,8 @@ public sealed partial class ShellViewModel : ObservableObject
             open.Tab.SelectedSection = open.Tab.Sections.First(s => s.Section == PreferencesSection.Integrations);
     }
 
-    // "Gérer les profils" of the welcome screen: the preferences tab, on its Git profiles section.
-    private void OpenProfiles()
+    // "Gérer les profils" of the welcome screen and of the status bar profile menu: the preferences tab, on its Git profiles section.
+    public void OpenProfiles()
     {
         OpenPreferences();
         if (FindTab<PreferencesTabViewModel>(_ => true) is { } open)
@@ -251,8 +256,8 @@ public sealed partial class ShellViewModel : ObservableObject
     private bool CanQuit => _workspace?.Quit is not null;
 
     /// <summary>Profiles to choose from, with the active one flagged; empty without profiles.</summary>
-    public IReadOnlyList<(string Id, string Label, bool IsActive)> ProfileChoices =>
-        _profiles is null ? [] : [.. _profiles.Profiles.Select(p => (p.Id, p.Label, p.Id == _profiles.Active?.Id))];
+    public IReadOnlyList<(string Id, string Label, bool IsActive, string? Icon)> ProfileChoices =>
+        _profiles is null ? [] : [.. _profiles.Profiles.Select(p => (p.Id, p.Label, p.Id == _profiles.Active?.Id, p.Icon))];
 
     private bool CanSwitchProfile => _workspace?.SwitchProfile is not null && _profiles is { Profiles.Count: > 1 };
 
@@ -446,6 +451,29 @@ public sealed partial class ShellViewModel : ObservableObject
     {
         foreach (var tab in Tabs.OfType<RepositoryTabViewModel>()) ApplyProject(tab);
         GroupProjectTabs();
+    }
+
+    /// <summary>Icon chosen for the repository of <paramref name="tab"/>; null restores the default icon.</summary>
+    public void SetTabIcon(RepositoryTabViewModel tab, string? icon) => SetRepositoryIcon(PathOf(tab), icon);
+
+    /// <summary>Icon of the repository at <paramref name="path"/>: its open tabs of this window change at once, and the choice is saved.</summary>
+    public void SetRepositoryIcon(string path, string? icon)
+    {
+        foreach (var tab in Tabs.OfType<RepositoryTabViewModel>().Where(t => string.Equals(PathOf(t), path, StringComparison.OrdinalIgnoreCase)))
+            tab.CustomIcon = icon;
+        _preferences?.UpdateAsync(p => p with
+        {
+            RepositoryIcons = icon is null
+                ? p.RepositoryIcons.RemoveRange(p.RepositoryIcons.Keys.Where(k => string.Equals(k, path, StringComparison.OrdinalIgnoreCase)))
+                : p.RepositoryIcons.SetItem(path, icon),
+        });
+    }
+
+    private void ApplyIcon(RepositoryTabViewModel tab)
+    {
+        var path = PathOf(tab);
+        tab.CustomIcon = _preferences?.Current.RepositoryIcons
+            .FirstOrDefault(i => string.Equals(i.Key, path, StringComparison.OrdinalIgnoreCase)).Value is { Length: > 0 } icon ? icon : null;
     }
 
     private void ApplyProject(RepositoryTabViewModel tab)
@@ -651,6 +679,7 @@ public sealed partial class ShellViewModel : ObservableObject
                 // Restoring: tabs are not shown one after the other (each would load its graph), only the welcome tab
                 // being replaced must give way.
                 ApplyProject(tab);
+                ApplyIcon(tab);
                 GroupProjectTabs();
                 if (!restoring || welcomeIndex >= 0) SelectedTab = tab;
                 LogRepositoryOpened(_logger, s.Value.GitDirectory);
@@ -702,7 +731,7 @@ public sealed partial class ShellViewModel : ObservableObject
                     : Array.Empty<PaletteEntry>(),
                 .. shell.CanSwitchProfile
                     ? shell.ProfileChoices.Where(p => !p.IsActive).Select(p =>
-                        new PaletteEntry(PaletteGroup.Commands, "person", Loc.Format("Shell.Palette.SwitchProfile", p.Label), () => shell.SwitchProfileAsync(p.Id)))
+                        new PaletteEntry(PaletteGroup.Commands, p.Icon ?? "person", Loc.Format("Shell.Palette.SwitchProfile", p.Label), () => shell.SwitchProfileAsync(p.Id)))
                     : Array.Empty<PaletteEntry>(),
                 .. shell.UpdateEntries(),
                 .. shell.CanQuit ? [Command("arrow_exit", Loc.Get("Shell.Palette.Quit"), shell.QuitCommand, Shortcut(ShortcutIds.Quit))] : Array.Empty<PaletteEntry>(),

@@ -2544,4 +2544,20 @@ Stocké par Git LFS (déclaré dans {1}).</value></data>
   <data name="PrefUpdatePreReleasesSwitch.OnContent" xml:space="preserve"><value>Oui</value></data>
   <data name="PrefUpdatePreReleasesSwitch.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Recevoir les versions bêta</value></data>
   <data name="PrefUpdatePreReleasesTitle.Text" xml:space="preserve"><value>Recevoir les versions bêta</value></data>
+  <data name="Shell.TabMenu.ChangeIcon" xml:space="preserve"><value>Changer l’icône…</value></data>
+  <data name="TabIcon.Title" xml:space="preserve"><value>Icône de l’onglet</value></data>
+  <data name="TabIcon.Default" xml:space="preserve"><value>Icône par défaut</value></data>
+  <data name="TabIcon.Cancel" xml:space="preserve"><value>Annuler</value></data>
+  <data name="TabIconSearch.PlaceholderText" xml:space="preserve"><value>Rechercher une icône (en anglais)</value></data>
+  <data name="TabIconNone.Text" xml:space="preserve"><value>Aucune icône ne correspond.</value></data>
+  <data name="ProfileIcon.Title" xml:space="preserve"><value>Icône du profil</value></data>
+  <data name="PrefProfileIcon.ToolTipService.ToolTip" xml:space="preserve"><value>Choisir l’icône du profil</value></data>
+  <data name="PrefProfileIcon.AutomationProperties.Name" xml:space="preserve"><value>Choisir l’icône du profil</value></data>
+  <data name="PrefProfileIconLabel.Text" xml:space="preserve"><value>Icône</value></data>
+  <data name="Preferences.Section.Icons" xml:space="preserve"><value>Icônes</value></data>
+  <data name="PrefIconsIntro.Text" xml:space="preserve"><value>Toutes les icônes Fluent avec leur nom (en anglais). Sélectionnez-en une pour l’affecter à un profil Git ou à un dépôt (icône de son onglet).</value></data>
+  <data name="PrefIconsNoSelection.Text" xml:space="preserve"><value>Sélectionnez une icône</value></data>
+  <data name="PrefIconsAssignProfile.Content" xml:space="preserve"><value>Affecter à un profil ▾</value></data>
+  <data name="PrefIconsAssignRepository.Content" xml:space="preserve"><value>Affecter à un dépôt ▾</value></data>
+  <data name="PrefIcons.NoRepository" xml:space="preserve"><value>Aucun dépôt ouvert récemment</value></data>
 </root>

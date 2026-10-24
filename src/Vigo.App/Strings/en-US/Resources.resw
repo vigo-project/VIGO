@@ -2544,4 +2544,20 @@ Stored by Git LFS (declared in {1}).</value></data>
   <data name="PrefUpdatePreReleasesSwitch.OnContent" xml:space="preserve"><value>Yes</value></data>
   <data name="PrefUpdatePreReleasesSwitch.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Receive pre-release versions</value></data>
   <data name="PrefUpdatePreReleasesTitle.Text" xml:space="preserve"><value>Receive pre-release versions</value></data>
+  <data name="Shell.TabMenu.ChangeIcon" xml:space="preserve"><value>Change icon…</value></data>
+  <data name="TabIcon.Title" xml:space="preserve"><value>Tab icon</value></data>
+  <data name="TabIcon.Default" xml:space="preserve"><value>Default icon</value></data>
+  <data name="TabIcon.Cancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="TabIconSearch.PlaceholderText" xml:space="preserve"><value>Search icons</value></data>
+  <data name="TabIconNone.Text" xml:space="preserve"><value>No icon matches.</value></data>
+  <data name="ProfileIcon.Title" xml:space="preserve"><value>Profile icon</value></data>
+  <data name="PrefProfileIcon.ToolTipService.ToolTip" xml:space="preserve"><value>Choose the profile icon</value></data>
+  <data name="PrefProfileIcon.AutomationProperties.Name" xml:space="preserve"><value>Choose the profile icon</value></data>
+  <data name="PrefProfileIconLabel.Text" xml:space="preserve"><value>Icon</value></data>
+  <data name="Preferences.Section.Icons" xml:space="preserve"><value>Icons</value></data>
+  <data name="PrefIconsIntro.Text" xml:space="preserve"><value>Every Fluent icon with its name. Select one to assign it to a Git profile or to a repository (the icon of its tab).</value></data>
+  <data name="PrefIconsNoSelection.Text" xml:space="preserve"><value>Select an icon</value></data>
+  <data name="PrefIconsAssignProfile.Content" xml:space="preserve"><value>Assign to a profile ▾</value></data>
+  <data name="PrefIconsAssignRepository.Content" xml:space="preserve"><value>Assign to a repository ▾</value></data>
+  <data name="PrefIcons.NoRepository" xml:space="preserve"><value>No recently opened repository</value></data>
 </root>

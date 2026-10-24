@@ -3,6 +3,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.Windows.Storage.Pickers;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml.Input;
+using Vigo.App.Controls;
 using Vigo.App.Services;
 using Vigo.Core.Models;
 using Vigo.Core.Services;
@@ -19,6 +20,7 @@ public sealed partial class PreferencesView : UserControl
     {
         ViewModel = viewModel;
         InitializeComponent();
+        FillIcons();
         SectionList.ContainerContentChanging += OnSectionContainerChanging;
     }
 
@@ -199,6 +201,79 @@ public sealed partial class PreferencesView : UserControl
     private void OnProfileActivateClick(object sender, RoutedEventArgs e)
     {
         if (ProfileOf(sender) is { } item) ViewModel.ActivateProfileCommand.Execute(item);
+    }
+
+    // "Icônes" section: the grid is filled once, then on each search (virtualized, so every icon is listed).
+    private string? _selectedIcon;
+
+    private void OnIconsQueryChanged(object sender, TextChangedEventArgs e) => FillIcons();
+
+    private void FillIcons()
+    {
+        var query = IconsQuery.Text.Trim().ToLowerInvariant().Replace(' ', '_');
+        IEnumerable<string> names = query.Length == 0
+            ? FluentIconCatalog.Names
+            : FluentIconCatalog.Names.Where(n => n.StartsWith(query, StringComparison.Ordinal))
+                .Concat(FluentIconCatalog.Names.Where(n => n.Contains(query, StringComparison.Ordinal) && !n.StartsWith(query, StringComparison.Ordinal)));
+        var entries = new System.Collections.ObjectModel.ObservableCollection<IconEntry>(names.Select(n => new IconEntry(n, FluentIconCatalog.GlyphOf(n)!)));
+        IconsGrid.ItemsSource = entries;
+        IconsEmptyNote.Visibility = entries.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    private void OnIconsSelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (IconsGrid.SelectedItem is not IconEntry entry) return;
+        _selectedIcon = entry.Name;
+        SelectedIconGlyph.Glyph = entry.Glyph;
+        SelectedIconName.Text = entry.Name;
+        AssignProfileButton.IsEnabled = ViewModel.Profiles.Count > 0;
+        AssignRepositoryButton.IsEnabled = true;
+    }
+
+    private void OnIconAssignProfileClick(object sender, RoutedEventArgs e)
+    {
+        if (_selectedIcon is not { } icon || sender is not FrameworkElement anchor) return;
+        var menu = new MenuFlyout();
+        foreach (var profile in ViewModel.Profiles)
+        {
+            var target = profile;
+            var item = new ToggleMenuFlyoutItem { Text = profile.Label, IsChecked = profile.Icon == icon };
+            item.Click += (_, _) => target.Icon = icon;
+            menu.Items.Add(item);
+        }
+        menu.ShowAt(anchor);
+    }
+
+    private void OnIconAssignRepositoryClick(object sender, RoutedEventArgs e)
+    {
+        if (_selectedIcon is not { } icon || sender is not FrameworkElement anchor) return;
+        var menu = new MenuFlyout();
+        foreach (var repository in ViewModel.KnownRepositories)
+        {
+            var path = repository.Path;
+            var item = new MenuFlyoutItem { Text = repository.Name };
+            ToolTipService.SetToolTip(item, path);
+            item.Click += (_, _) => ViewModel.AssignRepositoryIcon?.Invoke(path, icon);
+            menu.Items.Add(item);
+        }
+        if (menu.Items.Count == 0) menu.Items.Add(new MenuFlyoutItem { Text = Loc.Get("PrefIcons.NoRepository"), IsEnabled = false });
+        menu.ShowAt(anchor);
+    }
+
+    private bool _pickingProfileIcon;
+
+    private async void OnProfileIconClick(object sender, RoutedEventArgs e)
+    {
+        if (_pickingProfileIcon || ProfileOf(sender) is not { } item || XamlRoot is not { } root) return;
+        _pickingProfileIcon = true;
+        try
+        {
+            if (await TabIconPicker.ShowDialogAsync(root, Loc.Get("ProfileIcon.Title")) is { } pick) item.Icon = pick.Name;
+        }
+        finally
+        {
+            _pickingProfileIcon = false;
+        }
     }
 
     private void OnProfileRemoveClick(object sender, RoutedEventArgs e)

@@ -251,7 +251,12 @@ public sealed partial class RepositoryTabViewModel : TabViewModel, IDisposable
 
     private readonly IGitService _git;
 
-    public override string IconName => "folder";
+    /// <summary>Icon chosen for this repository (a Fluent System Icons name); null keeps the folder.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IconName))]
+    public partial string? CustomIcon { get; set; }
+
+    public override string IconName => CustomIcon ?? "folder";
 
     public string HeadDisplay => Info.HeadName ?? "main";
 

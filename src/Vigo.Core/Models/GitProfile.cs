@@ -17,6 +17,7 @@ namespace Vigo.Core.Models;
 /// <param name="SignCommits">Sign commits and tags with <paramref name="SigningKey"/>.</param>
 /// <param name="FolderRules">Folder patterns (<c>C:\dev\atlas\**</c>) of the repositories the profile applies to.</param>
 /// <param name="SigningFormat"><c>gpg.format</c> (<see cref="SigningFormats"/>); null: the Git configuration decides.</param>
+/// <param name="Icon">Fluent System Icons name shown for the profile; null: its initials.</param>
 public sealed record GitProfile(
     string Id,
     string Label,
@@ -25,7 +26,8 @@ public sealed record GitProfile(
     string? SigningKey = null,
     bool SignCommits = false,
     ImmutableArray<string> FolderRules = default,
-    string? SigningFormat = null)
+    string? SigningFormat = null,
+    string? Icon = null)
 {
     public ImmutableArray<string> FolderRules { get; init; } = FolderRules.IsDefault ? [] : FolderRules;
 

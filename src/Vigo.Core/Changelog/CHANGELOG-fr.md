@@ -1,3 +1,10 @@
+## 0.29.0 — 2026-10-24
+- Mises à jour : la fenêtre « Nouveautés » liste toutes les versions depuis la dernière installée, et plus seulement la dernière.
+- Onglets : clic droit sur un onglet de dépôt › « Changer l'icône… » pour choisir son icône parmi toutes les icônes Fluent, avec recherche par nom en anglais (mémorisée par dépôt).
+- Profils Git : chaque profil peut avoir une icône (choisie parmi toutes les icônes Fluent), affichée dans la liste des profils et dans la barre d'état.
+- Préférences › Icônes : la liste de toutes les icônes Fluent avec leur nom, à affecter à un profil Git ou à un dépôt (icône de son onglet). Les menus de profils affichent l'icône du profil.
+- Barre d'état : « Gérer les profils » du menu du profil ouvre directement la section Profils Git des préférences.
+
 ## 0.28.1 — 2026-10-24
 - GitHub : la connexion par navigateur demande aussi l'autorisation « workflow », nécessaire pour pousser des fichiers de `.github/workflows/` ; reconnectez le compte dans Préférences › Intégrations pour en profiter.
 - Les identifiants OAuth des hébergeurs sont désormais fournis à la compilation au lieu d'être codés en dur dans le code source.

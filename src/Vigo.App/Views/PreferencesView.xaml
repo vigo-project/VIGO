@@ -10,6 +10,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:Vigo.App.Controls"
+    xmlns:views="using:Vigo.App.Views"
     xmlns:local="using:Vigo.App.Views"
     xmlns:services="using:Vigo.App.Services"
     xmlns:model="using:Vigo.Core.Models"
@@ -105,7 +106,7 @@
             </ListView>
         </Border>
 
-        <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto">
+        <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto" Visibility="{x:Bind ViewModel.IsNotIcons, Mode=OneWay}">
             <StackPanel MaxWidth="760" Margin="40,28,40,40" HorizontalAlignment="Left">
                 <TextBlock Text="{x:Bind ViewModel.SelectedSectionTitle, Mode=OneWay}" Style="{StaticResource VigoTitleText}" Margin="0,0,0,8" />
 
@@ -643,8 +644,12 @@
                                             <ColumnDefinition Width="Auto" />
                                         </Grid.ColumnDefinitions>
                                         <Border Width="32" Height="32" CornerRadius="16" Background="{ThemeResource VigoLane5Brush}" VerticalAlignment="Center">
-                                            <TextBlock Text="{x:Bind Initials, Mode=OneWay}" FontSize="{ThemeResource VigoFontSize12}" FontWeight="SemiBold" Foreground="White"
-                                                       HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                            <Grid>
+                                                <TextBlock Text="{x:Bind Initials, Mode=OneWay}" FontSize="{ThemeResource VigoFontSize12}" FontWeight="SemiBold" Foreground="White"
+                                                           HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="{x:Bind HasNoIcon, Mode=OneWay}" />
+                                                <FontIcon Style="{StaticResource VigoIcon}" FontSize="16" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                          Glyph="{x:Bind controls:FluentIcons.FromName(Icon), Mode=OneWay}" Visibility="{x:Bind HasIcon, Mode=OneWay}" />
+                                            </Grid>
                                         </Border>
                                         <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                             <StackPanel Orientation="Horizontal" Spacing="8">
@@ -695,9 +700,15 @@
                                         <TextBox Grid.Row="4" Grid.ColumnSpan="2" x:Uid="PrefProfileFolders"
                                                  Text="{x:Bind FolderRulesText, Mode=TwoWay}" AcceptsReturn="True" TextWrapping="NoWrap" MinHeight="64" MaxHeight="140"
                                                  FontFamily="{StaticResource VigoMonoFont}" PlaceholderText="C:\dev\atlas\**" />
-                                        <StackPanel Grid.Row="5" Grid.ColumnSpan="2" Orientation="Horizontal">
-                                            <Button Style="{StaticResource VigoStandardButton}" x:Uid="PrefProfileRemove" Tag="{x:Bind}" Click="OnProfileRemoveClick" />
-                                        </StackPanel>
+                                        <Grid Grid.Row="5" Grid.ColumnSpan="2">
+                                            <Button Style="{StaticResource VigoStandardButton}" x:Uid="PrefProfileIcon" Tag="{x:Bind}" Click="OnProfileIconClick" HorizontalAlignment="Left">
+                                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                                    <FontIcon Style="{StaticResource VigoIcon}" FontSize="18" Glyph="{x:Bind controls:FluentIcons.FromName(IconOrPlaceholder), Mode=OneWay}" />
+                                                    <TextBlock x:Uid="PrefProfileIconLabel" VerticalAlignment="Center" />
+                                                </StackPanel>
+                                            </Button>
+                                            <Button Style="{StaticResource VigoDangerButton}" x:Uid="PrefProfileRemove" Tag="{x:Bind}" Click="OnProfileRemoveClick" HorizontalAlignment="Right" />
+                                        </Grid>
                                     </Grid>
                                 </StackPanel>
                             </DataTemplate>
@@ -1279,5 +1290,47 @@
                 </StackPanel>
             </StackPanel>
         </ScrollViewer>
+        <!-- Icônes: every Fluent icon with its name; assignable to a Git profile or a repository tab. Outside the ScrollViewer: the grid
+             takes the height left in the window (anchored), and scrolls by itself. -->
+        <Grid Grid.Column="1" Visibility="{x:Bind ViewModel.IsIcons, Mode=OneWay}" Margin="40,28,40,40" RowSpacing="8">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <TextBlock Text="{x:Bind ViewModel.SelectedSectionTitle, Mode=OneWay}" Style="{StaticResource VigoTitleText}" Margin="0,0,0,8" />
+            <TextBlock Grid.Row="1" Style="{StaticResource SettingDescription}" x:Uid="PrefIconsIntro" />
+            <TextBox Grid.Row="2" x:Name="IconsQuery" x:Uid="TabIconSearch" TextChanged="OnIconsQueryChanged" />
+            <Grid Grid.Row="3">
+                <GridView x:Name="IconsGrid" SelectionMode="Single" SelectionChanged="OnIconsSelectionChanged">
+                    <GridView.ItemTemplate>
+                        <DataTemplate x:DataType="views:IconEntry">
+                            <StackPanel Width="112" Padding="4,8" Spacing="6" ToolTipService.ToolTip="{x:Bind Name}">
+                                <FontIcon Style="{StaticResource VigoIcon}" FontSize="24" Glyph="{x:Bind Glyph}" />
+                                <TextBlock Text="{x:Bind Name}" FontSize="{ThemeResource VigoFontSize11}" TextAlignment="Center" TextTrimming="CharacterEllipsis"
+                                           Foreground="{ThemeResource VigoText3Brush}" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </GridView.ItemTemplate>
+                </GridView>
+                <TextBlock x:Name="IconsEmptyNote" x:Uid="TabIconNone" Opacity="0.7" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </Grid>
+            <Grid Grid.Row="4" ColumnSpacing="12" Padding="12" CornerRadius="6" BorderThickness="1" BorderBrush="{ThemeResource VigoStrokeSubtleBrush}" Background="{ThemeResource VigoCardBrush}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <FontIcon x:Name="SelectedIconGlyph" Style="{StaticResource VigoIcon}" FontSize="28" VerticalAlignment="Center" />
+                <TextBlock x:Name="SelectedIconName" x:Uid="PrefIconsNoSelection" Grid.Column="1" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
+                           FontFamily="{StaticResource VigoMonoFont}" />
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8">
+                    <Button x:Name="AssignProfileButton" Style="{StaticResource VigoStandardButton}" x:Uid="PrefIconsAssignProfile" IsEnabled="False" Click="OnIconAssignProfileClick" />
+                    <Button x:Name="AssignRepositoryButton" Style="{StaticResource VigoStandardButton}" x:Uid="PrefIconsAssignRepository" IsEnabled="False" Click="OnIconAssignRepositoryClick" />
+                </StackPanel>
+            </Grid>
+        </Grid>
     </Grid>
 </UserControl>
