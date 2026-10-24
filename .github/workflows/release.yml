@@ -69,7 +69,7 @@ jobs:
           "PACK_VERSION=$v" | Out-File -Append -FilePath $env:GITHUB_ENV
 
       - name: Publish (Native AOT)
-        run: dotnet publish src/Vigo.App -c Release -r win-x64 -p:Platform=x64 -p:Version=${{ env.PACK_VERSION }} -o artifacts/publish/aot-x64
+        run: dotnet publish src/Vigo.App -c Release -r win-x64 -p:Platform=x64 -p:Version=${{ env.PACK_VERSION }} -p:VigoGitHubClientId=${{ vars.VIGO_GITHUB_CLIENT_ID }} -p:VigoAzdoClientId=${{ vars.VIGO_AZDO_CLIENT_ID }} -o artifacts/publish/aot-x64
 
       - name: Velopack
         run: dotnet tool install --global vpk --version 1.2.161

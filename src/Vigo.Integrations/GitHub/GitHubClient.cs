@@ -20,7 +20,7 @@ public sealed partial class GitHubClient(
     HttpClient http, string? clientId, TimeProvider? time = null, Microsoft.Extensions.Logging.ILogger? logger = null) : IHostingClient
 {
     /// <summary>Scopes asked at sign-in: repositories (clone, pull requests, checks) and the profile.</summary>
-    public const string Scopes = "repo read:user";
+    public const string Scopes = "repo workflow read:user";
 
     private const string DeviceCodeUrl = "https://github.com/login/device/code";
     private const string AccessTokenUrl = "https://github.com/login/oauth/access_token";

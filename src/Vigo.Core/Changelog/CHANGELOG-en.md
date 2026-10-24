@@ -1,3 +1,7 @@
+## 0.28.1 — 2026-10-24
+- GitHub: browser sign-in now also asks for the "workflow" permission, needed to push files under `.github/workflows/`; reconnect the account in Preferences › Integrations to get it.
+- Hosting OAuth client ids are now supplied at build time instead of being hard-coded in the source.
+
 ## 0.28.0 — 2026-10-23
 - Integrated terminal: new native engine (no WebView2), lighter; same features (shells, theme, font, copy and paste, links, shortcuts), with a small margin around the text.
 

@@ -62,9 +62,15 @@ public partial class App : Application
         _host.Services.GetRequiredService<AppUpdates>().StartBackgroundChecks();
     }
 
-    /// <summary>Client id of VIGO's GitHub OAuth App (device flow enabled). Public by design: the device flow has no secret.</summary>
-    private const string DefaultGitHubClientId = "Ov23lio0kGnDxp5CFizL";
-
+    /// <summary>OAuth client id passed at build time (<c>-p:VigoGitHubClientId=…</c>), then the runtime override variable; null when neither is set.</summary>
+    private static string? ClientId(string metadataKey, string overrideVariable)
+    {
+        if (Environment.GetEnvironmentVariable(overrideVariable) is { Length: > 0 } overridden)
+            return overridden;
+        var built = System.Reflection.CustomAttributeExtensions.GetCustomAttributes<System.Reflection.AssemblyMetadataAttribute>(typeof(App).Assembly)
+            .FirstOrDefault(a => a.Key == metadataKey)?.Value;
+        return string.IsNullOrWhiteSpace(built) ? null : built;
+    }
 
     private static IHost BuildHost()
     {
@@ -113,16 +119,16 @@ public partial class App : Application
         // Configurable shortcuts (J7.3, ADR-054): the map of the application is also the static ShortcutMap.Current.
         builder.Services.AddSingleton(sp => ShortcutMap.Current = new ShortcutMap(sp.GetRequiredService<Preferences>()));
         // Hosting accounts (J6.1, ADR-044): tokens in the Windows Credential Locker, names in accounts.json. The OAuth
-        // device flow uses the client id of VIGO's GitHub OAuth App (public, no secret); VIGO_GITHUB_CLIENT_ID overrides it
-        // (e.g. to test another app); a personal token always works.
+        // device flow uses the client ids passed at build time (public, no secret); VIGO_GITHUB_CLIENT_ID /
+        // VIGO_AZDO_CLIENT_ID override them at runtime; a personal token always works.
         builder.Services.AddSingleton(new HttpClient { Timeout = TimeSpan.FromSeconds(30) });
         builder.Services.AddSingleton<IHostingClient>(sp => new GitHubClient(
             sp.GetRequiredService<HttpClient>(),
-            Environment.GetEnvironmentVariable("VIGO_GITHUB_CLIENT_ID") is { Length: > 0 } overridden ? overridden : DefaultGitHubClientId,
+            ClientId("GitHubClientId", "VIGO_GITHUB_CLIENT_ID"),
             logger: sp.GetRequiredService<ILoggerFactory>().CreateLogger("Vigo.Integrations.GitHub")));
         builder.Services.AddSingleton<IHostingClient>(sp => new AzureDevOpsClient(
             sp.GetRequiredService<HttpClient>(),
-            Environment.GetEnvironmentVariable("VIGO_AZDO_CLIENT_ID") is { Length: > 0 } azdoClientId ? azdoClientId : null));
+            ClientId("AzdoClientId", "VIGO_AZDO_CLIENT_ID")));
         builder.Services.AddSingleton<ITokenVault, CredentialLockerVault>();
         // AI commit message (J7.9, ADR-070): off by default; engines are a CLI on this machine or the Anthropic API.
         builder.Services.AddSingleton<ISecretVault>(sp => (CredentialLockerVault)sp.GetRequiredService<ITokenVault>());

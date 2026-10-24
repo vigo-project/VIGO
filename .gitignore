@@ -445,3 +445,6 @@ Releases/
 .claude/skills/next/
 .claude/skills/resume/
 docs/
+
+# Local build inputs (OAuth client ids)
+Directory.Build.local.props

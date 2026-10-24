@@ -16,6 +16,9 @@
     <InvariantGlobalization>false</InvariantGlobalization>
   </PropertyGroup>
 
+  <!-- Local, uncommitted overrides (e.g. VigoGitHubClientId, VigoAzdoClientId). -->
+  <Import Project="Directory.Build.local.props" Condition="Exists('Directory.Build.local.props')" />
+
   <!-- Production libraries: verified trimming/AOT-compatible. -->
   <PropertyGroup Condition="'$(IsVigoLibrary)' == 'true'">
     <IsAotCompatible>true</IsAotCompatible>
