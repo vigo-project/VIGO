@@ -1,9 +1,10 @@
-## 0.29.0 — 2026-10-24
+## Unreleased
 - Updates: the "What's new" dialog lists every version since the last installed one, not just the latest.
 - Tabs: right-click a repository tab › "Change icon…" to pick its icon from all the Fluent icons, searchable by name (remembered per repository).
 - Git profiles: each profile can have an icon (picked from all the Fluent icons), shown in the profile list and in the status bar.
 - Preferences › Icons: the list of all the Fluent icons with their name, to assign to a Git profile or to a repository (its tab icon). The profile menus show the profile icon.
 - Status bar: "Manage profiles" in the profile menu now opens the Git profiles section of the preferences directly.
+- Preferences: sections reordered (everyday settings first); "Current repository" is set apart at the bottom of the list, under a separator.
 
 ## 0.28.1 — 2026-10-24
 - GitHub: browser sign-in now also asks for the "workflow" permission, needed to push files under `.github/workflows/`; reconnect the account in Preferences › Integrations to get it.

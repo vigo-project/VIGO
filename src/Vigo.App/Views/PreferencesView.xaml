@@ -97,9 +97,12 @@
                       SelectionMode="Single" x:Uid="PrefSectionList">
                 <ListView.ItemTemplate>
                     <DataTemplate x:DataType="vm:PreferencesSectionItem">
-                        <StackPanel Orientation="Horizontal" Spacing="10" Height="32" ToolTipService.ToolTip="{x:Bind Tooltip}">
-                            <FontIcon Style="{StaticResource VigoIcon}" Glyph="{x:Bind controls:FluentIcons.FromName(IconName)}" VerticalAlignment="Center" />
-                            <TextBlock Text="{x:Bind Label}" VerticalAlignment="Center" FontSize="{ThemeResource VigoFontSize13}" />
+                        <StackPanel ToolTipService.ToolTip="{x:Bind Tooltip}">
+                            <Border Height="1" VerticalAlignment="Center" Background="{ThemeResource VigoStrokeSubtleBrush}" Visibility="{x:Bind IsSeparator}" />
+                            <StackPanel Orientation="Horizontal" Spacing="10" Height="32" Visibility="{x:Bind IsNotSeparator}">
+                                <FontIcon Style="{StaticResource VigoIcon}" Glyph="{x:Bind controls:FluentIcons.FromName(IconName)}" VerticalAlignment="Center" />
+                                <TextBlock Text="{x:Bind Label}" VerticalAlignment="Center" FontSize="{ThemeResource VigoFontSize13}" />
+                            </StackPanel>
                         </StackPanel>
                     </DataTemplate>
                 </ListView.ItemTemplate>

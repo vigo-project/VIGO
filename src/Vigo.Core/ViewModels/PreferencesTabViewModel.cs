@@ -23,12 +23,18 @@ public enum PreferencesSection
     Integrations,
     Tools,
     About,
+    /// <summary>Not a section: the line that sets the contextual entry apart in the navigation.</summary>
+    Separator,
 }
 
 /// <summary>Entry of the navigation of the preferences tab; the sections of later milestones are shown disabled.</summary>
 public sealed record PreferencesSectionItem(PreferencesSection Section, string Label, string IconName, string? AvailableAt, string? DisabledTooltip = null)
 {
-    public bool IsEnabled => AvailableAt is null && DisabledTooltip is null;
+    public bool IsEnabled => !IsSeparator && AvailableAt is null && DisabledTooltip is null;
+
+    public bool IsSeparator => Section == PreferencesSection.Separator;
+
+    public bool IsNotSeparator => !IsSeparator;
 
     /// <summary>Tooltip of a disabled section.</summary>
     public string? Tooltip => DisabledTooltip ?? (AvailableAt is null ? null : Loc.Format("Preferences.Section.AvailableAt", AvailableAt));
@@ -92,16 +98,18 @@ public sealed partial class PreferencesTabViewModel : TabViewModel, IDisposable
         Sections =
         [
             new(PreferencesSection.General, Loc.Get("Preferences.Section.General"), "settings", null),
-            new(PreferencesSection.Repository, Loc.Get("Preferences.Section.Repository"), "folder", null, Loc.Get("Preferences.Section.NoRepository")),
             new(PreferencesSection.Appearance, Loc.Get("Preferences.Section.Appearance"), "paint_brush", null),
             new(PreferencesSection.Shortcuts, Loc.Get("Preferences.Section.Shortcuts"), "keyboard", shortcuts is null ? "J7" : null),
+            new(PreferencesSection.SshKeys, Loc.Get("Preferences.Section.SshKeys"), "key", sshKeys is null ? "J7" : null),
             new(PreferencesSection.Profiles, Loc.Get("Preferences.Section.Profiles"), "person", profiles is null ? "J6" : null),
+            new(PreferencesSection.Integrations, Loc.Get("Preferences.Section.Integrations"), "plug_connected", accounts is null ? "J6" : null),
             new(PreferencesSection.Projects, Loc.Get("Preferences.Section.Projects"), "folder", projects is null ? "J7" : null),
             new(PreferencesSection.Icons, Loc.Get("Preferences.Section.Icons"), "emoji", null),
-            new(PreferencesSection.SshKeys, Loc.Get("Preferences.Section.SshKeys"), "key", sshKeys is null ? "J7" : null),
-            new(PreferencesSection.Integrations, Loc.Get("Preferences.Section.Integrations"), "plug_connected", accounts is null ? "J6" : null),
             new(PreferencesSection.Tools, Loc.Get("Preferences.Section.Tools"), "document_edit", null),
             new(PreferencesSection.About, Loc.Get("Preferences.Section.About"), "info", null),
+            // Contextual section (depends on the repository shown before the preferences): apart, at the end.
+            new(PreferencesSection.Separator, string.Empty, string.Empty, null),
+            new(PreferencesSection.Repository, Loc.Get("Preferences.Section.Repository"), "folder", null, Loc.Get("Preferences.Section.NoRepository")),
         ];
         MergeToolOptions =
         [

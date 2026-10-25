@@ -29,7 +29,14 @@ public sealed partial class PreferencesView : UserControl
     /// <summary>Sections of later milestones are listed but cannot be selected (their tooltip names the milestone).</summary>
     private static void OnSectionContainerChanging(ListViewBase sender, ContainerContentChangingEventArgs args)
     {
-        if (args.Item is PreferencesSectionItem item) args.ItemContainer.IsEnabled = item.IsEnabled;
+        if (args.Item is not PreferencesSectionItem item) return;
+        args.ItemContainer.IsEnabled = item.IsEnabled;
+        if (!item.IsSeparator) return;
+        // The line is not an entry: neither selectable nor clickable, and thin.
+        args.ItemContainer.IsHitTestVisible = false;
+        args.ItemContainer.IsTabStop = false;
+        args.ItemContainer.MinHeight = 0;
+        args.ItemContainer.Height = 17;
     }
 
     // "Palette du graphe": the color picker of a swatch edits the lane color at once; the item is carried by Tag.
