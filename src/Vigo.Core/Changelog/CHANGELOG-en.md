@@ -1,4 +1,4 @@
-## Unreleased
+## 0.29.1 — 2026-10-25
 - Updates: the "What's new" dialog lists every version since the last installed one, not just the latest.
 - Tabs: right-click a repository tab › "Change icon…" to pick its icon from all the Fluent icons, searchable by name (remembered per repository).
 - Git profiles: each profile can have an icon (picked from all the Fluent icons), shown in the profile list and in the status bar.

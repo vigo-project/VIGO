@@ -1,4 +1,4 @@
-## Unreleased
+## 0.29.1 — 2026-10-25
 - Mises à jour : la fenêtre « Nouveautés » liste toutes les versions depuis la dernière installée, et plus seulement la dernière.
 - Onglets : clic droit sur un onglet de dépôt › « Changer l'icône… » pour choisir son icône parmi toutes les icônes Fluent, avec recherche par nom en anglais (mémorisée par dépôt).
 - Profils Git : chaque profil peut avoir une icône (choisie parmi toutes les icônes Fluent), affichée dans la liste des profils et dans la barre d'état.
