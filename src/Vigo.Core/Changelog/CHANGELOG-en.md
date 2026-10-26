@@ -1,3 +1,6 @@
+## 0.29.2 — 2026-10-26
+- Interactive rebase: with only "pick" onto a target that has moved on, the rebase now runs instead of reporting "Nothing to change".
+
 ## 0.29.1 — 2026-10-25
 - Updates: the "What's new" dialog lists every version since the last installed one, not just the latest.
 - Tabs: right-click a repository tab › "Change icon…" to pick its icon from all the Fluent icons, searchable by name (remembered per repository).

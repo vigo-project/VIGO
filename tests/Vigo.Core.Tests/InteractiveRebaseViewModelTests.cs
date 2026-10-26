@@ -99,6 +99,36 @@ public sealed class InteractiveRebaseViewModelTests : IDisposable
     }
 
     [Fact]
+    public async Task All_picks_onto_the_current_base_do_nothing_but_onto_a_moved_upstream_they_rebase()
+    {
+        using var tab = await OpenAsync();
+        RestoreOriginalOrder(tab.Rebase);
+        await tab.Rebase.StartCommand.ExecuteAsync(null);
+        Assert.Contains(_notifier.Items, n => n is (_, "Rien à modifier", _));
+
+        // A second line of history moved on from the base: rebasing onto it with only picks still replays the commits.
+        var head = _repo.Git("rev-parse", "HEAD").Trim();
+        _repo.Git("checkout", "-q", "--detach", _base.ToString());
+        var moved = GitSha.Parse(_repo.Commit("moved", ("moved.txt", "m\n")));
+        _repo.Git("checkout", "-q", "main");
+        _repo.Git("reset", "-q", "--hard", head);
+        await tab.Rebase.OpenAsync(moved.ToString(), "moved", moved);
+        RestoreOriginalOrder(tab.Rebase);
+
+        await tab.Rebase.StartCommand.ExecuteAsync(null);
+
+        Assert.Equal(moved.ToString(), _repo.Git("merge-base", moved.ToString(), "HEAD").Trim());
+    }
+
+    // Undoes the autosquash applied on opening: one, two, "fixup! one", three, all picks.
+    private static void RestoreOriginalOrder(InteractiveRebaseViewModel rebase)
+    {
+        rebase.SelectedRow = rebase.Rows[1];
+        rebase.MoveSelected(1);
+        foreach (var row in rebase.Rows) row.Action = RebaseAction.Pick;
+    }
+
+    [Fact]
     public async Task An_edit_step_stops_and_lets_the_commit_form_amend()
     {
         using var tab = await OpenAsync();

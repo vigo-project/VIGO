@@ -172,6 +172,7 @@ public sealed partial class InteractiveRebaseViewModel : ObservableObject
     public partial RebaseRow? SelectedRow { get; set; }
 
     private string _upstream = string.Empty;
+    private GitSha _upstreamSha;
     private int _autosquashed;
 
     // ---- Opening -----------------------------------------------------------------------------------------------
@@ -213,6 +214,7 @@ public sealed partial class InteractiveRebaseViewModel : ObservableObject
                         return;
                     }
                     _upstream = upstream;
+                    _upstreamSha = upstreamSha;
                     _commits = commits;
                     BranchName = CurrentBranch;
                     UpstreamName = upstreamName;
@@ -410,8 +412,10 @@ public sealed partial class InteractiveRebaseViewModel : ObservableObject
         if (!CanStart) return;
         var todo = Rows.Select(r => new RebaseTodoItem(r.Commit.Sha, r.Action, r.IsReword ? r.RewordMessage : null)).ToList();
         // Nothing changed: no rebase at all (git would rewrite nothing, but VIGO would record an empty operation).
+        // Only when the upstream is already the base of these commits: otherwise the rebase moves them onto it.
         if (todo.Select(t => t.Commit).SequenceEqual(_commits.Select(c => c.Sha))
-            && todo.All(t => t.Action == RebaseAction.Pick || t.Action == RebaseAction.Reword && t.Message == FindCommit(t.Commit)?.Message))
+            && todo.All(t => t.Action == RebaseAction.Pick || t.Action == RebaseAction.Reword && t.Message == FindCommit(t.Commit)?.Message)
+            && await _git.IsAncestorAsync(_repositoryPath, _upstreamSha, _commits[0].Sha, _lifetime) is { Value: Success<bool> { Value: true } })
         {
             Close();
             _notifier?.Notify(NotificationSeverity.Info, Loc.Get("Rebase.NothingToChange"), Loc.Get("Rebase.ListUnchanged"));
