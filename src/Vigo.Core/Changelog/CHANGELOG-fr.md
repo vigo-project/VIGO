@@ -1,3 +1,6 @@
+## 0.29.2 — 2026-10-26
+- Rebase interactif : avec uniquement des « pick » vers une cible qui a avancé, le rebase est maintenant lancé au lieu d'afficher « Rien à modifier ».
+
 ## 0.29.1 — 2026-10-25
 - Mises à jour : la fenêtre « Nouveautés » liste toutes les versions depuis la dernière installée, et plus seulement la dernière.
 - Onglets : clic droit sur un onglet de dépôt › « Changer l'icône… » pour choisir son icône parmi toutes les icônes Fluent, avec recherche par nom en anglais (mémorisée par dépôt).

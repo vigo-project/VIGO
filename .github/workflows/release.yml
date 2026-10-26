@@ -68,8 +68,18 @@ jobs:
           }
           "PACK_VERSION=$v" | Out-File -Append -FilePath $env:GITHUB_ENV
 
+      # The client ids are repository secrets (masked in logs): an empty one would silently disable the browser sign-in.
       - name: Publish (Native AOT)
-        run: dotnet publish src/Vigo.App -c Release -r win-x64 -p:Platform=x64 -p:Version=${{ env.PACK_VERSION }} -p:VigoGitHubClientId=${{ vars.VIGO_GITHUB_CLIENT_ID }} -p:VigoAzdoClientId=${{ vars.VIGO_AZDO_CLIENT_ID }} -o artifacts/publish/aot-x64
+        shell: pwsh
+        env:
+          VIGO_GITHUB_CLIENT_ID: ${{ secrets.VIGO_GITHUB_CLIENT_ID }}
+          VIGO_AZDO_CLIENT_ID: ${{ secrets.VIGO_AZDO_CLIENT_ID }}
+        run: |
+          foreach ($n in 'VIGO_GITHUB_CLIENT_ID', 'VIGO_AZDO_CLIENT_ID') {
+            if (-not (Get-Item "env:$n").Value) { throw "Secret $n is empty or missing" }
+          }
+          dotnet publish src/Vigo.App -c Release -r win-x64 -p:Platform=x64 -p:Version=$env:PACK_VERSION -p:VigoGitHubClientId=$env:VIGO_GITHUB_CLIENT_ID -p:VigoAzdoClientId=$env:VIGO_AZDO_CLIENT_ID -o artifacts/publish/aot-x64
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
 
       - name: Velopack
         run: dotnet tool install --global vpk --version 1.2.161
