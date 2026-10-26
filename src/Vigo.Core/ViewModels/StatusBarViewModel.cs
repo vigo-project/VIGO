@@ -44,7 +44,19 @@ public sealed partial class StatusBarViewModel : ObservableObject
     {
         OnPropertyChanged(nameof(IsUpdateReady));
         OnPropertyChanged(nameof(UpdateTooltip));
+        OnPropertyChanged(nameof(CanCheckForUpdates));
+        OnPropertyChanged(nameof(IsCheckingForUpdates));
     }
+
+    /// <summary>A check is running: the icon of the button spins.</summary>
+    public bool IsCheckingForUpdates => _updates?.IsChecking == true;
+
+    /// <summary>The "check for updates" button, at the far right: hidden once a version waits for its restart (the green button takes over).</summary>
+    public bool CanCheckForUpdates => _updates is not null && !IsUpdateReady;
+
+    /// <summary>Checks now; the result is a toast (up to date, downloading, failed).</summary>
+    [RelayCommand]
+    private Task CheckForUpdatesAsync() => _updates?.CheckNowAsync() ?? Task.CompletedTask;
 
     /// <summary>A newer version is downloaded and waits for a restart: the green button is shown next to the version.</summary>
     public bool IsUpdateReady => _updates?.ReadyVersion is not null || PreviewUpdate;

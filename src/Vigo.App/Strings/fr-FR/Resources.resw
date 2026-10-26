@@ -1085,6 +1085,8 @@ Stocké par Git LFS (déclaré dans {1}).</value></data>
   <data name="StatusPaletteButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Palette de commandes</value></data>
   <data name="StatusProfileButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Changer de profil</value></data>
   <data name="StatusRestartText.Text" xml:space="preserve"><value>Redémarrer et mettre à jour</value></data>
+  <data name="StatusCheckUpdatesButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Rechercher des mises à jour</value></data>
+  <data name="StatusCheckUpdatesButton.AutomationProperties.Name" xml:space="preserve"><value>Rechercher des mises à jour</value></data>
   <data name="StatusThemeButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Basculer thème clair / sombre</value></data>
   <data name="Submodule.Add.Confirm" xml:space="preserve"><value>Ajouter</value></data>
   <data name="Submodule.Add.Description" xml:space="preserve"><value>Le dépôt est cloné dans le dépôt courant ; .gitmodules et l'entrée sont indexés, il reste à les valider.</value></data>

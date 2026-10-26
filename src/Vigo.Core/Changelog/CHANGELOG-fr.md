@@ -1,3 +1,8 @@
+## 0.29.4 — 2026-10-26
+- Barre d'état : un bouton en bas à droite pour rechercher les mises à jour à la demande (son icône tourne pendant la recherche).
+- Terminal intégré : mise à jour de LoomTerminal en 0.1.0-alpha.2.
+- Préférences : correction d'un plantage en passant à l'onglet d'un autre dépôt avec la page « Dépôt » ouverte.
+
 ## 0.29.3 — 2026-10-26
 - Graphe : le menu clic droit d'une branche (badge ou ligne) reprend les actions du panneau gauche : extraire, fusionner, rebaser, pousser, renommer, supprimer, copier le nom.
 - Graphe : la touche Suppr supprime la branche (locale ou distante) de la ligne sélectionnée (un choix est proposé s'il y en a plusieurs).

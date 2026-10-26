@@ -1085,6 +1085,8 @@ Stored by Git LFS (declared in {1}).</value></data>
   <data name="StatusPaletteButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Command palette</value></data>
   <data name="StatusProfileButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Switch profile</value></data>
   <data name="StatusRestartText.Text" xml:space="preserve"><value>Restart and update</value></data>
+  <data name="StatusCheckUpdatesButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Check for updates</value></data>
+  <data name="StatusCheckUpdatesButton.AutomationProperties.Name" xml:space="preserve"><value>Check for updates</value></data>
   <data name="StatusThemeButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Toggle light / dark theme</value></data>
   <data name="Submodule.Add.Confirm" xml:space="preserve"><value>Add</value></data>
   <data name="Submodule.Add.Description" xml:space="preserve"><value>The repository is cloned inside the current one; .gitmodules and the entry are staged, they still have to be committed.</value></data>

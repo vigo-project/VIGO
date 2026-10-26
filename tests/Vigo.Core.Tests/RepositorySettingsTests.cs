@@ -112,6 +112,20 @@ public sealed class RepositorySettingsTests : IDisposable
     }
 
     [Fact]
+    public void A_null_encoding_from_the_combo_box_is_ignored()
+    {
+        using var sut = new PreferencesTabViewModel(_preferences, git: _git);
+        sut.SetRepository(_repo.Path, "demo");
+        var settings = sut.Repository!;
+        var chosen = settings.SelectedEncoding;
+
+        // The ComboBox writes null when its items are replaced.
+        settings.SelectedEncoding = null!;
+
+        Assert.Same(chosen, settings.SelectedEncoding);
+    }
+
+    [Fact]
     public async Task Hooks_are_listed_and_toggled_and_the_folder_and_skip_switch_are_written_to_the_config()
     {
         var hooks = Path.Combine(_repo.Path, ".git", "hooks");

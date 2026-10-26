@@ -171,6 +171,17 @@
                         <TextBlock x:Uid="StatusRestartText" />
                     </StackPanel>
                 </Button>
+                <!-- Manual check, bottom right (the automatic one runs every hour) -->
+                <Button x:Uid="StatusCheckUpdatesButton" Style="{StaticResource VigoStatusBarButton}"
+                        Command="{x:Bind ViewModel.StatusBar.CheckForUpdatesCommand}"
+                        Visibility="{x:Bind ViewModel.StatusBar.CanCheckForUpdates, Mode=OneWay}">
+                    <FontIcon x:Name="CheckUpdatesIcon" Style="{StaticResource VigoIcon}" FontSize="12"
+                              Glyph="{x:Bind controls:FluentIcons.ArrowSync}" RenderTransformOrigin="0.5,0.5">
+                        <FontIcon.RenderTransform>
+                            <RotateTransform x:Name="CheckUpdatesRotation" />
+                        </FontIcon.RenderTransform>
+                    </FontIcon>
+                </Button>
             </StackPanel>
         </Grid>
 

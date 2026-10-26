@@ -60,8 +60,11 @@ public sealed partial class AppUpdates(IAppUpdater updater, TimeProvider time, I
     /// <summary>Raised when something is worth telling the user (a version is ready, a manual check ended).</summary>
     public event EventHandler<UpdateNotice>? Notice;
 
-    /// <summary>Raised when <see cref="ReadyVersion"/> changes.</summary>
+    /// <summary>Raised when <see cref="ReadyVersion"/> or <see cref="IsChecking"/> changes.</summary>
     public event EventHandler? Changed;
+
+    /// <summary>A check (and the download it starts) is running.</summary>
+    public bool IsChecking { get; private set; }
 
     public static string CurrentVersion => AppVersion.Current;
 
@@ -110,6 +113,8 @@ public sealed partial class AppUpdates(IAppUpdater updater, TimeProvider time, I
             return;
         }
         if (!await _busy.WaitAsync(0, _disposed.Token)) return;
+        IsChecking = true;
+        Changed?.Invoke(this, EventArgs.Empty);
         try
         {
             var update = await updater.CheckAsync(_disposed.Token);
@@ -138,6 +143,8 @@ public sealed partial class AppUpdates(IAppUpdater updater, TimeProvider time, I
         }
         finally
         {
+            IsChecking = false;
+            Changed?.Invoke(this, EventArgs.Empty);
             _busy.Release();
         }
     }

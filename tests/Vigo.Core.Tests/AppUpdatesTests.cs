@@ -35,6 +35,27 @@ public sealed class AppUpdatesTests
     }
 
     [Fact]
+    public async Task The_status_bar_button_checks_now_and_gives_way_to_the_restart_button()
+    {
+        var updater = new FakeUpdater { Available = new AppUpdate("0.2.0") };
+        var (updates, _) = Create(updater);
+        var bar = new Vigo.Core.ViewModels.StatusBarViewModel(TimeProvider.System, null, updates: updates);
+        var checking = new List<bool>();
+        updates.Changed += (_, _) => checking.Add(updates.IsChecking);
+        Assert.True(bar.CanCheckForUpdates);
+        Assert.False(bar.IsCheckingForUpdates);
+
+        await bar.CheckForUpdatesCommand.ExecuteAsync(null);
+
+        Assert.Equal("0.2.0", updates.ReadyVersion);
+        Assert.False(bar.CanCheckForUpdates);
+        // Starts (true), version ready (true: still running), ends (false).
+        Assert.Equal([true, true, false], checking);
+        Assert.False(bar.IsCheckingForUpdates);
+        Assert.False(new Vigo.Core.ViewModels.StatusBarViewModel(TimeProvider.System, null).CanCheckForUpdates);
+    }
+
+    [Fact]
     public void Version_has_no_build_metadata()
     {
         Assert.False(string.IsNullOrWhiteSpace(AppVersion.Current));

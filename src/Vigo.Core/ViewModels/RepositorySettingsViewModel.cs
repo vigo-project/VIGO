@@ -63,16 +63,24 @@ public sealed partial class RepositorySettingsViewModel : ObservableObject
 
     public ObservableCollection<EncodingOption> EncodingOptions { get; }
 
-    [ObservableProperty]
-    public partial EncodingOption SelectedEncoding { get; set; }
+    private EncodingOption _selectedEncoding = null!;
+
+    /// <summary>
+    /// Never null: the ComboBox writes null when its items are replaced (switching to the tab of another repository),
+    /// which is ignored; the binding then shows the current choice again.
+    /// </summary>
+    public EncodingOption SelectedEncoding
+    {
+        get => _selectedEncoding;
+        set
+        {
+            if (value is null || !SetProperty(ref _selectedEncoding, value)) return;
+            if (!_loading) Saving = SaveEncodingAsync(value.Value);
+        }
+    }
 
     /// <summary>The write of the last choice (tests await it).</summary>
     internal Task Saving { get; private set; } = Task.CompletedTask;
-
-    partial void OnSelectedEncodingChanged(EncodingOption value)
-    {
-        if (!_loading) Saving = SaveEncodingAsync(value.Value);
-    }
 
     private Task? _loaded;
 

@@ -88,6 +88,7 @@ public sealed partial class MainWindow : Window, IDisposable
         Closed += OnClosed;
 
         ViewModel.PropertyChanged += OnViewModelPropertyChanged;
+        ViewModel.StatusBar.PropertyChanged += OnStatusBarPropertyChanged;
         ViewModel.Tabs.CollectionChanged += OnTabsCollectionChanged;
         Tabs.LayoutUpdated += OnTabsLayoutUpdated;
         ViewModel.ActivationRequested += OnActivationRequested;
@@ -175,6 +176,7 @@ public sealed partial class MainWindow : Window, IDisposable
         Appearance.Current.PropertyChanged -= OnAppearanceChanged;
         ViewModel.ActivationRequested -= OnActivationRequested;
         ViewModel.CloseRequested -= OnCloseRequested;
+        ViewModel.StatusBar.PropertyChanged -= OnStatusBarPropertyChanged;
         Dispose();
         _windows.OnClosed(this);
     }
@@ -598,6 +600,28 @@ public sealed partial class MainWindow : Window, IDisposable
         finally
         {
             _context.IsDialogOpen = false;
+        }
+    }
+
+    private Storyboard? _checkSpin;
+
+    // The icon of the "check for updates" button turns for as long as a check (and its download) runs.
+    private void OnStatusBarPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName != nameof(StatusBarViewModel.IsCheckingForUpdates)) return;
+        if (ViewModel.StatusBar.IsCheckingForUpdates)
+        {
+            var spin = new DoubleAnimation { From = 0, To = 360, Duration = TimeSpan.FromSeconds(1), RepeatBehavior = RepeatBehavior.Forever };
+            Storyboard.SetTarget(spin, CheckUpdatesRotation);
+            Storyboard.SetTargetProperty(spin, "Angle");
+            _checkSpin = new Storyboard { Children = { spin } };
+            _checkSpin.Begin();
+        }
+        else
+        {
+            _checkSpin?.Stop();
+            _checkSpin = null;
+            CheckUpdatesRotation.Angle = 0;
         }
     }
 

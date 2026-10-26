@@ -1,3 +1,8 @@
+## 0.29.4 — 2026-10-26
+- Status bar: a button at the bottom right to check for updates on demand (its icon spins while it checks).
+- Integrated terminal: LoomTerminal updated to 0.1.0-alpha.2.
+- Preferences: fixed a crash when switching to another repository's tab with the "Repository" page open.
+
 ## 0.29.3 — 2026-10-26
 - Graph: the right-click menu of a branch (badge or row) now has the left panel's actions: check out, merge, rebase, push, rename, delete, copy name.
 - Graph: the Delete key deletes the branch (local or remote) of the selected row (a choice is offered when there are several).
