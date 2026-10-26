@@ -397,6 +397,11 @@ public sealed partial class RefsPanelViewModel : ObservableObject, IDisposable
         _ => null,
     };
 
+    /// <summary>Row standing for a branch that is not in the list (a badge of the graph): enough for <see cref="MenuFor"/> and the row commands.</summary>
+    public static RefRow RowOf(GitRef branch) => new(
+        branch.CanonicalName, branch.Kind == GitRefKind.LocalBranch ? RefRowKind.LocalBranch : RefRowKind.RemoteBranch, branch.Name, 0,
+        IsHead: branch.IsCurrent, Ref: branch);
+
     /// <summary>Entries of the context menu of <paramref name="row"/> (null: no menu, e.g. a folder).</summary>
     public RefRowMenu? MenuFor(RefRow row)
     {

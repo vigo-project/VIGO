@@ -1,3 +1,7 @@
+## 0.29.3 — 2026-10-26
+- Graph: the right-click menu of a branch (badge or row) now has the left panel's actions: check out, merge, rebase, push, rename, delete, copy name.
+- Graph: the Delete key deletes the branch (local or remote) of the selected row (a choice is offered when there are several).
+
 ## 0.29.2 — 2026-10-26
 - Interactive rebase: with only "pick" onto a target that has moved on, the rebase now runs instead of reporting "Nothing to change".
 

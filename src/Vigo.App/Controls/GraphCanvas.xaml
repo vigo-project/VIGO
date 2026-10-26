@@ -100,6 +100,46 @@
                 -->
                 <FlyoutBase.AttachedFlyout>
                     <MenuFlyout x:Name="RowMenu">
+                        <!--
+                            Entries of the branch under the pointer (or of the row's local branch): the same as the branch menu of the
+                            left panel. Text and visibility set by code, as the panel does.
+                        -->
+                        <MenuFlyoutItem x:Name="CheckoutItem" Click="OnCheckoutClick">
+                            <MenuFlyoutItem.Icon>
+                                <FontIcon Glyph="{x:Bind controls:FluentIcons.ArrowSwap}" FontFamily="{StaticResource VigoIconFont}" />
+                            </MenuFlyoutItem.Icon>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutItem x:Name="MergeItem" Click="OnMergeClick">
+                            <MenuFlyoutItem.Icon>
+                                <FontIcon Glyph="{x:Bind controls:FluentIcons.Merge}" FontFamily="{StaticResource VigoIconFont}" />
+                            </MenuFlyoutItem.Icon>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutItem x:Name="RebaseItem" Click="OnRebaseClick">
+                            <MenuFlyoutItem.Icon>
+                                <FontIcon Glyph="{x:Bind controls:FluentIcons.ArrowRouting}" FontFamily="{StaticResource VigoIconFont}" />
+                            </MenuFlyoutItem.Icon>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutItem x:Name="PushItem" Click="OnPushClick">
+                            <MenuFlyoutItem.Icon>
+                                <FontIcon Glyph="{x:Bind controls:FluentIcons.ArrowUpload}" FontFamily="{StaticResource VigoIconFont}" />
+                            </MenuFlyoutItem.Icon>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutItem x:Name="RenameItem" x:Uid="RefsRenameItem" Click="OnRenameClick">
+                            <MenuFlyoutItem.Icon>
+                                <FontIcon Glyph="{x:Bind controls:FluentIcons.Rename}" FontFamily="{StaticResource VigoIconFont}" />
+                            </MenuFlyoutItem.Icon>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutItem x:Name="DeleteItem" Click="OnDeleteClick" Foreground="{ThemeResource VigoDangerBrush}">
+                            <MenuFlyoutItem.Icon>
+                                <FontIcon Glyph="{x:Bind controls:FluentIcons.Delete}" FontFamily="{StaticResource VigoIconFont}" />
+                            </MenuFlyoutItem.Icon>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutItem x:Name="CopyNameItem" x:Uid="RefsCopyItem" Click="OnCopyNameClick">
+                            <MenuFlyoutItem.Icon>
+                                <FontIcon Glyph="{x:Bind controls:FluentIcons.Copy}" FontFamily="{StaticResource VigoIconFont}" />
+                            </MenuFlyoutItem.Icon>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutSeparator x:Name="BranchSeparator" />
                         <MenuFlyoutItem x:Name="NewBranchItem" x:Uid="GraphNewBranchItem" KeyboardAcceleratorTextOverride="Ctrl+B" Click="OnNewBranchClick">
                             <MenuFlyoutItem.Icon>
                                 <FontIcon Glyph="{x:Bind controls:FluentIcons.Branch}" FontFamily="{StaticResource VigoIconFont}" />
