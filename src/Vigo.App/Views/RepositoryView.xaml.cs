@@ -64,6 +64,7 @@ public sealed partial class RepositoryView : UserControl
         GraphView.Graph = viewModel.Graph;
         GraphView.RefActions = viewModel.RefActions;
         GraphView.Merge = viewModel.Merge;
+        GraphView.Refs = viewModel.Refs;
         GraphView.CheckoutAndPull = viewModel.TryCheckoutAndPull;
         GraphView.History = viewModel.History;
         GraphView.Patches = viewModel.Patches;

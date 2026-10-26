@@ -136,6 +136,9 @@ public sealed partial class GraphCanvas : UserControl
         }
     }
 
+    /// <summary>Menu of the branch under the pointer, shared with the left panel; set once by the repository view.</summary>
+    public RefsPanelViewModel? Refs { get; set; }
+
     /// <summary>Merge and rebase by drag and drop of a badge; set once by the repository view.</summary>
     public MergeActionsViewModel? Merge { get; set; }
 
@@ -190,6 +193,8 @@ public sealed partial class GraphCanvas : UserControl
         // On a badge of another branch, that badge is the base of the pull request of the checked-out branch.
         _pullRequestTarget = null;
         var badge = e.TryGetPosition(Canvas, out var badgePoint) ? BranchAt(badgePoint)?.Reference : null;
+        // Rebase of the checked-out branch on the branch under the pointer, else on the local branch of the row.
+        FillBranchEntries(badge ?? LocalBranchOf(row));
         var current = _graph.Refs?.OfKind(GitRefKind.LocalBranch).FirstOrDefault(r => r.IsCurrent);
         if (badge is not null && current is not null && badge.CanonicalName != current.CanonicalName && badge.Name != current.Upstream
             && Hosting?.CanCreatePullRequest(current) == true)
@@ -286,6 +291,103 @@ public sealed partial class GraphCanvas : UserControl
             _ => ResetMode.Mixed,
         };
         History?.ResetCommand.Execute(new ResetPlan(sha, mode));
+    }
+
+    // ---- Entries of the branch under the pointer: the menu of the left panel's branch row -----------------------------------
+
+    private RefRow? _branchRow;
+    private RefRowMenu? _branchMenu;
+
+    private void FillBranchEntries(GitRef? branch)
+    {
+        _branchRow = branch is null || Refs is null ? null : RefsPanelViewModel.RowOf(branch);
+        _branchMenu = _branchRow is null ? null : Refs!.MenuFor(_branchRow);
+        var menu = _branchMenu;
+        CheckoutItem.Text = menu?.CheckoutLabel ?? string.Empty;
+        MergeItem.Text = menu?.Merge?.Label ?? string.Empty;
+        RebaseItem.Text = menu?.Rebase?.Label ?? string.Empty;
+        PushItem.Text = menu?.PushLabel ?? string.Empty;
+        DeleteItem.Text = menu?.DeleteLabel ?? string.Empty;
+        var visible = new (MenuFlyoutItem Item, bool Visible)[]
+        {
+            (CheckoutItem, menu?.CheckoutLabel is not null),
+            (MergeItem, menu?.Merge is not null),
+            (RebaseItem, menu?.Rebase is not null),
+            (PushItem, menu?.PushLabel is not null),
+            (RenameItem, menu?.CanRename == true),
+            (DeleteItem, menu?.DeleteLabel is not null),
+            (CopyNameItem, menu?.CopyText is not null),
+        };
+        foreach (var (item, show) in visible) item.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
+        DeleteItem.IsEnabled = menu?.CanDelete == true;
+        BranchSeparator.Visibility = menu is null ? Visibility.Collapsed : Visibility.Visible;
+    }
+
+    /// <summary>
+    /// Delete key: deletes the local or remote branch of the selected row (confirmed like in the left panel). With several,
+    /// the choice is offered in a menu. The checked-out branch is left out (git refuses to delete it).
+    /// </summary>
+    private void DeleteSelectedBranch()
+    {
+        if (_graph?.SelectedSha is not { } sha || Refs is null) return;
+        var branches = _graph.Refs?.OfKind(GitRefKind.LocalBranch).Where(r => !r.IsCurrent)
+            .Concat(_graph.Refs.OfKind(GitRefKind.RemoteBranch).Where(r => !r.Name.EndsWith("/HEAD", StringComparison.Ordinal)))
+            .Where(r => r.Target == sha).ToList() ?? [];
+        switch (branches.Count)
+        {
+            case 0:
+                return;
+            case 1:
+                Refs.DeleteCommand.Execute(RefsPanelViewModel.RowOf(branches[0]));
+                return;
+        }
+
+        var flyout = new MenuFlyout();
+        foreach (var branch in branches)
+        {
+            var item = new MenuFlyoutItem { Text = Loc.Format(branch.Kind == GitRefKind.RemoteBranch ? "Refs.Menu.DeleteRemoteBranch" : "Refs.Menu.DeleteBranch", branch.Name) };
+            item.Click += (_, _) => Refs.DeleteCommand.Execute(RefsPanelViewModel.RowOf(branch));
+            flyout.Items.Add(item);
+        }
+        flyout.ShowAt(Canvas, new FlyoutShowOptions { Position = new Point(_columns.Graph, (_graph.SelectedRow + 1) * RowHeight - _offset) });
+    }
+
+    private void OnCheckoutClick(object sender, RoutedEventArgs e)
+    {
+        if (_branchRow is { } row) Refs?.CheckoutCommand.Execute(row);
+    }
+
+    private void OnMergeClick(object sender, RoutedEventArgs e)
+    {
+        if (_branchMenu?.Merge is { } plan) Merge?.MergeCommand.Execute(plan);
+    }
+
+    private void OnRebaseClick(object sender, RoutedEventArgs e)
+    {
+        if (_branchMenu?.Rebase is { } plan) Merge?.RebaseCommand.Execute(plan);
+    }
+
+    private void OnPushClick(object sender, RoutedEventArgs e)
+    {
+        if (_branchRow is { } row) Refs?.PushCommand.Execute(row);
+    }
+
+    private void OnRenameClick(object sender, RoutedEventArgs e)
+    {
+        if (_branchRow is { } row) Refs?.RenameCommand.Execute(row);
+    }
+
+    private void OnDeleteClick(object sender, RoutedEventArgs e)
+    {
+        if (_branchRow is { } row) Refs?.DeleteCommand.Execute(row);
+    }
+
+    private void OnCopyNameClick(object sender, RoutedEventArgs e)
+    {
+        if (_branchMenu?.CopyText is not { } text) return;
+        var package = new DataPackage();
+        package.SetText(text);
+        Clipboard.SetContent(package);
     }
 
     private void OnInteractiveRebaseClick(object sender, RoutedEventArgs e)
@@ -656,6 +758,13 @@ public sealed partial class GraphCanvas : UserControl
                 .HasFlag(Windows.UI.Core.CoreVirtualKeyStates.Down))
         {
             CopySelectedSha();
+            e.Handled = true;
+            return;
+        }
+
+        if (e.Key == VirtualKey.Delete)
+        {
+            DeleteSelectedBranch();
             e.Handled = true;
             return;
         }

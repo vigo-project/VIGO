@@ -1,3 +1,7 @@
+## 0.29.3 — 2026-10-26
+- Graphe : le menu clic droit d'une branche (badge ou ligne) reprend les actions du panneau gauche : extraire, fusionner, rebaser, pousser, renommer, supprimer, copier le nom.
+- Graphe : la touche Suppr supprime la branche (locale ou distante) de la ligne sélectionnée (un choix est proposé s'il y en a plusieurs).
+
 ## 0.29.2 — 2026-10-26
 - Rebase interactif : avec uniquement des « pick » vers une cible qui a avancé, le rebase est maintenant lancé au lieu d'afficher « Rien à modifier ».
 
