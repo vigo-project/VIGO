@@ -325,7 +325,7 @@ public sealed class IssueViewModelTests : IDisposable
         Assert.Equal("Ouvert", screen.StateText);
         Assert.True(screen.CanCloseIssue);
         var toast = Assert.Single(_notifier.Items);
-        Assert.Equal((NotificationSeverity.Error, "Issue non fermée", "forbidden"), (toast.Severity, toast.Title, toast.Message));
+        Assert.Equal((NotificationSeverity.Error, "Ticket non fermé", "forbidden"), (toast.Severity, toast.Title, toast.Message));
     }
 
     [Fact]
@@ -395,7 +395,7 @@ public sealed class IssueViewModelTests : IDisposable
         await tab.Issue.EditTextCommand.ExecuteAsync(null);
 
         var toast = Assert.Single(_notifier.Items);
-        Assert.Equal((NotificationSeverity.Error, "Issue non modifiée", "forbidden"), (toast.Severity, toast.Title, toast.Message));
+        Assert.Equal((NotificationSeverity.Error, "Ticket non modifié", "forbidden"), (toast.Severity, toast.Title, toast.Message));
     }
 
     [Fact]

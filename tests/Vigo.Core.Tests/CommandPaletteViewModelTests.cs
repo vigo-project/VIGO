@@ -134,7 +134,7 @@ public sealed class CommandPaletteViewModelTests
         await tab.LoadAsync();
 
         var entries = tab.GetPaletteEntries().ToList();
-        Assert.Contains(entries, e => e is { Group: PaletteGroup.Commands, Label: "Stash des modifications" });
+        Assert.Contains(entries, e => e is { Group: PaletteGroup.Commands, Label: "Remiser les modifications" });
         // The current branch cannot be checked out again.
         Assert.Equal(["feature/cache"], entries.Where(e => e.Group == PaletteGroup.Branches).Select(e => e.Label));
         Assert.Equal(["b.txt"], entries.Where(e => e.Group == PaletteGroup.Files).Select(e => e.Label));

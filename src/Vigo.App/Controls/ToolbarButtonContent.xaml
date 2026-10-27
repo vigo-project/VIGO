@@ -9,7 +9,17 @@
     Width="{x:Bind services:Appearance.Current.ToolbarButtonWidth, Mode=OneWay}"
     Height="{x:Bind services:Appearance.Current.ToolbarButtonHeight, Mode=OneWay}">
     <StackPanel Spacing="2" HorizontalAlignment="Center" VerticalAlignment="Center">
-        <FontIcon Style="{StaticResource VigoIcon}" FontSize="20" Glyph="{x:Bind controls:FluentIcons.FromName(Icon)}" />
+        <!-- The counter badge (commits behind / ahead) sits on the upper right corner of the icon, outside of its bounds. -->
+        <Grid HorizontalAlignment="Center">
+            <FontIcon Style="{StaticResource VigoIcon}" FontSize="20" Glyph="{x:Bind controls:FluentIcons.FromName(Icon)}" />
+            <Border Visibility="{x:Bind controls:ToolbarButtonContent.BadgeVisibility(Badge), Mode=OneWay}"
+                    HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,0,-12,0" MinWidth="15" Padding="4,0"
+                    CornerRadius="8" Background="{ThemeResource VigoAccentBrush}">
+                <TextBlock Text="{x:Bind Badge, Mode=OneWay}" HorizontalAlignment="Center" FontWeight="SemiBold"
+                           FontSize="{ThemeResource VigoFontSize11}" LineHeight="{ThemeResource VigoLineHeight13}"
+                           Foreground="{ThemeResource VigoOnAccentBrush}" />
+            </Border>
+        </Grid>
         <TextBlock Text="{x:Bind Label}" FontSize="{ThemeResource VigoFontSize11}" LineHeight="{ThemeResource VigoLineHeight13}" HorizontalAlignment="Center"
                    Visibility="{x:Bind services:Appearance.Current.ToolbarLabelVisibility, Mode=OneWay}" />
     </StackPanel>

@@ -56,11 +56,11 @@ public sealed class StashActionsViewModelTests : IDisposable
 
         await tab.Stash.StashCommand.ExecuteAsync(null);
 
-        Assert.Contains(_notifier.Items, n => n is (NotificationSeverity.Success, "Stash créé", "stash@{0} : 2 fichiers mis de côté."));
+        Assert.Contains(_notifier.Items, n => n is (NotificationSeverity.Success, "Remise créée", "stash@{0} : 2 fichiers mis de côté."));
         Assert.Equal(0, tab.WorkingTree.ChangeCount);
         Assert.False(tab.Stash.CanStash);
         Assert.True(tab.Stash.CanPop);
-        Assert.StartsWith("Pop stash@{0} : ", tab.Stash.PopTooltip, StringComparison.Ordinal);
+        Assert.StartsWith("Réappliquer stash@{0} : ", tab.Stash.PopTooltip, StringComparison.Ordinal);
         Assert.DoesNotContain("stash@{0}", Row(tab, "stash@{0}").Label, StringComparison.Ordinal);
     }
 
@@ -137,7 +137,7 @@ public sealed class StashActionsViewModelTests : IDisposable
         Assert.Equal("newer\n", Read("b.txt"));
         Assert.Equal(["On main: older"], StashList());
         Assert.Contains(_notifier.Items, n => n is (NotificationSeverity.Success, "stash@{0} appliqué", "1 fichier restauré."));
-        Assert.Equal("Pop stash@{0} : older", tab.Stash.PopTooltip);
+        Assert.Equal("Réappliquer stash@{0} : older", tab.Stash.PopTooltip);
     }
 
     [Fact]
@@ -151,7 +151,7 @@ public sealed class StashActionsViewModelTests : IDisposable
         var older = Row(tab, "stash@{1}");
         var menu = tab.Refs.MenuFor(older);
         Assert.True(menu?.CanApplyStash);
-        Assert.Equal("Supprimer le stash « older »…", menu?.DeleteLabel);
+        Assert.Equal("Supprimer la remise « older »…", menu?.DeleteLabel);
 
         await tab.Refs.ApplyStashCommand.ExecuteAsync(older);
         Assert.Equal("older\n", Read("a.txt"));
@@ -222,7 +222,7 @@ public sealed class StashActionsViewModelTests : IDisposable
         Assert.Equal("other", _repo.Git("branch", "--show-current").Trim());
         Assert.Equal("one\n2\n3\n4\n5\n6\n7\neight\n", Read("c.txt"));
         Assert.Equal("new\n", Read("new.txt"));
-        Assert.Contains(_notifier.Items, n => n is (NotificationSeverity.Success, "Checkout de other effectué", _));
+        Assert.Contains(_notifier.Items, n => n is (NotificationSeverity.Success, "Bascule sur other effectuée", _));
         Assert.Empty(StashList());
         Assert.False(tab.WorkingTree.HasConflicts);
     }

@@ -1449,7 +1449,7 @@ public sealed partial class GitService(GitCli cli) : IGitService
         if (result is not Success<CliOutput> s) return Propagate<int>(result);
         return int.TryParse(s.Value.StandardOutput.Trim(), System.Globalization.CultureInfo.InvariantCulture, out var count)
             ? new Success<int>(count)
-            : new Failure("Sortie de git rev-list illisible.");
+            : new Failure(Loc.Get("GitError.RevListUnreadable"));
     }
 
     public async Task<GitResult> CreateTagAsync(string repositoryPath, CreateTagRequest request, CancellationToken cancellationToken = default)

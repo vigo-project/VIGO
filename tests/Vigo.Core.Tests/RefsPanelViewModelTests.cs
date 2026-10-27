@@ -70,7 +70,7 @@ public sealed class RefsPanelViewModelTests
             "  upstream",
             "    main",
             "Tags [3]",
-            "Stashes [1]",
+            "Remises [1]",
             "  try paging",
         ], rows.Select(Describe));
         Assert.True(rows.First(r => r.Label == "oauth-refresh").IsMetaAccent);
@@ -125,7 +125,7 @@ public sealed class RefsPanelViewModelTests
             "  upstream",
             "    main",
             "Tags [3]",
-            "Stashes [1]",
+            "Remises [1]",
         ], rows.Select(Describe));
     }
 

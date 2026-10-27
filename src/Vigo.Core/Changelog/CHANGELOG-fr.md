@@ -1,3 +1,9 @@
+## 0.31.0 — 2026-10-27
+- Français : « Checkout » devient « Basculer », « issue » devient « ticket », la case Amend s'appelle « Modifier le dernier commit » et les modes de fusion des pull requests sont traduits. Les noms de touches des raccourcis (Entrée / Enter, Maj / Shift…) suivent la langue choisie.
+- Formulaire de commit : la case « Pousser après la validation » se décoche une fois le push fait.
+- Français : vocabulaire git traduit dans toute l'interface (Tirer, Pousser, Récupérer, Remiser / Réappliquer, arbres de travail, éléments de travail, Inverser, Réinitialiser) ; les boutons de la barre du haut sont traduits et un peu plus larges.
+- Barre du haut : des badges sur Tirer et Pousser indiquent le nombre de commits à récupérer et à pousser.
+
 ## 0.30.0 — 2026-10-27
 - Formulaire de commit : un loader tourne sur le bouton pendant la validation puis l'envoi (« Validation en cours… », « Envoi en cours… »).
 - Formulaire de commit : la ligne Amend / profil / signature passe au-dessus du message, une case « Pousser après la validation » est ajoutée, et le bouton s'intitule « Valider X fichiers » ou « Valider X fichiers et pousser ».

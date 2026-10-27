@@ -89,7 +89,7 @@ public sealed class AuthenticationFlowTests : IDisposable
 
         Assert.Single(_prompt.Problems);
         Assert.Equal(origin.Path, _repo.Git("remote", "get-url", "origin").Trim());
-        Assert.Contains(_notifier.Items, n => n is { Severity: NotificationSeverity.Success, Title: "Fetch terminé" });
+        Assert.Contains(_notifier.Items, n => n is { Severity: NotificationSeverity.Success, Title: "Récupération terminée" });
         Assert.Contains(_notifier.Items, n => n is { Title: "Distant origin modifié" });
     }
 

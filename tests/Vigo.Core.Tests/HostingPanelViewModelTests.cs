@@ -59,7 +59,7 @@ public sealed class HostingPanelViewModelTests : IDisposable
         var rows = tab.Refs.Rows.Select(i => i.Row).ToList();
 
         Assert.Equal(HostingState.Ready, tab.Hosting.State);
-        Assert.Equal(["Distants", "Pull requests", "Issues", "Tags", "Stashes", "Worktrees"],
+        Assert.Equal(["Distants", "Pull requests", "Tickets", "Tags", "Remises", "Arbres de travail"],
             rows.Where(r => r.IsSection && r.Label != "Branches locales").Select(r => r.Label));
         Assert.Equal(["#12 Fix cache [octocat]", "#9 Draft idea [brouillon]"], rows.Where(r => r.Kind == RefRowKind.PullRequest).Select(Describe));
         Assert.Equal("2", rows.Single(r => r.Key == "section:PullRequests").Meta);
@@ -107,7 +107,7 @@ public sealed class HostingPanelViewModelTests : IDisposable
 
     private static Issue NewIssue(int number, string title) => new(number, title, "octocat", Now, $"https://github.com/atlas/atlas-api/issues/{number}");
 
-    private static List<RefRow> IssueRows(RepositoryTabViewModel tab) => [.. tab.Refs.Rows.Select(i => i.Row).Where(r => r.Section == RefSection.Issues)];
+    private static List<RefRow> IssueRows(RepositoryTabViewModel tab) => [.. tab.Refs.SnapshotRows().Where(r => r.Section == RefSection.Issues)];
 
     private static void ExpandIssues(RepositoryTabViewModel tab) =>
         tab.Refs.ActivateCommand.Execute(tab.Refs.Rows.Select(i => i.Row).Single(r => r.Key == "section:Issues"));
@@ -125,7 +125,8 @@ public sealed class HostingPanelViewModelTests : IDisposable
         Assert.Equal(["#5 Five", "#4 Four", "Charger plus…"], rows.Skip(1).Select(r => r.Label));
 
         tab.Refs.ActivateCommand.Execute(rows.Single(r => r.Key == RefsPanelViewModel.MoreIssuesKey));
-        await WaitUntilAsync(() => tab.Hosting.Issues.Count == 3);
+        // The rows follow the list by an event: wait for the row itself, not only for the list.
+        await WaitUntilAsync(() => IssueRows(tab).Any(r => r.Label == "#3 Three"));
 
         rows = IssueRows(tab);
         Assert.Equal("3", rows[0].Meta);
@@ -172,10 +173,10 @@ public sealed class HostingPanelViewModelTests : IDisposable
 
         await tab.Hosting.SetIssueFilterAsync(new IssueQuery(Search: "nothing"));
         var rows = IssueRows(tab);
-        Assert.Contains(rows, r => r.Label == "Aucune issue ne correspond aux filtres.");
+        Assert.Contains(rows, r => r.Label == "Aucun ticket ne correspond aux filtres.");
 
         tab.Refs.ActivateCommand.Execute(rows.Single(r => r.Key == RefsPanelViewModel.IssueFilterKey));
-        await WaitUntilAsync(() => tab.Hosting.IssueFilter.IsDefault);
+        await WaitUntilAsync(() => IssueRows(tab).Any(r => r.Kind == RefRowKind.Issue));
 
         Assert.True(tab.Hosting.IssueFilter.IsDefault);
         Assert.Equal(["#5 Cache bug"], IssueRows(tab).Where(r => r.Kind == RefRowKind.Issue).Select(r => r.Label));
@@ -443,7 +444,7 @@ public sealed class HostingPanelViewModelTests : IDisposable
 
         Assert.Equal("atlas/atlas-api", Assert.Single(_inputs.Shown).Description);
         Assert.Equal(new NewIssue("Cache never expires", "Seen on **main**."), Assert.Single(_client.CreatedIssues));
-        Assert.Contains(_notifier.Items, n => n.Severity == NotificationSeverity.Success && n.Title == "Issue #77 créée");
+        Assert.Contains(_notifier.Items, n => n.Severity == NotificationSeverity.Success && n.Title == "Ticket #77 créé");
         Assert.Equal(["https://github.com/atlas/atlas-api/issues/77"], _launcher.Opened);
     }
 

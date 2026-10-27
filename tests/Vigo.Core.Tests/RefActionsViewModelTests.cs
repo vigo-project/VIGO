@@ -195,7 +195,7 @@ public sealed class RefActionsViewModelTests : IDisposable
 
         Assert.Contains("refs/heads/feature", _remote.Git("for-each-ref", "--format=%(refname)"), StringComparison.Ordinal);
         Assert.Equal("origin/feature", _repo.Git("rev-parse", "--abbrev-ref", "feature@{upstream}").Trim());
-        Assert.Contains(_notifier.Items, n => n.Title == "Push terminé");
+        Assert.Contains(_notifier.Items, n => n.Title == "Envoi terminé");
     }
 
     [Fact]
@@ -282,7 +282,7 @@ public sealed class RefActionsViewModelTests : IDisposable
         Assert.Equal("Pousser main vers origin/main", main.PushLabel);
 
         var feature = tab.Refs.MenuFor(Row(RefRowKind.LocalBranch, "feature"))!;
-        Assert.Equal("Checkout feature", feature.CheckoutLabel);
+        Assert.Equal("Basculer sur feature", feature.CheckoutLabel);
         Assert.True(feature.CanDelete && feature.CanRename && feature.CanCreateBranch);
         Assert.Equal("Publier feature sur origin", feature.PushLabel);
 
@@ -299,7 +299,7 @@ public sealed class RefActionsViewModelTests : IDisposable
         Assert.Null(remote.DeleteLabel);
 
         Assert.True(tab.Refs.MenuFor(Row(RefRowKind.Section, "Distants"))!.CanAddRemote);
-        Assert.Null(tab.Refs.MenuFor(Row(RefRowKind.Section, "Stashes")));
+        Assert.Null(tab.Refs.MenuFor(Row(RefRowKind.Section, "Remises")));
     }
 
     [Theory]

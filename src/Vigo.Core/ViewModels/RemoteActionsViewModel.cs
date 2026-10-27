@@ -1,3 +1,4 @@
+using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
@@ -107,6 +108,14 @@ public sealed partial class RemoteActionsViewModel : ObservableObject, IDisposab
     public bool CanPush => !IsRunning && Status is { Branch: not null };
 
     private static string Hint(string text, string shortcutId) => ShortcutMap.Current.WithHint(text, shortcutId);
+
+    /// <summary>Badge of the Pull button: the commits the upstream has that the branch lacks; empty when none.</summary>
+    public string PullBadge => Status is { Upstream: not null, Behind: > 0 and var behind } ? Count(behind) : string.Empty;
+
+    /// <summary>Badge of the Push button: the commits the branch has that its upstream lacks; empty when none.</summary>
+    public string PushBadge => Status is { Upstream: not null, Ahead: > 0 and var ahead } ? Count(ahead) : string.Empty;
+
+    private static string Count(int n) => n > 99 ? "99+" : n.ToString(CultureInfo.CurrentCulture);
 
     public string PullTooltip => Status switch
     {
@@ -592,6 +601,8 @@ public sealed partial class RemoteActionsViewModel : ObservableObject, IDisposab
     {
         OnPropertyChanged(nameof(PullTooltip));
         OnPropertyChanged(nameof(PushTooltip));
+        OnPropertyChanged(nameof(PullBadge));
+        OnPropertyChanged(nameof(PushBadge));
         OnPropertyChanged(nameof(CanFetch));
         OnPropertyChanged(nameof(CanPull));
         OnPropertyChanged(nameof(CanPush));

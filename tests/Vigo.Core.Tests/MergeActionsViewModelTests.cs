@@ -86,7 +86,7 @@ public sealed class MergeActionsViewModelTests : IDisposable
         Assert.Equal((MergeMode.IntoHead, "Fusionner feature dans main"), (intoHead?.Merge?.Mode, intoHead?.Merge?.Label));
         Assert.Equal("Rebaser feature sur main", intoHead?.Rebase?.Label);
         Assert.Equal((MergeMode.FastForwardBranch, "Avancer behind jusqu'à main"), (forward?.Merge?.Mode, forward?.Merge?.Label));
-        Assert.Equal((MergeMode.CheckoutThenMerge, "Extraire feature puis fusionner main"), (checkout?.Merge?.Mode, checkout?.Merge?.Label));
+        Assert.Equal((MergeMode.CheckoutThenMerge, "Basculer sur feature puis fusionner main"), (checkout?.Merge?.Mode, checkout?.Merge?.Label));
         Assert.Equal(MergeMode.UpToDate, upToDate?.Merge?.Mode);
         Assert.Null(await tab.Merge.DropMenuAsync(Ref(tab, "main"), Ref(tab, "main")));
     }

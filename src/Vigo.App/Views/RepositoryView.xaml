@@ -224,9 +224,9 @@
                     <controls:ToolbarButtonContent x:Uid="RepoRedoContent" Icon="arrow_redo" />
                 </Button>
                 <Border Style="{StaticResource Separator}" />
-                <!-- Pull / Push (J3.4): commits behind / ahead in the tooltip (no badge); right click: fetch, pull strategy, force push -->
-                <Button Style="{StaticResource VigoToolbarButton}" Command="{x:Bind ViewModel.Remote.PullCommand}"
-                        ToolTipService.ToolTip="{x:Bind ViewModel.Remote.PullTooltip, Mode=OneWay}" AutomationProperties.Name="Pull">
+                <!-- Pull / Push (J3.4): commits behind / ahead in a badge on the icon and in the tooltip; right click: fetch, pull strategy, force push -->
+                <Button Style="{StaticResource VigoToolbarButton}" Command="{x:Bind ViewModel.Remote.PullCommand}" x:Uid="RepoPull"
+                        ToolTipService.ToolTip="{x:Bind ViewModel.Remote.PullTooltip, Mode=OneWay}">
                     <Button.ContextFlyout>
                         <MenuFlyout>
                             <MenuFlyoutItem x:Uid="RepoFetchAll" Command="{x:Bind ViewModel.Remote.FetchCommand}" KeyboardAcceleratorTextOverride="F5">
@@ -240,10 +240,10 @@
                             <MenuFlyoutItem x:Uid="RepoPullFastForward" Command="{x:Bind ViewModel.Remote.PullFastForwardCommand}" />
                         </MenuFlyout>
                     </Button.ContextFlyout>
-                    <controls:ToolbarButtonContent Icon="arrow_download" Label="Pull" />
+                    <controls:ToolbarButtonContent x:Uid="RepoPullContent" Icon="arrow_download" Badge="{x:Bind ViewModel.Remote.PullBadge, Mode=OneWay}" />
                 </Button>
-                <Button Style="{StaticResource VigoToolbarButton}" Command="{x:Bind ViewModel.Remote.PushCommand}"
-                        ToolTipService.ToolTip="{x:Bind ViewModel.Remote.PushTooltip, Mode=OneWay}" AutomationProperties.Name="Push">
+                <Button Style="{StaticResource VigoToolbarButton}" Command="{x:Bind ViewModel.Remote.PushCommand}" x:Uid="RepoPush"
+                        ToolTipService.ToolTip="{x:Bind ViewModel.Remote.PushTooltip, Mode=OneWay}">
                     <Button.ContextFlyout>
                         <MenuFlyout>
                             <MenuFlyoutItem x:Uid="RepoForcePush" Command="{x:Bind ViewModel.Remote.ForcePushCommand}">
@@ -253,7 +253,7 @@
                             </MenuFlyoutItem>
                         </MenuFlyout>
                     </Button.ContextFlyout>
-                    <controls:ToolbarButtonContent Icon="arrow_upload" Label="Push" />
+                    <controls:ToolbarButtonContent x:Uid="RepoPushContent" Icon="arrow_upload" Badge="{x:Bind ViewModel.Remote.PushBadge, Mode=OneWay}" />
                 </Button>
                 <Border Style="{StaticResource Separator}" />
                 <Button Style="{StaticResource VigoToolbarButton}" Command="{x:Bind ViewModel.RefActions.CreateBranchCommand}"
@@ -272,11 +272,11 @@
                             </MenuFlyoutItem>
                         </MenuFlyout>
                     </Button.ContextFlyout>
-                    <controls:ToolbarButtonContent Icon="archive" Label="Stash" />
+                    <controls:ToolbarButtonContent x:Uid="RepoStashContent" Icon="archive" />
                 </Button>
                 <Button Style="{StaticResource VigoToolbarButton}" Command="{x:Bind ViewModel.Stash.PopLatestCommand}"
-                        ToolTipService.ToolTip="{x:Bind ViewModel.Stash.PopTooltip, Mode=OneWay}" AutomationProperties.Name="Pop">
-                    <controls:ToolbarButtonContent Icon="archive_arrow_back" Label="Pop" />
+                        ToolTipService.ToolTip="{x:Bind ViewModel.Stash.PopTooltip, Mode=OneWay}" x:Uid="RepoPop">
+                    <controls:ToolbarButtonContent x:Uid="RepoPopContent" Icon="archive_arrow_back" />
                 </Button>
                 <Border Style="{StaticResource Separator}" />
                 <!-- Terminal (J7.10): highlighted while the panel is shown -->

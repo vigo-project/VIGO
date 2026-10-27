@@ -330,6 +330,8 @@ public sealed partial class CommitFormViewModel : ObservableObject, IDisposable
             if (!await RunCommitAsync(skipHooks) || !pushes || PushAfterCommit is not { } pushNow) return;
             Phase = CommitPhase.Pushing;
             await pushNow();
+            // One push per tick: the box is for this commit only.
+            PushAfter = false;
         }
         finally
         {

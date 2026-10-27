@@ -77,4 +77,16 @@ public sealed partial class ToolbarButtonContent : UserControl
 
     public string Icon { get; set; } = "circle";
     public string Label { get; set; } = string.Empty;
+
+    /// <summary>Counter shown on the icon ("3", "99+"); empty: no badge. Changes at run time, hence a dependency property.</summary>
+    public string Badge
+    {
+        get => (string)GetValue(BadgeProperty);
+        set => SetValue(BadgeProperty, value);
+    }
+
+    public static readonly DependencyProperty BadgeProperty =
+        DependencyProperty.Register(nameof(Badge), typeof(string), typeof(ToolbarButtonContent), new PropertyMetadata(string.Empty));
+
+    public static Visibility BadgeVisibility(string badge) => string.IsNullOrEmpty(badge) ? Visibility.Collapsed : Visibility.Visible;
 }

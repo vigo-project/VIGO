@@ -5,4 +5,11 @@
     <!-- Tests: method names with underscores are allowed. -->
     <NoWarn>$(NoWarn);CA1707;CA1515;CA2007</NoWarn>
   </PropertyGroup>
+  <!--
+    Test runner settings (tests wait for git.exe processes more than they compute: more threads than cores, and the
+    aggressive algorithm, which does not hold back threads while a test waits).
+  -->
+  <ItemGroup Condition="'$(MSBuildProjectName)' != 'Vigo.TestUtilities'">
+    <None Include="$(MSBuildThisFileDirectory)xunit.runner.json" Link="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
 </Project>
