@@ -1,3 +1,7 @@
+## Unreleased
+- Git profiles: a profile now carries all the signing of commits and tags; the global Git config is only used without a profile. A profile without a key no longer signs, even when the global config requires it (no more "gpg failed to sign the data"). If your commits were signed by the global config, turn signing on in your profile.
+- Preferences › Profiles: the "Create from the Git config" button creates a profile from your global config (identity, signing key and format).
+
 ## 0.29.4 — 2026-10-26
 - Status bar: a button at the bottom right to check for updates on demand (its icon spins while it checks).
 - Integrated terminal: LoomTerminal updated to 0.1.0-alpha.2.

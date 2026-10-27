@@ -1736,7 +1736,7 @@ Stocké par Git LFS (déclaré dans {1}).</value></data>
   <data name="PrefSshAgentToggle.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Utiliser l'agent OpenSSH de Windows</value></data>
   <data name="PrefSshGenerate.Content" xml:space="preserve"><value>Générer une clé ED25519</value></data>
   <data name="PrefSshImport.Content" xml:space="preserve"><value>Importer une clé…</value></data>
-  <data name="PrefProfilesIntro.Text" xml:space="preserve"><value>Un profil donne l'identité des commits (nom, e-mail), leur signature et les dossiers où il s'applique ; les autres dépôts utilisent le profil actif. VIGO le transmet à git.exe commande par commande : ni ~/.gitconfig ni les dépôts ne sont modifiés. Les comptes d'hébergeurs et la session rouverte au lancement suivent le profil actif.</value></data>
+  <data name="PrefProfilesIntro.Text" xml:space="preserve"><value>Un profil donne l'identité des commits (nom, e-mail), leur signature et les dossiers où il s'applique ; les autres dépôts utilisent le profil actif. Dès qu'un profil s'applique, il porte seul la signature : la config Git globale n'est utilisée que sans profil (« Créer depuis la config Git » en reprend le contenu). VIGO le transmet à git.exe commande par commande : ni ~/.gitconfig ni les dépôts ne sont modifiés. Les comptes d'hébergeurs et la session rouverte au lancement suivent le profil actif.</value></data>
   <data name="PrefProfilesNone.Text" xml:space="preserve"><value>Aucun profil : git.exe utilise votre configuration (user.name, user.email). Le premier profil créé reprend les comptes et la session existants.</value></data>
   <data name="PrefProfilesList.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Profils Git</value></data>
   <data name="PrefProfileActive.Text" xml:space="preserve"><value>Actif</value></data>
@@ -1759,6 +1759,7 @@ Stocké par Git LFS (déclaré dans {1}).</value></data>
   <data name="PrefProfileFolders.Header" xml:space="preserve"><value>Appliquer automatiquement aux dossiers (un motif par ligne)</value></data>
   <data name="PrefProfileRemove.Content" xml:space="preserve"><value>Supprimer ce profil</value></data>
   <data name="PrefProfileAdd.Content" xml:space="preserve"><value>Ajouter un profil</value></data>
+  <data name="PrefProfileFromConfig.Content" xml:space="preserve"><value>Créer depuis la config Git</value></data>
   <data name="SshKeys.ImportPicker.Title" xml:space="preserve"><value>Importer une clé SSH privée</value></data>
   <data name="SshKeys.Usage.Default" xml:space="preserve"><value>Utilisée par VIGO</value></data>
   <data name="SshKeys.Usage.Imported" xml:space="preserve"><value>Importée</value></data>
@@ -1779,6 +1780,7 @@ Stocké par Git LFS (déclaré dans {1}).</value></data>
   <data name="SshKeys.Service.GenerateFailed" xml:space="preserve"><value>La génération de la clé a échoué.</value></data>
   <data name="Profile.ActiveLabel" xml:space="preserve"><value>Profil actif : {0}</value></data>
   <data name="Profile.DefaultName" xml:space="preserve"><value>Défaut</value></data>
+  <data name="Profile.FromGitConfigName" xml:space="preserve"><value>Config Git</value></data>
   <data name="Profile.NumberedName" xml:space="preserve"><value>Profil {0}</value></data>
   <data name="Profile.Remove.Title" xml:space="preserve"><value>Supprimer ce profil ?</value></data>
   <data name="Profile.Remove.Message" xml:space="preserve"><value>Le profil « {0} » sera supprimé. Ses comptes d'hébergeurs et sa session restent enregistrés mais ne sont plus utilisés ; les dépôts qu'il couvrait retombent sur le profil actif.</value></data>

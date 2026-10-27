@@ -414,10 +414,14 @@ public sealed partial class CommitFormViewModel : ObservableObject, IDisposable
 
     private async Task LoadSigningAsync()
     {
-        // A profile that signs wins over the configuration (it hands commit.gpgsign to git.exe, ADR-051).
+        // A profile owns the signing (it hands commit.gpgsign to git.exe, ADR-051): the configuration only counts without one.
         var profile = _profiles?.ResolveFor(_repositoryPath);
-        var profileSigns = profile is { SignCommits: true } && !string.IsNullOrWhiteSpace(profile.SigningKey);
-        if (!profileSigns)
+        if (profile is { Signs: false })
+        {
+            SigningLabel = null;
+            return;
+        }
+        if (profile is null)
         {
             var sign = await _git.GetConfigValueAsync(_repositoryPath, "commit.gpgsign", _lifetime);
             if (sign.Value is not Success<string?> { Value: { } value } || !IsTrue(value))

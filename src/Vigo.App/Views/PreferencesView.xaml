@@ -718,7 +718,10 @@
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
 
-                    <Button Style="{StaticResource VigoStandardButton}" x:Uid="PrefProfileAdd" Command="{x:Bind ViewModel.AddProfileCommand}" HorizontalAlignment="Left" />
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button Style="{StaticResource VigoStandardButton}" x:Uid="PrefProfileAdd" Command="{x:Bind ViewModel.AddProfileCommand}" />
+                        <Button Style="{StaticResource VigoStandardButton}" x:Uid="PrefProfileFromConfig" Command="{x:Bind ViewModel.AddProfileFromGitConfigCommand}" />
+                    </StackPanel>
                 </StackPanel>
 
                 <!-- Projets d'onglets (J7.6, ADR-058): name and color of the groups of repository tabs. -->

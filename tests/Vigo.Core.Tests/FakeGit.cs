@@ -88,8 +88,11 @@ internal sealed class FakeGit : IGitService
     public Task<GitResult<GitSha>> CommitAsync(string repositoryPath, CommitRequest request, CancellationToken cancellationToken = default) =>
         Task.FromResult<GitResult<GitSha>>(new Failure("not implemented"));
 
+    /// <summary>Values <see cref="GetConfigValueAsync"/> returns, whatever the repository.</summary>
+    public Dictionary<string, string> Config { get; } = [];
+
     public Task<GitResult<string?>> GetConfigValueAsync(string? repositoryPath, string key, CancellationToken cancellationToken = default) =>
-        Task.FromResult<GitResult<string?>>(new Success<string?>(null));
+        Task.FromResult<GitResult<string?>>(new Success<string?>(Config.GetValueOrDefault(key)));
 
     /// <summary>What <see cref="GetStagedPatchAsync"/> returns.</summary>
     public StagedPatch StagedPatch { get; set; } = new(string.Empty, false, []);

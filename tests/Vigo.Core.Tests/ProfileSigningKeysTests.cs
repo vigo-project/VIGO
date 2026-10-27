@@ -40,8 +40,8 @@ public sealed class ProfileSigningKeysTests : IDisposable
     [InlineData(null)]
     [InlineData("")]
     [InlineData("pgp-or-whatever")]
-    public void Unknown_format_leaves_the_configuration_in_charge(string? format) =>
-        Assert.Empty(new GitProfile("a", "A", " ", string.Empty, SigningFormat: format).ConfigOverrides());
+    public void Unknown_format_sends_no_format(string? format) =>
+        Assert.DoesNotContain(new GitProfile("a", "A", " ", string.Empty, SigningFormat: format).ConfigOverrides(), o => o.StartsWith("gpg.format", StringComparison.Ordinal));
 
     [Fact]
     public void Card_format_choice_is_saved_in_the_profile()
@@ -119,6 +119,25 @@ public sealed class ProfileSigningKeysTests : IDisposable
 
         Assert.Null(await sut.GenerateSshSigningKeyAsync(Ct));
         Assert.Contains(_notifier.Items, n => n.Severity == NotificationSeverity.Error);
+    }
+
+    [Fact]
+    public async Task A_profile_can_be_created_from_the_git_configuration()
+    {
+        var git = new FakeGit();
+        git.Config["user.name"] = "Ada";
+        git.Config["user.email"] = "ada@example.com";
+        git.Config["user.signingkey"] = "KEY";
+        git.Config["gpg.format"] = "openpgp";
+        git.Config["commit.gpgsign"] = "true";
+        using var sut = new PreferencesTabViewModel(_preferences, git: git, profiles: _profiles);
+
+        await sut.AddProfileFromGitConfigCommand.ExecuteAsync(null);
+
+        var profile = Assert.Single(_profiles.Profiles);
+        Assert.Equal(("Ada", "ada@example.com", "KEY", true), (profile.Name, profile.Email, profile.SigningKey, profile.SignCommits));
+        Assert.Equal(SigningFormats.OpenPgp, SigningFormats.Normalize(profile.SigningFormat));
+        Assert.Contains("commit.gpgsign=true", profile.ConfigOverrides());
     }
 
     [Fact]

@@ -39,8 +39,9 @@ public sealed record GitProfile(
         : string.Join(" · ", new[] { Name, Email }.Where(s => !string.IsNullOrWhiteSpace(s)));
 
     /// <summary>
-    /// <c>-c key=value</c> settings that make git.exe use this profile: only the non-empty fields, so that an unfilled
-    /// one leaves the user's configuration in charge.
+    /// <c>-c key=value</c> settings that make git.exe use this profile. The identity fields leave the user's configuration
+    /// in charge when empty (git needs an identity), but the signing is the profile's alone: a profile that does not sign
+    /// switches it off, whatever the global configuration says. The global configuration only applies without profiles.
     /// </summary>
     public IReadOnlyList<string> ConfigOverrides()
     {
@@ -48,17 +49,24 @@ public sealed record GitProfile(
         if (!string.IsNullOrWhiteSpace(Name)) overrides.Add($"user.name={Name.Trim()}");
         if (!string.IsNullOrWhiteSpace(Email)) overrides.Add($"user.email={Email.Trim()}");
         if (SigningFormats.Normalize(SigningFormat) is { } format) overrides.Add($"gpg.format={format}");
-        if (!string.IsNullOrWhiteSpace(SigningKey))
+        if (!string.IsNullOrWhiteSpace(SigningKey)) overrides.Add($"user.signingkey={SigningKey.Trim()}");
+        if (Signs)
         {
-            overrides.Add($"user.signingkey={SigningKey.Trim()}");
-            if (SignCommits)
-            {
-                overrides.Add("commit.gpgsign=true");
-                overrides.Add("tag.gpgsign=true");
-            }
+            overrides.Add("commit.gpgsign=true");
+            overrides.Add("tag.gpgsign=true");
+        }
+        else
+        {
+            // tag.forceSignAnnotated signs annotated tags even when tag.gpgSign is off.
+            overrides.Add("commit.gpgsign=false");
+            overrides.Add("tag.gpgsign=false");
+            overrides.Add("tag.forcesignannotated=false");
         }
         return overrides;
     }
+
+    /// <summary>The profile signs commits and tags (it needs a key: the toggle alone does nothing).</summary>
+    public bool Signs => SignCommits && !string.IsNullOrWhiteSpace(SigningKey);
 
     /// <summary>Whether a folder rule of this profile matches the repository.</summary>
     public bool Matches(string repositoryPath) => FolderRules.Any(rule => FolderRule.Matches(rule, repositoryPath));

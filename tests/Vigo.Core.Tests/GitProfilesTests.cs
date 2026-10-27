@@ -43,17 +43,20 @@ public sealed class GitProfilesTests
         Assert.Equal(expected, FolderRule.Matches(rule, path));
 
     [Fact]
-    public void Overrides_hold_the_filled_fields_and_the_signing_settings()
+    public void Overrides_hold_the_filled_fields_and_the_profile_owns_the_signing()
     {
         var unsigned = new GitProfile("a", "A", "Ada", "ada@example.com", "KEY", SignCommits: false);
         var signed = unsigned with { SignCommits = true };
         var empty = new GitProfile("b", "B", " ", string.Empty);
+        string[] off = ["commit.gpgsign=false", "tag.gpgsign=false", "tag.forcesignannotated=false"];
 
-        Assert.Equal(["user.name=Ada", "user.email=ada@example.com", "user.signingkey=KEY"], unsigned.ConfigOverrides());
+        Assert.Equal(["user.name=Ada", "user.email=ada@example.com", "user.signingkey=KEY", .. off], unsigned.ConfigOverrides());
         Assert.Equal(
             ["user.name=Ada", "user.email=ada@example.com", "user.signingkey=KEY", "commit.gpgsign=true", "tag.gpgsign=true"],
             signed.ConfigOverrides());
-        Assert.Empty(empty.ConfigOverrides());
+        // A profile without key does not sign, whatever the global configuration says; the empty identity stays with git.
+        Assert.Equal(off, empty.ConfigOverrides());
+        Assert.Equal(off, (empty with { SignCommits = true }).ConfigOverrides());
     }
 
     [Fact]

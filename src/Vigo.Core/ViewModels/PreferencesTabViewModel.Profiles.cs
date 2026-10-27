@@ -209,6 +209,30 @@ public sealed partial class PreferencesTabViewModel
         if (Profiles.FirstOrDefault(p => p.Id == profile.Id) is { } item) item.IsOpen = true;
     }
 
+    /// <summary>
+    /// "Créer depuis la config Git": a profile holding what the user's Git configuration says (identity, signing key and format,
+    /// whether it signs). A profile carries the whole configuration of its repositories, the global one only counts without profiles.
+    /// </summary>
+    [RelayCommand]
+    private async Task AddProfileFromGitConfigAsync()
+    {
+        if (_profiles is null || _git is null) return;
+        async Task<string> ReadAsync(string key) =>
+            (await _git.GetConfigValueAsync(null, key, _lifetime.Token)).Value is Success<string?> { Value: { } value } ? value.Trim() : string.Empty;
+
+        var key = await ReadAsync("user.signingkey");
+        var sign = (await ReadAsync("commit.gpgsign")).ToLowerInvariant() is "true" or "yes" or "on" or "1";
+        var signs = key.Length > 0 && sign;
+        var created = _profiles.Add(Loc.Get("Profile.FromGitConfigName"), await ReadAsync("user.name"), await ReadAsync("user.email"));
+        _profiles.Update(created with
+        {
+            SigningKey = key.Length > 0 ? key : null,
+            SignCommits = signs,
+            SigningFormat = SigningFormats.Normalize(await ReadAsync("gpg.format")),
+        });
+        if (Profiles.FirstOrDefault(p => p.Id == created.Id) is { } item) item.IsOpen = true;
+    }
+
     [RelayCommand]
     private async Task ActivateProfileAsync(GitProfileItem? item)
     {
