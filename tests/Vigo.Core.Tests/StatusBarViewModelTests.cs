@@ -65,11 +65,11 @@ public sealed class StatusBarViewModelTests : IDisposable
         await tab.Graph.WhenReloadedAsync();
 
         Assert.Equal("↑0 ↓1 · origin", bar.SyncText);
-        Assert.Equal("2 commits affichés · fetch à l'instant", bar.InfoText);
+        Assert.Equal("2 commits affichés · récupéré à l'instant", bar.InfoText);
 
         _time.Advance(TimeSpan.FromMinutes(3));
         bar.Refresh();
-        Assert.EndsWith("fetch il y a 3 min", bar.InfoText, StringComparison.Ordinal);
+        Assert.EndsWith("récupéré il y a 3 min", bar.InfoText, StringComparison.Ordinal);
 
         bar.Attach(null);
         Assert.False(bar.IsRepository);
@@ -105,10 +105,10 @@ public sealed class StatusBarViewModelTests : IDisposable
 
         _time.Advance(TimeSpan.FromHours(2));
         bar.Refresh();
-        Assert.EndsWith("fetch il y a 2 h", bar.InfoText, StringComparison.Ordinal);
+        Assert.EndsWith("récupéré il y a 2 h", bar.InfoText, StringComparison.Ordinal);
 
         _time.Advance(TimeSpan.FromDays(3));
         bar.Refresh();
-        Assert.EndsWith("fetch il y a 3 j", bar.InfoText, StringComparison.Ordinal);
+        Assert.EndsWith("récupéré il y a 3 j", bar.InfoText, StringComparison.Ordinal);
     }
 }

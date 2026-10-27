@@ -55,6 +55,27 @@ public sealed class RemoteActionsViewModelTests : IDisposable
     }
 
     [Fact]
+    public async Task Pull_and_push_badges_count_the_commits_behind_and_ahead_and_hide_at_zero()
+    {
+        using var tab = await OpenAsync();
+        Assert.Equal((string.Empty, string.Empty), (tab.Remote.PullBadge, tab.Remote.PushBadge));
+
+        _mine.Commit("m1", ("m1.txt", "1\n"));
+        _mine.Commit("m2", ("m2.txt", "2\n"));
+        TheyPush();
+        await tab.Remote.FetchCommand.ExecuteAsync(null);
+        await tab.WorkingTree.RefreshAsync();
+
+        Assert.Equal(("1", "2"), (tab.Remote.PullBadge, tab.Remote.PushBadge));
+
+        // Capped: the badge stays small.
+        for (var i = 0; i < 100; i++) _mine.Commit($"c{i}", ($"c{i}.txt", "x\n"));
+        await tab.WorkingTree.RefreshAsync();
+
+        Assert.Equal("99+", tab.Remote.PushBadge);
+    }
+
+    [Fact]
     public async Task Fetch_follows_the_prune_preference()
     {
         _theirs.Git("push", "--quiet", "origin", "main:refs/heads/gone", "main:refs/heads/gone2");
@@ -96,7 +117,7 @@ public sealed class RemoteActionsViewModelTests : IDisposable
 
         Assert.Equal(_theirs.Head(), _mine.Head());
         Assert.Equal(0, tab.WorkingTree.Status?.Behind);
-        Assert.Contains(_notifier.Items, n => n is { Title: "Pull terminé", Message: "main est à jour avec origin/main." });
+        Assert.Contains(_notifier.Items, n => n is { Title: "Tirage terminé", Message: "main est à jour avec origin/main." });
         Assert.Equal(GitSha.Parse(_theirs.Head()), tab.Graph.Head);
     }
 
@@ -131,7 +152,7 @@ public sealed class RemoteActionsViewModelTests : IDisposable
 
         Assert.Equal(mine, RemoteHead());
         Assert.Equal(0, tab.WorkingTree.Status?.Ahead);
-        Assert.Contains(_notifier.Items, n => n is { Title: "Push terminé", Message: "1 commit poussé vers origin/main." });
+        Assert.Contains(_notifier.Items, n => n is { Title: "Envoi terminé", Message: "1 commit poussé vers origin/main." });
     }
 
     [Fact]
@@ -143,8 +164,8 @@ public sealed class RemoteActionsViewModelTests : IDisposable
         using var tab = await OpenAsync();
 
         await tab.Remote.PushCommand.ExecuteAsync(null);
-        Assert.Contains(_notifier.Items, n => n is { Severity: NotificationSeverity.Error, Title: "Échec du push" }
-                                              && n.Message!.StartsWith("Push refusé", StringComparison.Ordinal));
+        Assert.Contains(_notifier.Items, n => n is { Severity: NotificationSeverity.Error, Title: "Échec de l'envoi" }
+                                              && n.Message!.StartsWith("Envoi refusé", StringComparison.Ordinal));
 
         _confirmations.Answer = false;
         await tab.Remote.ForcePushCommand.ExecuteAsync(null);
@@ -202,6 +223,8 @@ public sealed class RemoteActionsViewModelTests : IDisposable
         Assert.Equal(_mine.Head(), RemoteHead());
         Assert.Equal([CommitPhase.Committing, CommitPhase.Pushing, CommitPhase.None], phases);
         Assert.False(form.IsWorking);
+        // The box is for this commit only: unchecked once pushed.
+        Assert.False(form.PushAfter);
     }
 
     [Fact]
@@ -251,7 +274,7 @@ public sealed class RemoteActionsViewModelTests : IDisposable
         Assert.False(remote.IsRunning);
         Assert.Equal(1, tab.WorkingTree.Status?.Behind);
         var toast = Assert.Single(_notifier.Items);
-        Assert.Equal((NotificationSeverity.Info, "Nouveaux commits sur origin/main", "1 commit récupéré par le fetch automatique (1 commit à récupérer)."), toast);
+        Assert.Equal((NotificationSeverity.Info, "Nouveaux commits sur origin/main", "1 commit récupéré par la récupération automatique (1 commit à récupérer)."), toast);
     }
 
     [Fact]

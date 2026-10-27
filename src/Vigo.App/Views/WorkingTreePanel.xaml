@@ -313,19 +313,27 @@
             </Grid.RowDefinitions>
 
             <!-- Amend, profile and signing, above the message -->
-            <StackPanel Orientation="Horizontal" Spacing="14">
+            <!-- The amend label ("Modifier le dernier commit") takes what the profile and the signing leave, and is trimmed. -->
+            <Grid ColumnSpacing="14">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
                 <CheckBox x:Uid="WtAmend" MinWidth="0" MinHeight="24" FontSize="{ThemeResource VigoFontSize12}" Padding="6,0,0,0" VerticalContentAlignment="Center"
-                          IsChecked="{x:Bind ViewModel.CommitForm.IsAmend, Mode=TwoWay}" IsEnabled="{x:Bind ViewModel.CommitForm.CanAmend, Mode=OneWay}" />
-                <TextBlock Text="{x:Bind ViewModel.CommitForm.ProfileLabel, Mode=OneWay}" FontSize="{ThemeResource VigoFontSize12}" VerticalAlignment="Center"
+                          IsChecked="{x:Bind ViewModel.CommitForm.IsAmend, Mode=TwoWay}" IsEnabled="{x:Bind ViewModel.CommitForm.CanAmend, Mode=OneWay}">
+                    <TextBlock x:Uid="WtAmendText" TextTrimming="CharacterEllipsis" />
+                </CheckBox>
+                <TextBlock Grid.Column="1" Text="{x:Bind ViewModel.CommitForm.ProfileLabel, Mode=OneWay}" FontSize="{ThemeResource VigoFontSize12}" VerticalAlignment="Center"
                            Foreground="{ThemeResource VigoText3Brush}" Visibility="{x:Bind ViewModel.CommitForm.HasProfile, Mode=OneWay}"
                            ToolTipService.ToolTip="{x:Bind ViewModel.CommitForm.ProfileIdentity, Mode=OneWay}" />
-                <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center"
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center"
                             Visibility="{x:Bind ViewModel.CommitForm.IsSigned, Mode=OneWay}">
                     <FontIcon Style="{StaticResource VigoIcon}" FontSize="14" Foreground="{ThemeResource VigoSuccessBrush}"
                               Glyph="{x:Bind controls:FluentIcons.ShieldKeyhole}" />
                     <TextBlock Text="{x:Bind ViewModel.CommitForm.SigningLabel, Mode=OneWay}" FontSize="{ThemeResource VigoFontSize12}" Foreground="{ThemeResource VigoText2Brush}" />
                 </StackPanel>
-            </StackPanel>
+            </Grid>
 
             <Grid Grid.Row="1">
                 <Grid.RowDefinitions>

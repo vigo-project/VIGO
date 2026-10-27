@@ -115,7 +115,7 @@ public sealed class StashTests : IDisposable
 
         Assert.Equal(["On main: second"], StashList());
         var gone = await _git.ApplyStashAsync(_repo.Path, first, drop: false, Ct);
-        Assert.StartsWith("Ce stash n'existe plus", Assert.IsType<Failure>(gone.Value).Message, StringComparison.Ordinal);
+        Assert.StartsWith("Cette remise n'existe plus", Assert.IsType<Failure>(gone.Value).Message, StringComparison.Ordinal);
     }
 
     [Fact]

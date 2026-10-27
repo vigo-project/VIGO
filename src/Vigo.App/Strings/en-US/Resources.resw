@@ -804,6 +804,26 @@ Stored by Git LFS (declared in {1}).</value></data>
   <data name="Refs.RemoteBranches.One" xml:space="preserve"><value>1 branch</value></data>
   <data name="Refs.Section.Local" xml:space="preserve"><value>Local branches</value></data>
   <data name="Refs.Section.Remote" xml:space="preserve"><value>Remotes</value></data>
+  <data name="Key.Delete" xml:space="preserve"><value>Del</value></data>
+  <data name="Key.Insert" xml:space="preserve"><value>Insert</value></data>
+  <data name="Key.Home" xml:space="preserve"><value>Home</value></data>
+  <data name="Key.End" xml:space="preserve"><value>End</value></data>
+  <data name="Key.PageDown" xml:space="preserve"><value>Page Down</value></data>
+  <data name="Key.PageUp" xml:space="preserve"><value>Page Up</value></data>
+  <data name="Key.Space" xml:space="preserve"><value>Space</value></data>
+  <data name="Key.Escape" xml:space="preserve"><value>Esc</value></data>
+  <data name="Key.Enter" xml:space="preserve"><value>Enter</value></data>
+  <data name="Key.Backspace" xml:space="preserve"><value>Backspace</value></data>
+  <data name="Key.Shift" xml:space="preserve"><value>Shift</value></data>
+  <data name="GraphRoot.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Commit graph</value></data>
+  <data name="GitError.RevListUnreadable" xml:space="preserve"><value>Could not read the output of git rev-list.</value></data>
+  <data name="Refs.Section.Submodules" xml:space="preserve"><value>Submodules</value></data>
+  <data name="Refs.Section.Worktrees" xml:space="preserve"><value>Worktrees</value></data>
+  <data name="Refs.Section.Stashes" xml:space="preserve"><value>Stashes</value></data>
+  <data name="Refs.Section.Tags" xml:space="preserve"><value>Tags</value></data>
+  <data name="Refs.Section.Issues" xml:space="preserve"><value>Issues</value></data>
+  <data name="Refs.Section.WorkItems" xml:space="preserve"><value>Work Items</value></data>
+  <data name="Refs.Section.PullRequests" xml:space="preserve"><value>Pull requests</value></data>
   <data name="Refs.Submodule.Conflict" xml:space="preserve"><value>conflict</value></data>
   <data name="Refs.Submodule.ConflictTooltip" xml:space="preserve"><value>Conflict on the recorded commit.</value></data>
   <data name="Refs.Submodule.InSyncTooltip" xml:space="preserve"><value>On the commit recorded by the repository.</value></data>
@@ -977,6 +997,13 @@ Stored by Git LFS (declared in {1}).</value></data>
   <data name="RepoToolbarBranchContent.Label" xml:space="preserve"><value>Branch</value></data>
   <data name="RepoUndo.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Undo</value></data>
   <data name="RepoUndoContent.Label" xml:space="preserve"><value>Undo</value></data>
+  <data name="RepoPull.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Pull</value></data>
+  <data name="RepoPullContent.Label" xml:space="preserve"><value>Pull</value></data>
+  <data name="RepoPush.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Push</value></data>
+  <data name="RepoPushContent.Label" xml:space="preserve"><value>Push</value></data>
+  <data name="RepoStashContent.Label" xml:space="preserve"><value>Stash</value></data>
+  <data name="RepoPop.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Pop</value></data>
+  <data name="RepoPopContent.Label" xml:space="preserve"><value>Pop</value></data>
   <data name="RepositoryPicker.Open" xml:space="preserve"><value>Open tabs</value></data>
   <data name="RepositoryPicker.Recent" xml:space="preserve"><value>Recent</value></data>
   <data name="Search.Commits" xml:space="preserve"><value>{0:N0} commits</value></data>
@@ -1199,7 +1226,7 @@ Stored by Git LFS (declared in {1}).</value></data>
   <data name="Worktree.Remove.Failed" xml:space="preserve"><value>Could not remove {0}</value></data>
   <data name="Worktree.Remove.Message" xml:space="preserve"><value>The folder {0} will be deleted. {1}</value></data>
   <data name="Worktree.Remove.Title" xml:space="preserve"><value>Remove worktree {0}?</value></data>
-  <data name="WtAmend.Content" xml:space="preserve"><value>Amend</value></data>
+  <data name="WtAmendText.Text" xml:space="preserve"><value>Amend</value></data>
   <data name="WtPushAfter.Content" xml:space="preserve"><value>Push after committing</value></data>
   <data name="WtPushAfter.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>The button commits, then pushes the branch</value></data>
   <data name="WtAmend.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Modify the last commit (amend)</value></data>

@@ -19,10 +19,31 @@ public sealed class TestRepoBuilder : IDisposable
     /// <summary>Creates an empty repository on the given initial branch.</summary>
     public static TestRepoBuilder Create(string initialBranch = "main", bool bare = false)
     {
+        // Copy of a repository initialized (and configured) once per process: a copy of a few files instead of 6 git.exe runs.
         var repo = new TestRepoBuilder(NewDirectory());
-        repo.Git("init", "--initial-branch", initialBranch, bare ? "--bare" : "--quiet");
-        if (!bare) repo.Configure();
+        CopyDirectory(Template(initialBranch, bare), repo.Path);
         return repo;
+    }
+
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<(string Branch, bool Bare), Lazy<string>> s_templates = new();
+
+    /// <summary>The initialized repository every <see cref="Create"/> copies; built on first use, removed when the process ends.</summary>
+    private static string Template(string initialBranch, bool bare) =>
+        s_templates.GetOrAdd((initialBranch, bare), key => new Lazy<string>(() =>
+        {
+            var template = new TestRepoBuilder(NewDirectory());
+            template.Git("init", "--initial-branch", key.Branch, key.Bare ? "--bare" : "--quiet");
+            if (!key.Bare) template.Configure();
+            AppDomain.CurrentDomain.ProcessExit += (_, _) => template.Dispose();
+            return template.Path;
+        })).Value;
+
+    private static void CopyDirectory(string source, string target)
+    {
+        foreach (var directory in Directory.EnumerateDirectories(source, "*", SearchOption.AllDirectories))
+            Directory.CreateDirectory(System.IO.Path.Combine(target, System.IO.Path.GetRelativePath(source, directory)));
+        foreach (var file in Directory.EnumerateFiles(source, "*", SearchOption.AllDirectories))
+            File.Copy(file, System.IO.Path.Combine(target, System.IO.Path.GetRelativePath(source, file)));
     }
 
     /// <summary>Clones <paramref name="source"/> (a path, e.g. a bare repository used as remote "origin").</summary>
@@ -66,14 +87,14 @@ public sealed class TestRepoBuilder : IDisposable
         return path;
     }
 
-    private void Configure()
-    {
-        Git("config", "user.name", "Vigo Test");
-        Git("config", "user.email", "test@vigo.dev");
-        Git("config", "commit.gpgsign", "false");
-        Git("config", "tag.gpgsign", "false");
-        Git("config", "core.autocrlf", "false");
-    }
+    /// <summary>
+    /// Identity, no signing, no line-ending conversion; no fsync and no background maintenance (the tests do not need
+    /// either, and they cost a process or a disk flush per operation). Written to the config file: no git.exe run.
+    /// </summary>
+    private void Configure() => File.AppendAllText(
+        System.IO.Path.Combine(Path, ".git", "config"),
+        "[user]\n\tname = Vigo Test\n\temail = test@vigo.dev\n[commit]\n\tgpgsign = false\n[tag]\n\tgpgsign = false\n"
+        + "[core]\n\tautocrlf = false\n\tfsync = none\n[gc]\n\tauto = 0\n[maintenance]\n\tauto = false\n");
 
     /// <summary>Writes a file (relative path, '/' separators).</summary>
     public TestRepoBuilder WriteFile(string relativePath, string content)
@@ -141,7 +162,34 @@ public sealed class TestRepoBuilder : IDisposable
         return this;
     }
 
-    public string Head() => Git("rev-parse", "HEAD").Trim();
+    public string Head() => ReadHead() ?? Git("rev-parse", "HEAD").Trim();
+
+    /// <summary>HEAD read from the files of the repository (a loose or packed ref, or a detached HEAD); null when unsure (git.exe then answers).</summary>
+    private string? ReadHead()
+    {
+        var gitDirectory = System.IO.Path.Combine(Path, ".git");
+        try
+        {
+            var head = File.ReadAllText(System.IO.Path.Combine(gitDirectory, "HEAD")).Trim();
+            if (!head.StartsWith("ref: ", StringComparison.Ordinal)) return IsSha(head) ? head : null;
+
+            var reference = head[5..];
+            var loose = System.IO.Path.Combine(gitDirectory, reference.Replace('/', System.IO.Path.DirectorySeparatorChar));
+            if (File.Exists(loose)) return File.ReadAllText(loose).Trim() is var sha && IsSha(sha) ? sha : null;
+
+            var packed = System.IO.Path.Combine(gitDirectory, "packed-refs");
+            if (!File.Exists(packed)) return null;
+            foreach (var line in File.ReadLines(packed))
+            {
+                if (line.EndsWith(' ' + reference, StringComparison.Ordinal) && IsSha(line[..^(reference.Length + 1)])) return line[..^(reference.Length + 1)];
+            }
+        }
+        catch (IOException) { }
+        catch (UnauthorizedAccessException) { }
+        return null;
+    }
+
+    private static bool IsSha(string text) => text.Length is 40 or 64 && text.All(char.IsAsciiHexDigit);
 
     /// <summary>Runs git and returns stdout; throws if the exit code is non-zero.</summary>
     public string Git(params string[] args) => Git(null, args);
@@ -183,14 +231,62 @@ public sealed class TestRepoBuilder : IDisposable
 
     public void Dispose()
     {
+        if (!TryDelete(Path)) s_undeleted.Add(Path);
+    }
+
+    // ---- Clean-up of the test folders ---------------------------------------------------------------------------------
+
+    private static readonly System.Collections.Concurrent.ConcurrentBag<string> s_undeleted = [];
+
+    /// <summary>Folders older than this belong to a run that was interrupted (a suite lasts well under that).</summary>
+    private static readonly TimeSpan s_staleAfter = TimeSpan.FromHours(2);
+
+    static TestRepoBuilder()
+    {
+        // A folder that could not be deleted (a watcher or a process still holds it) is tried again when the run ends.
+        AppDomain.CurrentDomain.ProcessExit += (_, _) =>
+        {
+            foreach (var path in s_undeleted) TryDelete(path, attempts: 3);
+        };
+        // The folders of earlier, interrupted runs: removed in the background, the tests do not wait for it.
+        _ = Task.Run(SweepStaleFolders);
+    }
+
+    private static void SweepStaleFolders()
+    {
         try
         {
-            // Git objects are read-only: clear the attribute before deleting.
-            foreach (var f in Directory.EnumerateFiles(Path, "*", SearchOption.AllDirectories))
-                File.SetAttributes(f, FileAttributes.Normal);
-            Directory.Delete(Path, recursive: true);
+            var root = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "vigo-tests");
+            if (!Directory.Exists(root)) return;
+            foreach (var directory in Directory.EnumerateDirectories(root))
+            {
+                if (DateTime.UtcNow - Directory.GetLastWriteTimeUtc(directory) > s_staleAfter) TryDelete(directory, attempts: 1);
+            }
         }
-        catch (IOException) { /* file still locked: the temp folder will be purged later */ }
+        catch (IOException) { }
         catch (UnauthorizedAccessException) { }
+    }
+
+    /// <summary>
+    /// Deletes a folder, git's read-only objects included. A few tries with a short wait: a process that is still ending, or
+    /// a watcher being disposed, releases the folder a moment later. False when it is still there.
+    /// </summary>
+    private static bool TryDelete(string path, int attempts = 6)
+    {
+        for (var attempt = 1; attempt <= attempts; attempt++)
+        {
+            try
+            {
+                if (!Directory.Exists(path)) return true;
+                foreach (var entry in Directory.EnumerateFileSystemEntries(path, "*", SearchOption.AllDirectories))
+                    File.SetAttributes(entry, FileAttributes.Normal);
+                Directory.Delete(path, recursive: true);
+                return true;
+            }
+            catch (IOException) { }
+            catch (UnauthorizedAccessException) { }
+            if (attempt < attempts) Thread.Sleep(50 * attempt);
+        }
+        return false;
     }
 }

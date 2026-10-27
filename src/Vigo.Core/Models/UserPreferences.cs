@@ -332,8 +332,8 @@ public sealed record SshSettings(string? KeyPath, bool UseWindowsAgent);
 /// <summary>Sizes that depend on the density, shared by the XAML views and the Win2D controls.</summary>
 public sealed record DensityMetrics(double RowHeight, double LaneWidth, double CodeLineHeight, double ToolbarButtonWidth, double ToolbarButtonHeight, bool ShowToolbarLabels)
 {
-    /// <summary>Mockup: <c>--row:28px</c>, lanes 14 px, code 20 px, 56 × 44 toolbar buttons with labels.</summary>
-    public static DensityMetrics Normal { get; } = new(28, 14, 20, 56, 44, true);
+    /// <summary>Mockup: <c>--row:28px</c>, lanes 14 px, code 20 px, 64 × 44 toolbar buttons with labels (wide enough for "Réappliquer").</summary>
+    public static DensityMetrics Normal { get; } = new(28, 14, 20, 64, 44, true);
 
     /// <summary>Mockup: <c>--row:22px</c>, lanes 11 px, code 18 px, 32 × 30 toolbar buttons without labels.</summary>
     public static DensityMetrics Compact { get; } = new(22, 11, 18, 32, 30, false);

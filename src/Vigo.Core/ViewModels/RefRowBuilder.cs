@@ -158,8 +158,8 @@ internal static class RefRowBuilder
 
             var counted = hosting.State is HostingState.Ready or HostingState.Loading;
             var issueCount = hosting.Issues.Count.ToString(System.Globalization.CultureInfo.CurrentCulture) + (hosting.IssuesHaveMore ? "+" : string.Empty);
-            AddSection(rows, RefSection.PullRequests, "Pull requests", hosting.PullRequests.Count, pullRows, IsOpen, counted ? null : string.Empty);
-            AddSection(rows, RefSection.Issues, workItems ? "Work Items" : "Issues", hosting.Issues.Count, issueRows, IsOpen, counted ? issueCount : string.Empty);
+            AddSection(rows, RefSection.PullRequests, Loc.Get("Refs.Section.PullRequests"), hosting.PullRequests.Count, pullRows, IsOpen, counted ? null : string.Empty);
+            AddSection(rows, RefSection.Issues, Loc.Get(workItems ? "Refs.Section.WorkItems" : "Refs.Section.Issues"), hosting.Issues.Count, issueRows, IsOpen, counted ? issueCount : string.Empty);
         }
 
         // Tags, most recent version first.
@@ -169,7 +169,7 @@ internal static class RefRowBuilder
             .Select(t => WithEye(new RefRow("tag:" + t.CanonicalName, RefRowKind.Tag, t.Name, 0,
                 ToolTip: t.Message is { Length: > 0 } m ? $"{t.Name} — {m}" : t.Name, Ref: t, Section: RefSection.Tags), t))
             .ToList();
-        AddSection(rows, RefSection.Tags, "Tags", tags.Count, tagRows, IsOpen);
+        AddSection(rows, RefSection.Tags, Loc.Get("Refs.Section.Tags"), tags.Count, tagRows, IsOpen);
 
         // Stashes, newest first (git order).
         var stashes = all.Where(r => r.Kind == GitRefKind.Stash).ToList();
@@ -180,7 +180,7 @@ internal static class RefRowBuilder
             .Select(s => WithEye(new RefRow("stash:" + s.Stash.CanonicalName, RefRowKind.Stash, s.Label, 0,
                 ToolTip: s.Stash.Message ?? s.Stash.Name, Ref: s.Stash, Section: RefSection.Stashes), s.Stash))
             .ToList();
-        AddSection(rows, RefSection.Stashes, "Stashes", stashes.Count, stashRows, IsOpen);
+        AddSection(rows, RefSection.Stashes, Loc.Get("Refs.Section.Stashes"), stashes.Count, stashRows, IsOpen);
 
         // Worktrees (J7.1): shown once they are read; the main one first (git order).
         if (worktrees is { Count: > 0 })
@@ -195,7 +195,7 @@ internal static class RefRowBuilder
                     ? WithEye(row, reference)
                     : row)
                 .ToList();
-            AddSection(rows, RefSection.Worktrees, "Worktrees", worktrees.Count, worktreeRows, IsOpen);
+            AddSection(rows, RefSection.Worktrees, Loc.Get("Refs.Section.Worktrees"), worktrees.Count, worktreeRows, IsOpen);
         }
 
         // Submodules (J7.2): shown when the repository declares some, in .gitmodules order (git status order).
@@ -205,7 +205,7 @@ internal static class RefRowBuilder
                 .Where(s => Matches(s.Path) || Matches(s.Name))
                 .Select(SubmoduleRow)
                 .ToList();
-            AddSection(rows, RefSection.Submodules, "Submodules", submodules.Count, submoduleRows, IsOpen);
+            AddSection(rows, RefSection.Submodules, Loc.Get("Refs.Section.Submodules"), submodules.Count, submoduleRows, IsOpen);
         }
 
         // Git LFS (J7.5): shown when an attributes file routes patterns through it; one row per pattern, then a summary line.

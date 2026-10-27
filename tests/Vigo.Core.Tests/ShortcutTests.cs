@@ -145,7 +145,7 @@ public sealed class ShortcutTests : IDisposable
     [Fact]
     public async Task Conflicts_name_the_command_or_the_fixed_shortcut_that_uses_the_gesture()
     {
-        Assert.Equal("Pull", _map.FindConflict(ShortcutIds.Push, new KeyGesture('L', GestureModifiers.Ctrl | GestureModifiers.Shift)));
+        Assert.Equal("Tirer", _map.FindConflict(ShortcutIds.Push, new KeyGesture('L', GestureModifiers.Ctrl | GestureModifiers.Shift)));
         Assert.Equal("Copier", _map.FindConflict(ShortcutIds.Push, new KeyGesture('C', GestureModifiers.Ctrl)));
         Assert.Null(_map.FindConflict(ShortcutIds.Push, new KeyGesture('L', GestureModifiers.Ctrl | GestureModifiers.Shift) with { Key = 'K' }));
         // Its own gesture is not a conflict.
@@ -224,7 +224,7 @@ public sealed class ShortcutTests : IDisposable
 
         await sut.AssignShortcutAsync(pull, new KeyGesture('P', GestureModifiers.Ctrl | GestureModifiers.Shift));
         Assert.True(pull.IsCapturing);
-        Assert.Contains("Push", pull.Message);
+        Assert.Contains("Pousser", pull.Message);
         Assert.Equal("Ctrl+Maj+L", _map.Display(ShortcutIds.Pull));
 
         await sut.AssignShortcutAsync(pull, new KeyGesture('K', GestureModifiers.None));
@@ -273,7 +273,7 @@ public sealed class ShortcutTests : IDisposable
 
         await sut.ResetShortcutCommand.ExecuteAsync(pull);
 
-        Assert.Contains("Push", pull.Message);
+        Assert.Contains("Pousser", pull.Message);
         Assert.Equal("Ctrl+Alt+U", pull.GestureText);
         Assert.Equal("Ctrl+Maj+L", push.GestureText);
     }

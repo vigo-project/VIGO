@@ -80,7 +80,7 @@ public sealed class WorktreeActionsViewModelTests : IDisposable
         Assert.Equal(2, tab.Worktrees.Worktrees.Count);
         Assert.Equal("feature/x", tab.Worktrees.Worktrees[1].Branch);
         Assert.True(File.Exists(Path.Combine(folder, "a.txt")));
-        Assert.Contains(_notifier.Items, n => n.Title == "Worktree créé");
+        Assert.Contains(_notifier.Items, n => n.Title == "Arbre de travail créé");
     }
 
     [Fact]
@@ -206,7 +206,7 @@ public sealed class WorktreeActionsViewModelTests : IDisposable
 
         Assert.True(Directory.Exists(folder));
         Assert.Equal(2, tab.Worktrees.Worktrees.Count);
-        Assert.DoesNotContain(_notifier.Items, n => n.Title == "Worktree supprimé");
+        Assert.DoesNotContain(_notifier.Items, n => n.Title == "Arbre de travail supprimé");
     }
 
     [Fact]

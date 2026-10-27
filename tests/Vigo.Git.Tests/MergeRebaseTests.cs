@@ -178,7 +178,7 @@ public sealed class MergeRebaseTests
 
         var failure = Assert.IsType<Failure>((await _git.MergeAsync(repo.Path, "refs/heads/other", Ct)).Value);
 
-        Assert.StartsWith("Une opération (fusion, rebase, cherry-pick ou revert) est déjà en cours", failure.Message, StringComparison.Ordinal);
+        Assert.StartsWith("Une opération (fusion, rebase, cherry-pick ou inversion) est déjà en cours", failure.Message, StringComparison.Ordinal);
     }
 
     [Fact]

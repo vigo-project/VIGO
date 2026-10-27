@@ -256,7 +256,7 @@
                             <FontIcon Glyph="{x:Bind controls:FluentIcons.WindowNew}" FontFamily="{StaticResource VigoIconFont}" />
                         </MenuFlyoutItem.Icon>
                     </MenuFlyoutItem>
-                    <MenuFlyoutItem x:Name="AddWorktreeItem" Text="Nouveau worktree…" Click="OnAddWorktreeClick">
+                    <MenuFlyoutItem x:Name="AddWorktreeItem" Click="OnAddWorktreeClick">
                         <MenuFlyoutItem.Icon>
                             <FontIcon Glyph="{x:Bind controls:FluentIcons.FolderAdd}" FontFamily="{StaticResource VigoIconFont}" />
                         </MenuFlyoutItem.Icon>

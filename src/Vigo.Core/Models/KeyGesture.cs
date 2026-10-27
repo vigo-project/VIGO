@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text;
+using Vigo.Core.Services;
 
 namespace Vigo.Core.Models;
 
@@ -71,13 +72,19 @@ public readonly record struct KeyGesture(int Key, GestureModifiers Modifiers)
         return true;
     }
 
+    // Keys whose name is a word: translated (Key.<Name>) when shown, read at use since the language is set at launch.
+    private static readonly HashSet<string> s_localizedNames =
+        ["Backspace", "Enter", "Escape", "Space", "PageUp", "PageDown", "End", "Home", "Insert", "Delete"];
+
+    private static string DisplayName(string name, string symbol) => s_localizedNames.Contains(name) ? Loc.Get("Key." + name) : symbol;
+
     private string Format(bool display)
     {
         var text = new StringBuilder();
         if (Modifiers.HasFlag(GestureModifiers.Ctrl)) text.Append("Ctrl+");
         if (Modifiers.HasFlag(GestureModifiers.Alt)) text.Append("Alt+");
-        if (Modifiers.HasFlag(GestureModifiers.Shift)) text.Append(display ? "Maj+" : "Shift+");
-        if (s_byKey.TryGetValue(Key, out var names)) text.Append(display ? names.Display : names.Name);
+        if (Modifiers.HasFlag(GestureModifiers.Shift)) text.Append(display ? Loc.Get("Key.Shift") + "+" : "Shift+");
+        if (s_byKey.TryGetValue(Key, out var names)) text.Append(display ? DisplayName(names.Name, names.Display) : names.Name);
         else text.Append(CultureInfo.InvariantCulture, $"VK{Key}");
         return text.ToString();
     }

@@ -55,7 +55,7 @@ public sealed class HistoryActionsViewModelTests : IDisposable
     {
         using var tab = await OpenAsync();
 
-        Assert.Equal("Reset main ici", tab.History.ResetLabel);
+        Assert.Equal("Réinitialiser main ici", tab.History.ResetLabel);
         Assert.True(tab.History.CanCherryPick(_pick));
         Assert.False(tab.History.CanCherryPick(_mainTip));
         Assert.True(tab.History.CanRevert(_mainTip));
@@ -139,7 +139,7 @@ public sealed class HistoryActionsViewModelTests : IDisposable
 
         Assert.Equal("Revert \"main-3\"", _repo.Git("log", "-1", "--format=%s").Trim());
         Assert.False(File.Exists(Path.Combine(_repo.Path, "c.txt")));
-        Assert.Contains(_notifier.Items, n => n is (NotificationSeverity.Success, "Revert effectué", _));
+        Assert.Contains(_notifier.Items, n => n is (NotificationSeverity.Success, "Inversion effectuée", _));
     }
 
     [Fact]
@@ -152,7 +152,7 @@ public sealed class HistoryActionsViewModelTests : IDisposable
         Assert.Equal(_base.ToString(), _repo.Head());
         Assert.Empty(_confirmations.Requests);
         Assert.Equal("main\n", File.ReadAllText(Path.Combine(_repo.Path, "a.txt")).ReplaceLineEndings("\n"));
-        Assert.Contains(_notifier.Items, n => n is (NotificationSeverity.Success, "Reset effectué", var m)
+        Assert.Contains(_notifier.Items, n => n is (NotificationSeverity.Success, "Réinitialisation effectuée", var m)
             && m == $"main ramenée sur {_base.ToShortString()} « base » (1 commit retiré de la branche). Leurs modifications sont dans le répertoire de travail.");
         Assert.Equal(_base, tab.Graph.Head);
         Assert.Equal(1, tab.WorkingTree.ChangeCount);
@@ -168,7 +168,7 @@ public sealed class HistoryActionsViewModelTests : IDisposable
 
         var request = Assert.Single(_confirmations.Requests);
         Assert.True(request.IsDestructive);
-        Assert.Equal("Reset hard de main ?", request.Title);
+        Assert.Equal("Réinitialiser main en mode hard ?", request.Title);
         Assert.Contains("1 commit ne sera plus sur la branche.", request.Message, StringComparison.Ordinal);
         Assert.Contains("Les modifications non validées de 1 fichier suivi seront perdues définitivement.", request.Message, StringComparison.Ordinal);
         Assert.Equal(_mainTip.ToString(), _repo.Head());
@@ -187,7 +187,7 @@ public sealed class HistoryActionsViewModelTests : IDisposable
         Assert.Equal(_base.ToString(), _repo.Head());
         Assert.Equal("base\n", File.ReadAllText(Path.Combine(_repo.Path, "a.txt")).ReplaceLineEndings("\n"));
         Assert.Equal(0, tab.WorkingTree.ChangeCount);
-        Assert.Contains(_notifier.Items, n => n is (NotificationSeverity.Success, "Reset effectué", _));
+        Assert.Contains(_notifier.Items, n => n is (NotificationSeverity.Success, "Réinitialisation effectuée", _));
     }
 
     private sealed class FakeConfirmations : IConfirmationService

@@ -187,8 +187,8 @@ public sealed class UndoHistoryTests : IDisposable
         Assert.Equal(_base.ToString(), _repo.Head());
         Assert.Equal("local\n", File.ReadAllText(Path.Combine(_repo.Path, "a.txt")).ReplaceLineEndings("\n"));
         Assert.Contains(_notifier.Items, n => n.Severity == NotificationSeverity.Error
-            && n.Title == $"Impossible d'annuler : Reset de main sur {_base.ToShortString()} « base »"
-            && n.Message!.Contains("stash", StringComparison.Ordinal));
+            && n.Title == $"Impossible d'annuler : Réinitialisation de main sur {_base.ToShortString()} « base »"
+            && n.Message!.Contains("remise", StringComparison.Ordinal));
         Assert.True(tab.Undo.CanUndo);
     }
 

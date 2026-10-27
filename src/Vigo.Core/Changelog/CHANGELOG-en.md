@@ -1,3 +1,9 @@
+## 0.31.0 — 2026-10-27
+- French: "Checkout" becomes "Basculer", "issue" becomes "ticket", the Amend box reads "Modifier le dernier commit" and the pull request merge modes are translated. The key names of the shortcuts (Entrée / Enter, Maj / Shift…) follow the chosen language.
+- Commit form: the "Push after committing" box unchecks itself once the push is done.
+- French: git vocabulary translated across the interface (Tirer, Pousser, Récupérer, Remiser / Réappliquer, arbres de travail, éléments de travail, Inverser, Réinitialiser); the top bar buttons are translated and slightly wider.
+- Top bar: badges on Pull and Push show the number of commits to pull and to push.
+
 ## 0.30.0 — 2026-10-27
 - Commit form: a loader spins on the button while committing, then pushing ("Committing…", "Pushing…").
 - Commit form: the amend / profile / signing row moves above the message, a "Push after committing" box is added, and the button reads "Commit X files" or "Commit X files and push".

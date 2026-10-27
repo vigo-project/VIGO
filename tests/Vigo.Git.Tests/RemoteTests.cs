@@ -246,7 +246,7 @@ public sealed class RemoteTests : IDisposable
 
         var rejected = await _git.PushAsync(_mine.Path, new PushRequest(), null, Ct);
         var failure = Assert.IsType<Failure>(rejected.Value);
-        Assert.StartsWith("Push refusé : origin/main contient des commits absents en local", failure.Message, StringComparison.Ordinal);
+        Assert.StartsWith("Envoi refusé : origin/main contient des commits absents en local", failure.Message, StringComparison.Ordinal);
         Assert.Contains("[rejected]", failure.Details, StringComparison.Ordinal);
         // Their commit was never fetched ("fetch first"): a lease would erase it, so no forced push is offered.
         Assert.NotEqual(FailureReason.PushNeedsForce, failure.Reason);
@@ -256,7 +256,7 @@ public sealed class RemoteTests : IDisposable
         // until their commit is part of the branch.
         AssertDone(await _git.FetchAsync(_mine.Path, null, true, Ct));
         var forced = Assert.IsType<Failure>((await _git.PushAsync(_mine.Path, new PushRequest(ForceWithLease: true), null, Ct)).Value);
-        Assert.StartsWith("Push forcé refusé", forced.Message, StringComparison.Ordinal);
+        Assert.StartsWith("Envoi forcé refusé", forced.Message, StringComparison.Ordinal);
         Assert.Equal(theirs, RemoteHead());
 
         _mine.Git("rebase", "--quiet", "origin/main");
@@ -285,7 +285,7 @@ public sealed class RemoteTests : IDisposable
         var result = await _git.PushAsync(_mine.Path, new PushRequest(ForceWithLease: true), null, Ct);
 
         var failure = Assert.IsType<Failure>(result.Value);
-        Assert.StartsWith("Push forcé refusé", failure.Message, StringComparison.Ordinal);
+        Assert.StartsWith("Envoi forcé refusé", failure.Message, StringComparison.Ordinal);
         Assert.Equal(theirs, RemoteHead());
     }
 

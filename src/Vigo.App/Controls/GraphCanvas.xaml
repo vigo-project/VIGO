@@ -12,7 +12,7 @@
     xmlns:controls="using:Vigo.App.Controls"
     IsTabStop="True"
     UseSystemFocusVisuals="True"
-    AutomationProperties.Name="Graphe des commits">
+    x:Uid="GraphRoot">
 
     <UserControl.Resources>
         <Style x:Key="HeaderText" TargetType="TextBlock">

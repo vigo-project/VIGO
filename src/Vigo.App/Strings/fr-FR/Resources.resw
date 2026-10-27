@@ -72,7 +72,7 @@
   <data name="CommitForm.AmendFailed" xml:space="preserve"><value>Impossible de modifier le commit</value></data>
   <data name="CommitForm.AmendLabel" xml:space="preserve"><value>Modifier le commit {0}</value></data>
   <data name="CommitForm.AmendPublishedConfirm" xml:space="preserve"><value>Modifier</value></data>
-  <data name="CommitForm.AmendPublishedMessage" xml:space="preserve"><value>Le commit {0} est déjà sur {1}. Le modifier réécrit l'historique publié : il faudra forcer le push, et les personnes qui l'ont récupéré devront se resynchroniser.</value></data>
+  <data name="CommitForm.AmendPublishedMessage" xml:space="preserve"><value>Le commit {0} est déjà sur {1}. Le modifier réécrit l'historique publié : il faudra forcer l'envoi, et les personnes qui l'ont récupéré devront se resynchroniser.</value></data>
   <data name="CommitForm.AmendPublishedTitle" xml:space="preserve"><value>Modifier un commit déjà poussé ?</value></data>
   <data name="CommitForm.AmendedTitle" xml:space="preserve"><value>Commit {0} modifié</value></data>
   <data name="CommitForm.CommitDetached" xml:space="preserve"><value>Valider {0} (HEAD détaché)</value></data>
@@ -318,7 +318,7 @@
   <data name="Graph.Menu.InteractiveRebase" xml:space="preserve"><value>Rebase interactif de {0} sur ce commit…</value></data>
   <data name="Graph.Menu.PullRequestFor" xml:space="preserve"><value>Créer une pull request pour {0}…</value></data>
   <data name="Graph.Menu.PullRequestTo" xml:space="preserve"><value>Créer une pull request {0} → {1}…</value></data>
-  <data name="Graph.Menu.Reset" xml:space="preserve"><value>Reset ici</value></data>
+  <data name="Graph.Menu.Reset" xml:space="preserve"><value>Réinitialiser ici</value></data>
   <data name="Graph.Status.Empty" xml:space="preserve"><value>Dépôt vide : aucun commit.</value></data>
   <data name="Graph.Status.Loading" xml:space="preserve"><value>Chargement de l'historique…</value></data>
   <data name="Graph.Status.NoMatch" xml:space="preserve"><value>Aucun commit ne correspond à la recherche.</value></data>
@@ -337,10 +337,10 @@
   <data name="GraphNewTagItem.Text" xml:space="preserve"><value>Créer un tag ici…</value></data>
   <data name="GraphPullRequestItem.Text" xml:space="preserve"><value>Créer une pull request…</value></data>
   <data name="GraphResetHard.Text" xml:space="preserve"><value>Hard · supprimer les modifications…</value></data>
-  <data name="GraphResetItem.Text" xml:space="preserve"><value>Reset ici</value></data>
+  <data name="GraphResetItem.Text" xml:space="preserve"><value>Réinitialiser ici</value></data>
   <data name="GraphResetMixed.Text" xml:space="preserve"><value>Mixed · garder les modifications non indexées</value></data>
   <data name="GraphResetSoft.Text" xml:space="preserve"><value>Soft · garder les modifications indexées</value></data>
-  <data name="GraphRevertItem.Text" xml:space="preserve"><value>Revert</value></data>
+  <data name="GraphRevertItem.Text" xml:space="preserve"><value>Inverser</value></data>
   <data name="GraphSplitterAuthor.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Largeur de la colonne Auteur</value></data>
   <data name="GraphSplitterDate.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Largeur de la colonne Date</value></data>
   <data name="GraphSplitterGraph.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Largeur de la colonne Graphe</value></data>
@@ -352,10 +352,10 @@
   <data name="History.CherryPick.Undo" xml:space="preserve"><value>Cherry-pick de {0}</value></data>
   <data name="History.Conflict.Detail" xml:space="preserve"><value>{0} {1}. Résolvez-les dans le panneau des fichiers, puis continuez ou abandonnez depuis le bandeau.</value></data>
   <data name="History.Reset.CleanTree" xml:space="preserve"><value>Le répertoire de travail sera remis à l'état de ce commit (fichiers non suivis conservés).</value></data>
-  <data name="History.Reset.Confirm" xml:space="preserve"><value>Reset hard</value></data>
-  <data name="History.Reset.Done" xml:space="preserve"><value>Reset effectué</value></data>
+  <data name="History.Reset.Confirm" xml:space="preserve"><value>Réinitialiser (hard)</value></data>
+  <data name="History.Reset.Done" xml:space="preserve"><value>Réinitialisation effectuée</value></data>
   <data name="History.Reset.DoneDetail" xml:space="preserve"><value>{0} ramenée sur {1}{2}.{3}</value></data>
-  <data name="History.Reset.Failed" xml:space="preserve"><value>Reset de {0} impossible</value></data>
+  <data name="History.Reset.Failed" xml:space="preserve"><value>Réinitialisation de {0} impossible</value></data>
   <data name="History.Reset.KeptInTree" xml:space="preserve"><value> Leurs modifications sont dans le répertoire de travail.</value></data>
   <data name="History.Reset.KeptStaged" xml:space="preserve"><value> Leurs modifications sont indexées.</value></data>
   <data name="History.Reset.LeavingMany" xml:space="preserve"><value>{0:N0} commits ne seront plus sur la branche.</value></data>
@@ -365,14 +365,14 @@
   <data name="History.Reset.Moved" xml:space="preserve"><value>{0} sera ramenée sur {1}.</value></data>
   <data name="History.Reset.RemovedMany" xml:space="preserve"><value> ({0:N0} commits retirés de la branche)</value></data>
   <data name="History.Reset.RemovedOne" xml:space="preserve"><value> (1 commit retiré de la branche)</value></data>
-  <data name="History.Reset.Title" xml:space="preserve"><value>Reset hard de {0} ?</value></data>
-  <data name="History.Reset.Undo" xml:space="preserve"><value>Reset de {0} sur {1}</value></data>
-  <data name="History.ResetLabel" xml:space="preserve"><value>Reset {0} ici</value></data>
-  <data name="History.Revert.ConflictPrefix" xml:space="preserve"><value>Le revert de {0} a produit</value></data>
+  <data name="History.Reset.Title" xml:space="preserve"><value>Réinitialiser {0} en mode hard ?</value></data>
+  <data name="History.Reset.Undo" xml:space="preserve"><value>Réinitialisation de {0} sur {1}</value></data>
+  <data name="History.ResetLabel" xml:space="preserve"><value>Réinitialiser {0} ici</value></data>
+  <data name="History.Revert.ConflictPrefix" xml:space="preserve"><value>L'inversion de {0} a produit</value></data>
   <data name="History.Revert.Detail" xml:space="preserve"><value>{0} annulé par le commit {1}.</value></data>
-  <data name="History.Revert.Done" xml:space="preserve"><value>Revert effectué</value></data>
-  <data name="History.Revert.Failed" xml:space="preserve"><value>Revert de {0} impossible</value></data>
-  <data name="History.Revert.Undo" xml:space="preserve"><value>Revert de {0}</value></data>
+  <data name="History.Revert.Done" xml:space="preserve"><value>Inversion effectuée</value></data>
+  <data name="History.Revert.Failed" xml:space="preserve"><value>Inversion de {0} impossible</value></data>
+  <data name="History.Revert.Undo" xml:space="preserve"><value>Inversion de {0}</value></data>
   <data name="InputDialog.CloseButtonText" xml:space="preserve"><value>Annuler</value></data>
   <data name="Lfs.Pattern.ControlChar" xml:space="preserve"><value>Le motif ne peut pas contenir de caractère de contrôle.</value></data>
   <data name="Lfs.Pattern.Required" xml:space="preserve"><value>Le motif est obligatoire.</value></data>
@@ -393,7 +393,7 @@
   <data name="Merge.Abort.Merge" xml:space="preserve"><value>Abandonner la fusion</value></data>
   <data name="Merge.Abort.Other" xml:space="preserve"><value>Abandonner</value></data>
   <data name="Merge.Abort.Rebase" xml:space="preserve"><value>Abandonner le rebase</value></data>
-  <data name="Merge.Abort.Revert" xml:space="preserve"><value>Abandonner le revert</value></data>
+  <data name="Merge.Abort.Revert" xml:space="preserve"><value>Abandonner l'inversion</value></data>
   <data name="Merge.Aborted.Detail" xml:space="preserve"><value>Retour à l'état d'avant l'opération.</value></data>
   <data name="Merge.Aborted.Merge" xml:space="preserve"><value>Fusion abandonnée</value></data>
   <data name="Merge.Aborted.Other" xml:space="preserve"><value>{0} abandonné</value></data>
@@ -416,10 +416,10 @@
   <data name="Merge.Kind.CherryPick" xml:space="preserve"><value>Cherry-pick</value></data>
   <data name="Merge.Kind.Merge" xml:space="preserve"><value>Fusion</value></data>
   <data name="Merge.Kind.Rebase" xml:space="preserve"><value>Rebase</value></data>
-  <data name="Merge.Kind.Revert" xml:space="preserve"><value>Revert</value></data>
+  <data name="Merge.Kind.Revert" xml:space="preserve"><value>Inversion</value></data>
   <data name="Merge.Merged.Detail" xml:space="preserve"><value>{0} fusionnée dans {1}.</value></data>
   <data name="Merge.Merged.Title" xml:space="preserve"><value>Fusion effectuée</value></data>
-  <data name="Merge.Plan.CheckoutThenMerge" xml:space="preserve"><value>Extraire {0} puis fusionner {1}</value></data>
+  <data name="Merge.Plan.CheckoutThenMerge" xml:space="preserve"><value>Basculer sur {0} puis fusionner {1}</value></data>
   <data name="Merge.Plan.FastForward" xml:space="preserve"><value>Avancer {0} jusqu'à {1}</value></data>
   <data name="Merge.Plan.Merge" xml:space="preserve"><value>Fusionner {0} dans {1}</value></data>
   <data name="Merge.Plan.Rebase" xml:space="preserve"><value>Rebaser {0} sur {1}</value></data>
@@ -433,7 +433,7 @@
   <data name="Merge.Sides.Head" xml:space="preserve"><value>HEAD · {0}</value></data>
   <data name="Merge.Sides.RebaseBase" xml:space="preserve"><value>{0} · base du rebase</value></data>
   <data name="Merge.Sides.RebaseStep" xml:space="preserve"><value>{0} · commit {1} sur {2}</value></data>
-  <data name="Merge.Sides.Revert" xml:space="preserve"><value>revert de {0}</value></data>
+  <data name="Merge.Sides.Revert" xml:space="preserve"><value>inversion de {0}</value></data>
   <data name="Merge.Skip.Failed" xml:space="preserve"><value>Impossible de passer ce commit</value></data>
   <data name="Merge.Step.CommitCreated" xml:space="preserve"><value>{0} : commit créé.</value></data>
   <data name="Merge.Step.Done" xml:space="preserve"><value>{0} terminé</value></data>
@@ -442,7 +442,7 @@
   <data name="Merge.Title.Merge" xml:space="preserve"><value>Fusion de {0} dans {1}.</value></data>
   <data name="Merge.Title.Rebase" xml:space="preserve"><value>Rebase de {0} sur {1}.</value></data>
   <data name="Merge.Title.RebaseStep" xml:space="preserve"><value>Rebase de {0} sur {1} · commit {2} sur {3}.</value></data>
-  <data name="Merge.Title.Revert" xml:space="preserve"><value>Revert de {0}.</value></data>
+  <data name="Merge.Title.Revert" xml:space="preserve"><value>Inversion de {0}.</value></data>
   <data name="Merge.Undo.FastForward" xml:space="preserve"><value>Avance rapide de {0} jusqu'à {1}</value></data>
   <data name="Merge.Undo.Merge" xml:space="preserve"><value>Fusion de {0} dans {1}</value></data>
   <data name="Merge.Undo.Rebase" xml:space="preserve"><value>Rebase de {0} sur {1}</value></data>
@@ -453,16 +453,16 @@
   <data name="Merge.Wip.ConflictOne" xml:space="preserve"><value>{0} · 1 conflit</value></data>
   <data name="Merge.Wip.Merge" xml:space="preserve"><value>Fusion de {0} en cours</value></data>
   <data name="Merge.Wip.Rebase" xml:space="preserve"><value>Rebase sur {0} en cours</value></data>
-  <data name="Merge.Wip.Revert" xml:space="preserve"><value>Revert de {0} en cours</value></data>
-  <data name="PrefAutoFetchCombo.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Fetch automatique</value></data>
+  <data name="Merge.Wip.Revert" xml:space="preserve"><value>Inversion de {0} en cours</value></data>
+  <data name="PrefAutoFetchCombo.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Récupération automatique</value></data>
   <data name="PrefAutoFetchDescription.Text" xml:space="preserve"><value>Récupère les distants de l'onglet visible en arrière-plan, sans jamais demander d'identifiants.</value></data>
-  <data name="PrefAutoFetchTitle.Text" xml:space="preserve"><value>Fetch automatique</value></data>
-  <data name="PrefAutoPruneDescription.Text" xml:space="preserve"><value>À chaque fetch, retire les branches distantes qui n'existent plus sur le serveur. Désactivé : la configuration git (fetch.prune) décide.</value></data>
+  <data name="PrefAutoFetchTitle.Text" xml:space="preserve"><value>Récupération automatique</value></data>
+  <data name="PrefAutoPruneDescription.Text" xml:space="preserve"><value>À chaque récupération, retire les branches distantes qui n'existent plus sur le serveur. Désactivé : la configuration git (fetch.prune) décide.</value></data>
   <data name="PrefAutoPruneSwitch.OffContent" xml:space="preserve"><value>Non</value></data>
   <data name="PrefAutoPruneSwitch.OnContent" xml:space="preserve"><value>Oui</value></data>
   <data name="PrefAutoPruneSwitch.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Élaguer les branches distantes supprimées</value></data>
   <data name="PrefAutoPruneTitle.Text" xml:space="preserve"><value>Élaguer les branches distantes supprimées</value></data>
-  <data name="PrefKeepSubmodulesDescription.Text" xml:space="preserve"><value>Après un pull ou un checkout, met à jour les submodules (submodule update --init --recursive).</value></data>
+  <data name="PrefKeepSubmodulesDescription.Text" xml:space="preserve"><value>Après un tirage ou une bascule, met à jour les submodules (submodule update --init --recursive).</value></data>
   <data name="PrefKeepSubmodulesSwitch.OffContent" xml:space="preserve"><value>Non</value></data>
   <data name="PrefKeepSubmodulesSwitch.OnContent" xml:space="preserve"><value>Oui</value></data>
   <data name="PrefKeepSubmodulesSwitch.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Garder les submodules à jour</value></data>
@@ -480,8 +480,8 @@
   <data name="PrefCheckoutDescription.Text" xml:space="preserve"><value>Valeur proposée par défaut dans le dialogue « Nouvelle branche » ; le dernier choix fait dans le dialogue est aussi retenu ici.</value></data>
   <data name="PrefCheckoutSwitch.OffContent" xml:space="preserve"><value>Non</value></data>
   <data name="PrefCheckoutSwitch.OnContent" xml:space="preserve"><value>Oui</value></data>
-  <data name="PrefCheckoutSwitch.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Extraire la branche après sa création</value></data>
-  <data name="PrefCheckoutTitle.Text" xml:space="preserve"><value>Extraire la branche après sa création</value></data>
+  <data name="PrefCheckoutSwitch.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Basculer sur la branche après sa création</value></data>
+  <data name="PrefCheckoutTitle.Text" xml:space="preserve"><value>Basculer sur la branche après sa création</value></data>
   <data name="PrefDensityCompact.Content" xml:space="preserve"><value>Compact</value></data>
   <data name="PrefDensityDescription.Text" xml:space="preserve"><value>Compact : lignes de 22 px, barre d'outils sans libellés.</value></data>
   <data name="PrefDensityNormal.Content" xml:space="preserve"><value>Normal</value></data>
@@ -554,7 +554,7 @@
   <data name="PrefRepoHookSwitch.OffContent" xml:space="preserve"><value>Désactivé</value></data>
   <data name="PrefRepoHookSwitch.OnContent" xml:space="preserve"><value>Activé</value></data>
   <data name="PrefRepoSkipHooksTitle.Text" xml:space="preserve"><value>Ignorer les hooks</value></data>
-  <data name="PrefRepoSkipHooksDescription.Text" xml:space="preserve"><value>Les commits et push lancés par VIGO passent --no-verify : les vérifications du dépôt (lint, tests…) ne s'exécutent plus. Le terminal intégré n'est pas concerné.</value></data>
+  <data name="PrefRepoSkipHooksDescription.Text" xml:space="preserve"><value>Les commits et envois lancés par VIGO passent --no-verify : les vérifications du dépôt (lint, tests…) ne s'exécutent plus. Le terminal intégré n'est pas concerné.</value></data>
   <data name="PrefRepoSkipHooksSwitch.OffContent" xml:space="preserve"><value>Non</value></data>
   <data name="PrefRepoSkipHooksSwitch.OnContent" xml:space="preserve"><value>Oui</value></data>
   <data name="PrefRepoSkipHooksSwitch.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Ignorer les hooks</value></data>
@@ -573,14 +573,14 @@
   <data name="Preferences.SshAgent.StoppedWarning" xml:space="preserve"><value>Le service ssh-agent ne tourne pas : démarrez-le (Services Windows, démarrage Automatique), puis ajoutez votre clé avec ssh-add.</value></data>
   <data name="Preferences.Title" xml:space="preserve"><value>Préférences</value></data>
   <data name="Rebase.AlreadyContains" xml:space="preserve"><value>{0} contient déjà {1}.</value></data>
-  <data name="Rebase.CleanTreeRequired" xml:space="preserve"><value>Le rebase demande un répertoire de travail propre : validez vos modifications ou mettez-les de côté (stash).</value></data>
+  <data name="Rebase.CleanTreeRequired" xml:space="preserve"><value>Le rebase demande un répertoire de travail propre : validez vos modifications ou mettez-les de côté (remise).</value></data>
   <data name="Rebase.ConflictStopped" xml:space="preserve"><value>Le rebase interactif de {0} s'est arrêté sur {1}. Résolvez-les dans l'éditeur de conflits, puis continuez depuis le bandeau.</value></data>
   <data name="Rebase.DetachedHead" xml:space="preserve"><value>HEAD détaché</value></data>
   <data name="Rebase.Details.Autosquash.Many" xml:space="preserve"><value> · autosquash : {0} fixup! déplacés</value></data>
   <data name="Rebase.Details.Autosquash.One" xml:space="preserve"><value> · autosquash : {0} fixup! déplacé</value></data>
   <data name="Rebase.Done.Message" xml:space="preserve"><value>{0} a été réécrite sur {1}.</value></data>
   <data name="Rebase.Done.Title" xml:space="preserve"><value>Rebase interactif terminé</value></data>
-  <data name="Rebase.Error.AllDropped" xml:space="preserve"><value>Tous les commits seraient supprimés : utilisez plutôt un reset.</value></data>
+  <data name="Rebase.Error.AllDropped" xml:space="preserve"><value>Tous les commits seraient supprimés : utilisez plutôt une réinitialisation.</value></data>
   <data name="Rebase.Error.EmptyMessage" xml:space="preserve"><value>Le nouveau message de {0} est vide.</value></data>
   <data name="Rebase.Error.FirstCommit" xml:space="preserve"><value>Impossible de faire un {0} sur le premier commit : aucun commit précédent.</value></data>
   <data name="Rebase.Failed" xml:space="preserve"><value>Rebase interactif de {0} impossible</value></data>
@@ -662,13 +662,13 @@
   <data name="RefActions.DeleteTag.Title" xml:space="preserve"><value>Supprimer le tag {0} ?</value></data>
   <data name="RefActions.DeleteTag.Undo" xml:space="preserve"><value>Suppression du tag {0}</value></data>
   <data name="RefActions.EditRemote.Confirm" xml:space="preserve"><value>Enregistrer</value></data>
-  <data name="RefActions.EditRemote.PushUrl" xml:space="preserve"><value>URL de push distincte conservée : {0}</value></data>
+  <data name="RefActions.EditRemote.PushUrl" xml:space="preserve"><value>URL d'envoi distincte conservée : {0}</value></data>
   <data name="RefActions.EditRemote.RenameFailed" xml:space="preserve"><value>Renommage du distant {0} impossible</value></data>
   <data name="RefActions.EditRemote.Title" xml:space="preserve"><value>Modifier le distant {0}</value></data>
   <data name="RefActions.EditRemote.UrlFailed" xml:space="preserve"><value>URL du distant {0} inchangée</value></data>
   <data name="RefActions.FromCommit" xml:space="preserve"><value>Depuis {0}</value></data>
   <data name="RefActions.FromCommitSubject" xml:space="preserve"><value>Depuis {0} · {1}</value></data>
-  <data name="RefActions.NewBranch.Checkout" xml:space="preserve"><value>Extraire après création</value></data>
+  <data name="RefActions.NewBranch.Checkout" xml:space="preserve"><value>Basculer après création</value></data>
   <data name="RefActions.NewBranch.Confirm" xml:space="preserve"><value>Créer</value></data>
   <data name="RefActions.NewBranch.Failed" xml:space="preserve"><value>Création de {0} impossible</value></data>
   <data name="RefActions.NewBranch.Header" xml:space="preserve"><value>Nom de la branche</value></data>
@@ -685,18 +685,18 @@
   <data name="RefActions.NewTag.Undo" xml:space="preserve"><value>Création du tag {0}</value></data>
   <data name="RefActions.NoCommit.Detail" xml:space="preserve"><value>Le dépôt est vide : faites un premier commit avant de créer une branche ou un tag.</value></data>
   <data name="RefActions.NoCommit.Title" xml:space="preserve"><value>Aucun commit</value></data>
-  <data name="RefActions.PushBranch.Done" xml:space="preserve"><value>Push terminé</value></data>
-  <data name="RefActions.PushBranch.Failed" xml:space="preserve"><value>Échec du push</value></data>
+  <data name="RefActions.PushBranch.Done" xml:space="preserve"><value>Envoi terminé</value></data>
+  <data name="RefActions.PushBranch.Failed" xml:space="preserve"><value>Échec de l'envoi</value></data>
   <data name="RefActions.PushBranch.Publish" xml:space="preserve"><value>Publier {0} sur {1}</value></data>
   <data name="RefActions.PushBranch.PublishTitle" xml:space="preserve"><value>Publication de {0}</value></data>
   <data name="RefActions.PushBranch.Published" xml:space="preserve"><value>{0} publiée sur {1}.</value></data>
   <data name="RefActions.PushBranch.Push" xml:space="preserve"><value>Pousser {0} vers {1}</value></data>
-  <data name="RefActions.PushBranch.PushTitle" xml:space="preserve"><value>Push de {0} vers {1}</value></data>
+  <data name="RefActions.PushBranch.PushTitle" xml:space="preserve"><value>Pousser {0} vers {1}</value></data>
   <data name="RefActions.PushBranch.UpToDate" xml:space="preserve"><value>{0} est à jour.</value></data>
   <data name="RefActions.PushTag.Detail" xml:space="preserve"><value>{0} est publié sur {1}.</value></data>
   <data name="RefActions.PushTag.Done" xml:space="preserve"><value>Tag poussé</value></data>
-  <data name="RefActions.PushTag.Failed" xml:space="preserve"><value>Échec du push du tag</value></data>
-  <data name="RefActions.PushTag.Title" xml:space="preserve"><value>Push du tag {0} vers {1}</value></data>
+  <data name="RefActions.PushTag.Failed" xml:space="preserve"><value>Échec de l'envoi du tag</value></data>
+  <data name="RefActions.PushTag.Title" xml:space="preserve"><value>Pousser le tag {0} vers {1}</value></data>
   <data name="RefActions.RemoveRemote.BranchesMany" xml:space="preserve"><value>Ses {0:N0} branches distantes disparaîtront</value></data>
   <data name="RefActions.RemoveRemote.BranchesOne" xml:space="preserve"><value>Sa branche distante disparaîtra</value></data>
   <data name="RefActions.RemoveRemote.Failed" xml:space="preserve"><value>Suppression du distant {0} impossible</value></data>
@@ -731,9 +731,9 @@
   <data name="RefNames.Required" xml:space="preserve"><value>Le nom est obligatoire.</value></data>
   <data name="RefNames.StartsWithDash" xml:space="preserve"><value>Le nom ne peut pas commencer par « - ».</value></data>
   <data name="RefNames.Whitespace" xml:space="preserve"><value>Le nom ne peut pas contenir d'espace.</value></data>
-  <data name="Refs.Checkout.Branch" xml:space="preserve"><value>Checkout {0}</value></data>
-  <data name="Refs.Checkout.Commit" xml:space="preserve"><value>Checkout {0} (HEAD détaché)</value></data>
-  <data name="Refs.Checkout.Remote" xml:space="preserve"><value>Checkout {0} (nouvelle branche suivant {1})</value></data>
+  <data name="Refs.Checkout.Branch" xml:space="preserve"><value>Basculer sur {0}</value></data>
+  <data name="Refs.Checkout.Commit" xml:space="preserve"><value>Basculer sur {0} (HEAD détaché)</value></data>
+  <data name="Refs.Checkout.Remote" xml:space="preserve"><value>Basculer sur {0} (nouvelle branche suivant {1})</value></data>
   <data name="Refs.Detached" xml:space="preserve"><value>HEAD détaché</value></data>
   <data name="Refs.Eye.Hide" xml:space="preserve"><value>Masquer dans le graphe</value></data>
   <data name="Refs.Eye.Show" xml:space="preserve"><value>Afficher dans le graphe</value></data>
@@ -757,9 +757,9 @@ Depuis {1}.</value></data>
   <data name="Refs.IssueFilter.SummaryClosed" xml:space="preserve"><value>fermées</value></data>
   <data name="Refs.IssueFilter.SummaryCreatedByMe" xml:space="preserve"><value>créées par moi</value></data>
   <data name="Refs.IssueFilter.SummaryQuoted" xml:space="preserve"><value>« {0} »</value></data>
-  <data name="Refs.Issues.NoMatch" xml:space="preserve"><value>Aucune issue ne correspond aux filtres.</value></data>
-  <data name="Refs.Issues.NoWorkItem" xml:space="preserve"><value>Aucun work item ouvert.</value></data>
-  <data name="Refs.Issues.None" xml:space="preserve"><value>Aucune issue ouverte.</value></data>
+  <data name="Refs.Issues.NoMatch" xml:space="preserve"><value>Aucun ticket ne correspond aux filtres.</value></data>
+  <data name="Refs.Issues.NoWorkItem" xml:space="preserve"><value>Aucun élément de travail ouvert.</value></data>
+  <data name="Refs.Issues.None" xml:space="preserve"><value>Aucun ticket ouvert.</value></data>
   <data name="Refs.Lfs.FileMany" xml:space="preserve"><value>{0} fichiers LFS</value></data>
   <data name="Refs.Lfs.FileOne" xml:space="preserve"><value>1 fichier LFS</value></data>
   <data name="Refs.Lfs.NoFile" xml:space="preserve"><value>Aucun fichier LFS dans ce commit.</value></data>
@@ -768,9 +768,9 @@ Depuis {1}.</value></data>
 Stocké par Git LFS (déclaré dans {1}).</value></data>
   <data name="Refs.Lfs.ToPullMany" xml:space="preserve"><value>{0}, {1} à récupérer</value></data>
   <data name="Refs.Lfs.ToPullOne" xml:space="preserve"><value>{0}, 1 à récupérer</value></data>
-  <data name="Refs.LoadMore.IssuesTooltip" xml:space="preserve"><value>Lire les issues suivantes</value></data>
+  <data name="Refs.LoadMore.IssuesTooltip" xml:space="preserve"><value>Lire les tickets suivants</value></data>
   <data name="Refs.LoadMore.Label" xml:space="preserve"><value>Charger plus…</value></data>
-  <data name="Refs.LoadMore.WorkItemsTooltip" xml:space="preserve"><value>Lire les work items suivants</value></data>
+  <data name="Refs.LoadMore.WorkItemsTooltip" xml:space="preserve"><value>Lire les éléments de travail suivants</value></data>
   <data name="Refs.Menu.CopyLink" xml:space="preserve"><value>Copier le lien</value></data>
   <data name="Refs.Menu.CopyName" xml:space="preserve"><value>Copier le nom</value></data>
   <data name="Refs.Menu.CopyPath" xml:space="preserve"><value>Copier le chemin</value></data>
@@ -778,15 +778,15 @@ Stocké par Git LFS (déclaré dans {1}).</value></data>
   <data name="Refs.Menu.DeleteBranch" xml:space="preserve"><value>Supprimer {0}…</value></data>
   <data name="Refs.Menu.DeleteRemoteBranch" xml:space="preserve"><value>Supprimer {0} du distant…</value></data>
   <data name="Refs.Menu.DeleteStash" xml:space="preserve"><value>Supprimer {0}…</value></data>
-  <data name="Refs.Menu.DeleteStashNamed" xml:space="preserve"><value>Supprimer le stash « {0} »…</value></data>
+  <data name="Refs.Menu.DeleteStashNamed" xml:space="preserve"><value>Supprimer la remise « {0} »…</value></data>
   <data name="Refs.Menu.DeleteTag" xml:space="preserve"><value>Supprimer le tag {0}…</value></data>
   <data name="Refs.Menu.FinishFeature" xml:space="preserve"><value>Terminer la feature {0}…</value></data>
   <data name="Refs.Menu.FinishHotfix" xml:space="preserve"><value>Terminer le hotfix {0}…</value></data>
   <data name="Refs.Menu.FinishRelease" xml:space="preserve"><value>Terminer la release {0}…</value></data>
   <data name="Refs.Menu.InitUpdateSubmodule" xml:space="preserve"><value>Initialiser et mettre à jour</value></data>
-  <data name="Refs.Menu.NewWorktree" xml:space="preserve"><value>Nouveau worktree…</value></data>
+  <data name="Refs.Menu.NewWorktree" xml:space="preserve"><value>Nouvel arbre de travail…</value></data>
   <data name="Refs.Menu.OpenInBrowser" xml:space="preserve"><value>Ouvrir dans le navigateur</value></data>
-  <data name="Refs.Menu.OpenInNewWorktree" xml:space="preserve"><value>Ouvrir dans un nouveau worktree…</value></data>
+  <data name="Refs.Menu.OpenInNewWorktree" xml:space="preserve"><value>Ouvrir dans un nouvel arbre de travail…</value></data>
   <data name="Refs.Menu.OpenOn" xml:space="preserve"><value>Ouvrir sur {0}</value></data>
   <data name="Refs.Menu.UpdateSubmodule" xml:space="preserve"><value>Mettre à jour</value></data>
   <data name="Refs.Narrator.Head" xml:space="preserve"><value>{0}, extraite</value></data>
@@ -804,6 +804,26 @@ Stocké par Git LFS (déclaré dans {1}).</value></data>
   <data name="Refs.RemoteBranches.One" xml:space="preserve"><value>1 branche</value></data>
   <data name="Refs.Section.Local" xml:space="preserve"><value>Branches locales</value></data>
   <data name="Refs.Section.Remote" xml:space="preserve"><value>Distants</value></data>
+  <data name="Key.Delete" xml:space="preserve"><value>Suppr</value></data>
+  <data name="Key.Insert" xml:space="preserve"><value>Inser</value></data>
+  <data name="Key.Home" xml:space="preserve"><value>Début</value></data>
+  <data name="Key.End" xml:space="preserve"><value>Fin</value></data>
+  <data name="Key.PageDown" xml:space="preserve"><value>Page suiv.</value></data>
+  <data name="Key.PageUp" xml:space="preserve"><value>Page préc.</value></data>
+  <data name="Key.Space" xml:space="preserve"><value>Espace</value></data>
+  <data name="Key.Escape" xml:space="preserve"><value>Échap</value></data>
+  <data name="Key.Enter" xml:space="preserve"><value>Entrée</value></data>
+  <data name="Key.Backspace" xml:space="preserve"><value>Retour</value></data>
+  <data name="Key.Shift" xml:space="preserve"><value>Maj</value></data>
+  <data name="GraphRoot.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Graphe des commits</value></data>
+  <data name="GitError.RevListUnreadable" xml:space="preserve"><value>Sortie de git rev-list illisible.</value></data>
+  <data name="Refs.Section.Submodules" xml:space="preserve"><value>Submodules</value></data>
+  <data name="Refs.Section.Worktrees" xml:space="preserve"><value>Arbres de travail</value></data>
+  <data name="Refs.Section.Stashes" xml:space="preserve"><value>Remises</value></data>
+  <data name="Refs.Section.Tags" xml:space="preserve"><value>Tags</value></data>
+  <data name="Refs.Section.Issues" xml:space="preserve"><value>Tickets</value></data>
+  <data name="Refs.Section.WorkItems" xml:space="preserve"><value>Éléments de travail</value></data>
+  <data name="Refs.Section.PullRequests" xml:space="preserve"><value>Pull requests</value></data>
   <data name="Refs.Submodule.Conflict" xml:space="preserve"><value>conflit</value></data>
   <data name="Refs.Submodule.ConflictTooltip" xml:space="preserve"><value>Conflit sur le commit enregistré.</value></data>
   <data name="Refs.Submodule.InSyncTooltip" xml:space="preserve"><value>Sur le commit enregistré par le dépôt.</value></data>
@@ -818,9 +838,9 @@ Stocké par Git LFS (déclaré dans {1}).</value></data>
   <data name="Refs.Worktree.Detached" xml:space="preserve"><value>détaché {0}</value></data>
   <data name="Refs.Worktree.Locked" xml:space="preserve"><value>Verrouillé</value></data>
   <data name="Refs.Worktree.LockedWithReason" xml:space="preserve"><value>Verrouillé : {0}</value></data>
-  <data name="Refs.Worktree.Main" xml:space="preserve"><value>Worktree principal</value></data>
+  <data name="Refs.Worktree.Main" xml:space="preserve"><value>Arbre de travail principal</value></data>
   <data name="Refs.Worktree.Missing" xml:space="preserve"><value>introuvable</value></data>
-  <data name="Refs.Worktree.Prunable" xml:space="preserve"><value>Son dossier n'existe plus : « Nettoyer les worktrees » l'oublie.</value></data>
+  <data name="Refs.Worktree.Prunable" xml:space="preserve"><value>Son dossier n'existe plus : « Nettoyer les arbres de travail » l'oublie.</value></data>
   <data name="Refs.Worktree.ShownHere" xml:space="preserve"><value>Affiché dans cet onglet</value></data>
   <data name="RefsAddRemoteItem.Text" xml:space="preserve"><value>Ajouter un distant…</value></data>
   <data name="RefsAddSubmoduleItem.Text" xml:space="preserve"><value>Ajouter un submodule…</value></data>
@@ -832,7 +852,7 @@ Stocké par Git LFS (déclaré dans {1}).</value></data>
   <data name="RefsFilter.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Filtrer branches et tags</value></data>
   <data name="RefsInitGitFlowItem.Text" xml:space="preserve"><value>Initialiser Git Flow…</value></data>
   <data name="RefsIssueFilterMenu.Text" xml:space="preserve"><value>Filtrer</value></data>
-  <data name="RefsList.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Branches, distants, tags et stashes</value></data>
+  <data name="RefsList.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Branches, distants, tags et remises</value></data>
   <data name="RefsNewBranchItem.Text" xml:space="preserve"><value>Créer une branche ici…</value></data>
   <data name="RefsNewIssueItem.Text" xml:space="preserve"><value>Nouvelle issue…</value></data>
   <data name="RefsNewPullRequestItem.Text" xml:space="preserve"><value>Créer une pull request…</value></data>
@@ -840,12 +860,12 @@ Stocké par Git LFS (déclaré dans {1}).</value></data>
   <data name="RefsNoMatch.Text" xml:space="preserve"><value>Aucune branche ni aucun tag ne correspond au filtre.</value></data>
   <data name="RefsOpenSubmoduleItem.Text" xml:space="preserve"><value>Ouvrir dans un onglet</value></data>
   <data name="RefsOpenWorktreeItem.Text" xml:space="preserve"><value>Ouvrir dans un onglet</value></data>
-  <data name="RefsPopStashItem.Text" xml:space="preserve"><value>Pop (appliquer et supprimer)</value></data>
-  <data name="RefsPruneWorktreesItem.Text" xml:space="preserve"><value>Nettoyer les worktrees</value></data>
+  <data name="RefsPopStashItem.Text" xml:space="preserve"><value>Réappliquer (appliquer et supprimer)</value></data>
+  <data name="RefsPruneWorktreesItem.Text" xml:space="preserve"><value>Nettoyer les arbres de travail</value></data>
   <data name="RefsPullLfsItem.Text" xml:space="preserve"><value>Récupérer les fichiers LFS</value></data>
   <data name="RefsRefreshHostingItem.Text" xml:space="preserve"><value>Actualiser</value></data>
   <data name="RefsRemoveRemoteItem.Text" xml:space="preserve"><value>Supprimer le distant…</value></data>
-  <data name="RefsRemoveWorktreeItem.Text" xml:space="preserve"><value>Supprimer le worktree…</value></data>
+  <data name="RefsRemoveWorktreeItem.Text" xml:space="preserve"><value>Supprimer l'arbre de travail…</value></data>
   <data name="RefsRenameItem.Text" xml:space="preserve"><value>Renommer…</value></data>
   <data name="RefsShowIssueItem.Text" xml:space="preserve"><value>Afficher le ticket</value></data>
   <data name="RefsShowPullRequestItem.Text" xml:space="preserve"><value>Afficher la pull request</value></data>
@@ -859,24 +879,24 @@ Stocké par Git LFS (déclaré dans {1}).</value></data>
   <data name="Remote.Auth.FailedDetail" xml:space="preserve"><value>{0} : {1}</value></data>
   <data name="Remote.AutoFetch.ArrivedMany" xml:space="preserve"><value>{0:N0} commits récupérés</value></data>
   <data name="Remote.AutoFetch.ArrivedOne" xml:space="preserve"><value>1 commit récupéré</value></data>
-  <data name="Remote.AutoFetch.Detail" xml:space="preserve"><value>{0} par le fetch automatique ({1} à récupérer).</value></data>
+  <data name="Remote.AutoFetch.Detail" xml:space="preserve"><value>{0} par la récupération automatique ({1} à récupérer).</value></data>
   <data name="Remote.AutoFetch.Title" xml:space="preserve"><value>Nouveaux commits sur {0}</value></data>
   <data name="Remote.Canceled.Detail" xml:space="preserve"><value>{0} a été interrompu.</value></data>
   <data name="Remote.Canceled.Title" xml:space="preserve"><value>Opération annulée</value></data>
   <data name="Remote.Conflict.Detail" xml:space="preserve"><value>{0} : {1}. Résolvez-les dans l'éditeur de conflits, ou annulez avec git merge --abort / git rebase --abort.</value></data>
   <data name="Remote.Conflict.Title" xml:space="preserve"><value>Conflits à résoudre</value></data>
   <data name="Remote.Fetch.AllDone" xml:space="preserve"><value>Tous les distants ont été récupérés.</value></data>
-  <data name="Remote.Fetch.AllTitle" xml:space="preserve"><value>Fetch de tous les distants</value></data>
+  <data name="Remote.Fetch.AllTitle" xml:space="preserve"><value>Récupérer tous les distants</value></data>
   <data name="Remote.Fetch.Behind" xml:space="preserve"><value>{0} à récupérer depuis {1}.</value></data>
-  <data name="Remote.Fetch.Done" xml:space="preserve"><value>Fetch terminé</value></data>
-  <data name="Remote.Fetch.Failed" xml:space="preserve"><value>Échec du fetch</value></data>
-  <data name="Remote.Fetch.RemoteTitle" xml:space="preserve"><value>Fetch de {0}</value></data>
+  <data name="Remote.Fetch.Done" xml:space="preserve"><value>Récupération terminée</value></data>
+  <data name="Remote.Fetch.Failed" xml:space="preserve"><value>Échec de la récupération</value></data>
+  <data name="Remote.Fetch.RemoteTitle" xml:space="preserve"><value>Récupérer {0}</value></data>
   <data name="Remote.Fetch.RemoteUpToDate" xml:space="preserve"><value>{0} est à jour.</value></data>
   <data name="Remote.Fetch.UpToDate" xml:space="preserve"><value>Branche à jour avec {0}.</value></data>
-  <data name="Remote.Force.Confirm" xml:space="preserve"><value>Forcer le push</value></data>
-  <data name="Remote.Force.Message" xml:space="preserve"><value>Les commits de {0} absents en local seront remplacés par les vôtres. Le push est refusé si la branche distante a changé depuis le dernier fetch (--force-with-lease).</value></data>
-  <data name="Remote.Force.RejectedMessage" xml:space="preserve"><value>Le push a été refusé : {0} contient des commits que votre branche a réécrits (amend, rebase). Un push forcé les remplace par les vôtres ; il est refusé si la branche distante a changé depuis le dernier fetch (--force-with-lease).</value></data>
-  <data name="Remote.Force.RejectedTitle" xml:space="preserve"><value>Le push a été refusé. Forcer le push ?</value></data>
+  <data name="Remote.Force.Confirm" xml:space="preserve"><value>Forcer l'envoi</value></data>
+  <data name="Remote.Force.Message" xml:space="preserve"><value>Les commits de {0} absents en local seront remplacés par les vôtres. L'envoi est refusé si la branche distante a changé depuis la dernière récupération (--force-with-lease).</value></data>
+  <data name="Remote.Force.RejectedMessage" xml:space="preserve"><value>L'envoi a été refusé : {0} contient des commits que votre branche a réécrits (amend, rebase). Un envoi forcé les remplace par les vôtres ; il est refusé si la branche distante a changé depuis la dernière récupération (--force-with-lease).</value></data>
+  <data name="Remote.Force.RejectedTitle" xml:space="preserve"><value>L'envoi a été refusé. Forcer l'envoi ?</value></data>
   <data name="Remote.Force.TargetFallback" xml:space="preserve"><value>la branche distante</value></data>
   <data name="Remote.Force.Title" xml:space="preserve"><value>Pousser en forçant ?</value></data>
   <data name="Remote.Phase.CheckingOut" xml:space="preserve"><value>Extraction des fichiers</value></data>
@@ -896,26 +916,26 @@ Stocké par Git LFS (déclaré dans {1}).</value></data>
   <data name="Remote.Progress.Retrying" xml:space="preserve"><value>Nouvelle tentative…</value></data>
   <data name="Remote.Progress.Merging" xml:space="preserve"><value>Fusion en cours (ne peut plus être annulée)…</value></data>
   <data name="Remote.Progress.Server" xml:space="preserve"><value>Serveur : {0}</value></data>
-  <data name="Remote.Pull.Done" xml:space="preserve"><value>Pull terminé</value></data>
-  <data name="Remote.Pull.Failed" xml:space="preserve"><value>Échec du pull</value></data>
+  <data name="Remote.Pull.Done" xml:space="preserve"><value>Tirage terminé</value></data>
+  <data name="Remote.Pull.Failed" xml:space="preserve"><value>Échec du tirage</value></data>
   <data name="Remote.Pull.HowFastForward" xml:space="preserve"><value> (fast-forward)</value></data>
   <data name="Remote.Pull.HowMerge" xml:space="preserve"><value> (fusion)</value></data>
   <data name="Remote.Pull.HowRebase" xml:space="preserve"><value> (rebase)</value></data>
-  <data name="Remote.Pull.Title" xml:space="preserve"><value>Pull {0}{1}</value></data>
+  <data name="Remote.Pull.Title" xml:space="preserve"><value>Tirer {0}{1}</value></data>
   <data name="Remote.Pull.UpToDate" xml:space="preserve"><value>{0} est à jour avec {1}.</value></data>
   <data name="Remote.Pull.Updated" xml:space="preserve"><value>Historique mis à jour.</value></data>
   <data name="Remote.Pull.UpstreamFallback" xml:space="preserve"><value>la branche amont</value></data>
   <data name="Remote.Push.BranchPushed" xml:space="preserve"><value>Branche poussée.</value></data>
-  <data name="Remote.Push.Done" xml:space="preserve"><value>Push terminé</value></data>
-  <data name="Remote.Push.Failed" xml:space="preserve"><value>Échec du push</value></data>
+  <data name="Remote.Push.Done" xml:space="preserve"><value>Envoi terminé</value></data>
+  <data name="Remote.Push.Failed" xml:space="preserve"><value>Échec de l'envoi</value></data>
   <data name="Remote.Push.Forced" xml:space="preserve"><value>{0} (forcé)</value></data>
-  <data name="Remote.Push.ForcedDone" xml:space="preserve"><value>Push forcé terminé</value></data>
-  <data name="Remote.Push.ForcedFailed" xml:space="preserve"><value>Échec du push forcé</value></data>
+  <data name="Remote.Push.ForcedDone" xml:space="preserve"><value>Envoi forcé terminé</value></data>
+  <data name="Remote.Push.ForcedFailed" xml:space="preserve"><value>Échec de l'envoi forcé</value></data>
   <data name="Remote.Push.PublishTitle" xml:space="preserve"><value>Publication de {0}</value></data>
   <data name="Remote.Push.Published" xml:space="preserve"><value>{0} publiée sur {1}.</value></data>
   <data name="Remote.Push.PushedMany" xml:space="preserve"><value>{0:N0} commits poussés vers {1}.</value></data>
   <data name="Remote.Push.PushedOne" xml:space="preserve"><value>1 commit poussé vers {0}.</value></data>
-  <data name="Remote.Push.Title" xml:space="preserve"><value>Push vers {0}</value></data>
+  <data name="Remote.Push.Title" xml:space="preserve"><value>Pousser vers {0}</value></data>
   <data name="Remote.Push.UpToDate" xml:space="preserve"><value>{0} est à jour.</value></data>
   <data name="Remote.Token.NotStored" xml:space="preserve"><value>Jeton non enregistré</value></data>
   <data name="Remote.Url.Changed" xml:space="preserve"><value>Distant {0} modifié</value></data>
@@ -928,7 +948,7 @@ Stocké par Git LFS (déclaré dans {1}).</value></data>
   <data name="RepoBranchLabel.Text" xml:space="preserve"><value>Branche</value></data>
   <data name="PreventionConflicting.Text" xml:space="preserve"><value>Fichiers en conflit</value></data>
   <data name="PreventionPossible.Text" xml:space="preserve"><value>Fichiers modifiés par vous et par la cible</value></data>
-  <data name="PreventionFetch.Content" xml:space="preserve"><value>Fetch maintenant</value></data>
+  <data name="PreventionFetch.Content" xml:space="preserve"><value>Récupérer maintenant</value></data>
   <data name="PreventionCopy.Content" xml:space="preserve"><value>Copier la liste</value></data>
   <data name="RepoBranchList.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Branches</value></data>
   <data name="RepoCancelOperation.Content" xml:space="preserve"><value>Annuler</value></data>
@@ -939,8 +959,8 @@ Stocké par Git LFS (déclaré dans {1}).</value></data>
   <data name="RepoCopyPath.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Copier le chemin du dépôt</value></data>
   <data name="RepoExplorer.Content" xml:space="preserve"><value>Explorateur</value></data>
   <data name="RepoExplorer.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Afficher le dépôt dans l'Explorateur</value></data>
-  <data name="RepoFetchAll.Text" xml:space="preserve"><value>Fetch de tous les distants</value></data>
-  <data name="RepoForcePush.Text" xml:space="preserve"><value>Push forcé (--force-with-lease)…</value></data>
+  <data name="RepoFetchAll.Text" xml:space="preserve"><value>Récupérer tous les distants</value></data>
+  <data name="RepoForcePush.Text" xml:space="preserve"><value>Envoi forcé (--force-with-lease)…</value></data>
   <data name="RepoLeftSplitter.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Largeur du panneau des branches</value></data>
   <data name="RepoNewBranch.Content" xml:space="preserve"><value>Nouvelle branche…</value></data>
   <data name="RepoNewBranch.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Nouvelle branche</value></data>
@@ -955,9 +975,9 @@ Stocké par Git LFS (déclaré dans {1}).</value></data>
   <data name="RepoPreferences.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Préférences</value></data>
   <data name="RepoPreferences.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Préférences (Ctrl+,)</value></data>
   <data name="RepoProgress.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Progression</value></data>
-  <data name="RepoPullFastForward.Text" xml:space="preserve"><value>Pull (fast-forward uniquement)</value></data>
-  <data name="RepoPullMerge.Text" xml:space="preserve"><value>Pull (fusion)</value></data>
-  <data name="RepoPullRebase.Text" xml:space="preserve"><value>Pull (rebase)</value></data>
+  <data name="RepoPullFastForward.Text" xml:space="preserve"><value>Tirer (fast-forward uniquement)</value></data>
+  <data name="RepoPullMerge.Text" xml:space="preserve"><value>Tirer (fusion)</value></data>
+  <data name="RepoPullRebase.Text" xml:space="preserve"><value>Tirer (rebase)</value></data>
   <data name="RepoRedo.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Rétablir</value></data>
   <data name="RepoRedoContent.Label" xml:space="preserve"><value>Rétablir</value></data>
   <data name="RepoRepositoryButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Dépôt</value></data>
@@ -970,13 +990,20 @@ Stocké par Git LFS (déclaré dans {1}).</value></data>
   <data name="RepoSearch.PlaceholderText" xml:space="preserve"><value>Rechercher : message, author:, sha:, file:</value></data>
   <data name="RepoSearch.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Rechercher dans les commits</value></data>
   <data name="RepoStash.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Mettre les modifications de côté (Ctrl+Maj+S) ; clic droit : avec un message</value></data>
-  <data name="RepoStashWithMessage.Text" xml:space="preserve"><value>Stash avec titre…</value></data>
+  <data name="RepoStashWithMessage.Text" xml:space="preserve"><value>Remiser avec titre…</value></data>
   <data name="RepoTerminalSplitter.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Hauteur du terminal</value></data>
   <data name="RepoToolbarBranch.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Branche</value></data>
   <data name="RepoToolbarBranch.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Nouvelle branche sur le commit sélectionné, ou sur HEAD (Ctrl+B)</value></data>
   <data name="RepoToolbarBranchContent.Label" xml:space="preserve"><value>Branche</value></data>
   <data name="RepoUndo.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Annuler</value></data>
   <data name="RepoUndoContent.Label" xml:space="preserve"><value>Annuler</value></data>
+  <data name="RepoPull.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Tirer</value></data>
+  <data name="RepoPullContent.Label" xml:space="preserve"><value>Tirer</value></data>
+  <data name="RepoPush.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Pousser</value></data>
+  <data name="RepoPushContent.Label" xml:space="preserve"><value>Pousser</value></data>
+  <data name="RepoStashContent.Label" xml:space="preserve"><value>Remiser</value></data>
+  <data name="RepoPop.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Réappliquer</value></data>
+  <data name="RepoPopContent.Label" xml:space="preserve"><value>Réappliquer</value></data>
   <data name="RepositoryPicker.Open" xml:space="preserve"><value>Onglets ouverts</value></data>
   <data name="RepositoryPicker.Recent" xml:space="preserve"><value>Récents</value></data>
   <data name="Search.Commits" xml:space="preserve"><value>{0:N0} commits</value></data>
@@ -1030,24 +1057,24 @@ Stocké par Git LFS (déclaré dans {1}).</value></data>
   <data name="Stash.Apply.RestoredOne" xml:space="preserve"><value>1 fichier restauré.</value></data>
   <data name="Stash.Checkout.Canceled" xml:space="preserve"><value>opération annulée</value></data>
   <data name="Stash.Checkout.ConflictPrefix" xml:space="preserve"><value>{0} est extraite ; vos modifications ont été réappliquées</value></data>
-  <data name="Stash.Checkout.Done" xml:space="preserve"><value>Checkout de {0} effectué</value></data>
+  <data name="Stash.Checkout.Done" xml:space="preserve"><value>Bascule sur {0} effectuée</value></data>
   <data name="Stash.Checkout.DoneDetail" xml:space="preserve"><value>Vos modifications ont été réappliquées.</value></data>
-  <data name="Stash.Checkout.Failed" xml:space="preserve"><value>Checkout de {0} impossible</value></data>
-  <data name="Stash.Checkout.LeftInStash" xml:space="preserve"><value>{0} Vos modifications sont restées dans le stash {1} : appliquez-le depuis le panneau de gauche.</value></data>
+  <data name="Stash.Checkout.Failed" xml:space="preserve"><value>Bascule sur {0} impossible</value></data>
+  <data name="Stash.Checkout.LeftInStash" xml:space="preserve"><value>{0} Vos modifications sont restées dans la remise {1} : appliquez-la depuis le panneau de gauche.</value></data>
   <data name="Stash.Checkout.ReapplyFailed" xml:space="preserve"><value>{0} est extraite, mais vos modifications n'ont pas pu être réappliquées ({1}) : elles restent dans stash@{{0}}.</value></data>
-  <data name="Stash.Checkout.Undo" xml:space="preserve"><value>Checkout de {0}</value></data>
-  <data name="Stash.Conflict.DetailMany" xml:space="preserve"><value>{0} avec {1:N0} conflits ; le stash est conservé. Résolvez-les dans le panneau des fichiers, puis supprimez le stash.</value></data>
-  <data name="Stash.Conflict.DetailOne" xml:space="preserve"><value>{0} avec 1 conflit ; le stash est conservé. Résolvez-le dans le panneau des fichiers, puis supprimez le stash.</value></data>
+  <data name="Stash.Checkout.Undo" xml:space="preserve"><value>Bascule sur {0}</value></data>
+  <data name="Stash.Conflict.DetailMany" xml:space="preserve"><value>{0} avec {1:N0} conflits ; la remise est conservée. Résolvez-les dans le panneau des fichiers, puis supprimez la remise.</value></data>
+  <data name="Stash.Conflict.DetailOne" xml:space="preserve"><value>{0} avec 1 conflit ; la remise est conservée. Résolvez-le dans le panneau des fichiers, puis supprimez la remise.</value></data>
   <data name="Stash.Created.DetailMany" xml:space="preserve"><value>stash@{{0}} : {0:N0} fichiers mis de côté.</value></data>
   <data name="Stash.Created.DetailOne" xml:space="preserve"><value>stash@{{0}} : 1 fichier mis de côté.</value></data>
-  <data name="Stash.Created.Title" xml:space="preserve"><value>Stash créé</value></data>
+  <data name="Stash.Created.Title" xml:space="preserve"><value>Remise créée</value></data>
   <data name="Stash.Delete.Confirm" xml:space="preserve"><value>Supprimer</value></data>
-  <data name="Stash.Delete.Done" xml:space="preserve"><value>Stash supprimé</value></data>
+  <data name="Stash.Delete.Done" xml:space="preserve"><value>Remise supprimée</value></data>
   <data name="Stash.Delete.Failed" xml:space="preserve"><value>Suppression de {0} impossible</value></data>
   <data name="Stash.Delete.Message" xml:space="preserve"><value>Les modifications mises de côté{0} seront perdues.</value></data>
   <data name="Stash.Delete.Subject" xml:space="preserve"><value> (« {0} »)</value></data>
   <data name="Stash.Delete.Title" xml:space="preserve"><value>Supprimer {0} ?</value></data>
-  <data name="Stash.Dialog.Confirm" xml:space="preserve"><value>Stash</value></data>
+  <data name="Stash.Dialog.Confirm" xml:space="preserve"><value>Remiser</value></data>
   <data name="Stash.Dialog.DescriptionMany" xml:space="preserve"><value>{0:N0} fichiers modifiés sur {1}</value></data>
   <data name="Stash.Dialog.DescriptionOne" xml:space="preserve"><value>1 fichier modifié sur {0}</value></data>
   <data name="Stash.Dialog.Detached" xml:space="preserve"><value>HEAD détaché</value></data>
@@ -1057,7 +1084,7 @@ Stocké par Git LFS (déclaré dans {1}).</value></data>
   <data name="Stash.Dialog.IncludeUntracked" xml:space="preserve"><value>Inclure les fichiers non suivis</value></data>
   <data name="Stash.Dialog.Placeholder" xml:space="preserve"><value>Essai de pagination</value></data>
   <data name="Stash.Dialog.Title" xml:space="preserve"><value>Mettre les modifications de côté</value></data>
-  <data name="Stash.Failed" xml:space="preserve"><value>Stash impossible</value></data>
+  <data name="Stash.Failed" xml:space="preserve"><value>Remisage impossible</value></data>
   <data name="StatusBadge.Added" xml:space="preserve"><value>Ajouté</value></data>
   <data name="StatusBadge.Conflict" xml:space="preserve"><value>En conflit</value></data>
   <data name="StatusBadge.Copied" xml:space="preserve"><value>Copié</value></data>
@@ -1070,15 +1097,15 @@ Stocké par Git LFS (déclaré dans {1}).</value></data>
   <data name="StatusBar.Density.Normal" xml:space="preserve"><value>Normal</value></data>
   <data name="StatusBar.Info.Many" xml:space="preserve"><value>{0:N0} commits affichés</value></data>
   <data name="StatusBar.Info.One" xml:space="preserve"><value>1 commit affiché</value></data>
-  <data name="StatusBar.Info.WithFetch" xml:space="preserve"><value>{0} · fetch {1}</value></data>
+  <data name="StatusBar.Info.WithFetch" xml:space="preserve"><value>{0} · récupéré {1}</value></data>
   <data name="StatusBar.Info.Zero" xml:space="preserve"><value>0 commit</value></data>
   <data name="StatusBar.Profile" xml:space="preserve"><value>Profil : {0}</value></data>
   <data name="StatusBar.Progress" xml:space="preserve"><value>{0} · {1:0} %</value></data>
   <data name="StatusBar.Sync.NoRemoteText" xml:space="preserve"><value>Aucun distant</value></data>
   <data name="StatusBar.Sync.NoRemoteTip" xml:space="preserve"><value>Ce dépôt n'a aucun distant</value></data>
   <data name="StatusBar.Sync.NoUpstreamText" xml:space="preserve"><value>Pas de branche amont</value></data>
-  <data name="StatusBar.Sync.NoUpstreamTip" xml:space="preserve"><value>La branche n'a pas de branche amont — cliquer pour lancer un fetch</value></data>
-  <data name="StatusBar.Sync.Tooltip" xml:space="preserve"><value>{0} à pousser, {1} à récupérer depuis {2} — cliquer pour lancer un fetch</value></data>
+  <data name="StatusBar.Sync.NoUpstreamTip" xml:space="preserve"><value>La branche n'a pas de branche amont — cliquer pour lancer une récupération</value></data>
+  <data name="StatusBar.Sync.Tooltip" xml:space="preserve"><value>{0} à pousser, {1} à récupérer depuis {2} — cliquer pour lancer une récupération</value></data>
   <data name="StatusBar.Theme.Dark" xml:space="preserve"><value>Sombre</value></data>
   <data name="StatusBar.Theme.Light" xml:space="preserve"><value>Clair</value></data>
   <data name="StatusBar.Theme.System" xml:space="preserve"><value>Système</value></data>
@@ -1121,18 +1148,18 @@ Stocké par Git LFS (déclaré dans {1}).</value></data>
   <data name="Submodule.UpdateAll.Failed" xml:space="preserve"><value>Mise à jour des submodules impossible</value></data>
   <data name="Submodule.UpdateAll.UpToDate" xml:space="preserve"><value>Les submodules sont à jour.</value></data>
   <data name="Submodule.Url.Whitespace" xml:space="preserve"><value>L'URL ne peut pas contenir d'espace.</value></data>
-  <data name="Toolbar.Pull.Detached" xml:space="preserve"><value>Pull : HEAD est détaché</value></data>
-  <data name="Toolbar.Pull.From" xml:space="preserve"><value>Pull depuis {0}</value></data>
-  <data name="Toolbar.Pull.NoUpstream" xml:space="preserve"><value>Pull : la branche n'a pas de branche amont (poussez-la d'abord)</value></data>
-  <data name="Toolbar.Pull.WithMenu" xml:space="preserve"><value>{0} — clic droit : fetch, fusion, rebase, ff-only</value></data>
-  <data name="Toolbar.Push.Detached" xml:space="preserve"><value>Push : HEAD est détaché</value></data>
+  <data name="Toolbar.Pull.Detached" xml:space="preserve"><value>Tirer : HEAD est détaché</value></data>
+  <data name="Toolbar.Pull.From" xml:space="preserve"><value>Tirer depuis {0}</value></data>
+  <data name="Toolbar.Pull.NoUpstream" xml:space="preserve"><value>Tirer : la branche n'a pas de branche amont (poussez-la d'abord)</value></data>
+  <data name="Toolbar.Pull.WithMenu" xml:space="preserve"><value>{0} — clic droit : récupération, fusion, rebase, ff-only</value></data>
+  <data name="Toolbar.Push.Detached" xml:space="preserve"><value>Pousser : HEAD est détaché</value></data>
   <data name="Toolbar.Push.Publish" xml:space="preserve"><value>Publier {0} sur le distant</value></data>
-  <data name="Toolbar.Push.To" xml:space="preserve"><value>Push vers {0}</value></data>
-  <data name="Toolbar.Push.WithMenu" xml:space="preserve"><value>{0} — clic droit : push forcé</value></data>
+  <data name="Toolbar.Push.To" xml:space="preserve"><value>Pousser vers {0}</value></data>
+  <data name="Toolbar.Push.WithMenu" xml:space="preserve"><value>{0} — clic droit : envoi forcé</value></data>
   <data name="Toolbar.Redo.None" xml:space="preserve"><value>Rien à rétablir (Ctrl+Y)</value></data>
   <data name="Toolbar.Redo.Tooltip" xml:space="preserve"><value>Rétablir : {0} (Ctrl+Y)</value></data>
-  <data name="Toolbar.Stash.Pop" xml:space="preserve"><value>Pop {0} : {1}</value></data>
-  <data name="Toolbar.Stash.PopNone" xml:space="preserve"><value>Aucun stash à réappliquer</value></data>
+  <data name="Toolbar.Stash.Pop" xml:space="preserve"><value>Réappliquer {0} : {1}</value></data>
+  <data name="Toolbar.Stash.PopNone" xml:space="preserve"><value>Aucune remise à réappliquer</value></data>
   <data name="Toolbar.Undo.None" xml:space="preserve"><value>Rien à annuler (Ctrl+Z)</value></data>
   <data name="Toolbar.Undo.Tooltip" xml:space="preserve"><value>Annuler : {0} (Ctrl+Z)</value></data>
   <data name="WorkingTree.ChangesMany" xml:space="preserve"><value>{0} fichiers{1}</value></data>
@@ -1174,35 +1201,35 @@ Stocké par Git LFS (déclaré dans {1}).</value></data>
   <data name="WorkingTree.WhereBranch" xml:space="preserve"><value> · sur {0}</value></data>
   <data name="WorkingTree.WhereDetached" xml:space="preserve"><value> · HEAD détaché ({0})</value></data>
   <data name="Worktree.Add.Confirm" xml:space="preserve"><value>Créer</value></data>
-  <data name="Worktree.Add.Done" xml:space="preserve"><value>Worktree créé</value></data>
+  <data name="Worktree.Add.Done" xml:space="preserve"><value>Arbre de travail créé</value></data>
   <data name="Worktree.Add.DoneDetail" xml:space="preserve"><value>{0} est extraite dans {1}.</value></data>
-  <data name="Worktree.Add.Failed" xml:space="preserve"><value>Création du worktree impossible</value></data>
+  <data name="Worktree.Add.Failed" xml:space="preserve"><value>Création de l'arbre de travail impossible</value></data>
   <data name="Worktree.Add.Header" xml:space="preserve"><value>Nom de la nouvelle branche</value></data>
-  <data name="Worktree.Add.Title" xml:space="preserve"><value>Nouveau worktree</value></data>
-  <data name="Worktree.Folder.Header" xml:space="preserve"><value>Dossier du worktree</value></data>
+  <data name="Worktree.Add.Title" xml:space="preserve"><value>Nouvel arbre de travail</value></data>
+  <data name="Worktree.Folder.Header" xml:space="preserve"><value>Dossier de l'arbre de travail</value></data>
   <data name="Worktree.Folder.Placeholder" xml:space="preserve"><value>D:\travail\depot-ma-branche</value></data>
   <data name="Worktree.ForBranch.Description" xml:space="preserve"><value>La branche y sera extraite ; elle ne peut pas l'être en même temps ici.</value></data>
-  <data name="Worktree.ForBranch.Title" xml:space="preserve"><value>Worktree pour {0}</value></data>
+  <data name="Worktree.ForBranch.Title" xml:space="preserve"><value>Arbre de travail pour {0}</value></data>
   <data name="Worktree.Force.Confirm" xml:space="preserve"><value>Supprimer quand même</value></data>
   <data name="Worktree.Force.Message" xml:space="preserve"><value>{0} Ces modifications seront perdues.</value></data>
   <data name="Worktree.Force.Title" xml:space="preserve"><value>Forcer la suppression de {0} ?</value></data>
-  <data name="Worktree.Missing.Detail" xml:space="preserve"><value>Le dossier {0} n'existe plus : « Nettoyer les worktrees » l'oublie.</value></data>
-  <data name="Worktree.Missing.Title" xml:space="preserve"><value>Worktree introuvable</value></data>
-  <data name="Worktree.NoCommit.Detail" xml:space="preserve"><value>Le dépôt est vide : faites un premier commit avant de créer un worktree.</value></data>
+  <data name="Worktree.Missing.Detail" xml:space="preserve"><value>Le dossier {0} n'existe plus : « Nettoyer les arbres de travail » l'oublie.</value></data>
+  <data name="Worktree.Missing.Title" xml:space="preserve"><value>Arbre de travail introuvable</value></data>
+  <data name="Worktree.NoCommit.Detail" xml:space="preserve"><value>Le dépôt est vide : faites un premier commit avant de créer un arbre de travail.</value></data>
   <data name="Worktree.Path.NotAbsolute" xml:space="preserve"><value>Saisissez un chemin absolu.</value></data>
   <data name="Worktree.Path.Required" xml:space="preserve"><value>Le dossier est obligatoire.</value></data>
   <data name="Worktree.Path.StartsWithDash" xml:space="preserve"><value>Le dossier ne peut pas commencer par « - ».</value></data>
-  <data name="Worktree.Prune.Failed" xml:space="preserve"><value>Nettoyage des worktrees impossible</value></data>
+  <data name="Worktree.Prune.Failed" xml:space="preserve"><value>Nettoyage des arbres de travail impossible</value></data>
   <data name="Worktree.Remove.BranchKept" xml:space="preserve"><value>La branche {0} est conservée. </value></data>
   <data name="Worktree.Remove.Confirm" xml:space="preserve"><value>Supprimer</value></data>
-  <data name="Worktree.Remove.Done" xml:space="preserve"><value>Worktree supprimé</value></data>
+  <data name="Worktree.Remove.Done" xml:space="preserve"><value>Arbre de travail supprimé</value></data>
   <data name="Worktree.Remove.Failed" xml:space="preserve"><value>Suppression de {0} impossible</value></data>
   <data name="Worktree.Remove.Message" xml:space="preserve"><value>Le dossier {0} sera supprimé. {1}</value></data>
-  <data name="Worktree.Remove.Title" xml:space="preserve"><value>Supprimer le worktree {0} ?</value></data>
-  <data name="WtAmend.Content" xml:space="preserve"><value>Amend</value></data>
+  <data name="Worktree.Remove.Title" xml:space="preserve"><value>Supprimer l'arbre de travail {0} ?</value></data>
+  <data name="WtAmendText.Text" xml:space="preserve"><value>Modifier le dernier commit</value></data>
   <data name="WtPushAfter.Content" xml:space="preserve"><value>Pousser après la validation</value></data>
   <data name="WtPushAfter.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Le bouton valide puis pousse la branche</value></data>
-  <data name="WtAmend.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Modifier le dernier commit (amend)</value></data>
+  <data name="WtAmend.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Remplace le dernier commit au lieu d'en créer un nouveau (amend)</value></data>
   <data name="WtCommitMore.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Autres façons de valider</value></data>
   <data name="WtCommitMore.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Valider et pousser…</value></data>
   <data name="WtDescription.PlaceholderText" xml:space="preserve"><value>Description (facultatif)</value></data>
@@ -1240,9 +1267,9 @@ Stocké par Git LFS (déclaré dans {1}).</value></data>
   <data name="WtRowReveal.Text" xml:space="preserve"><value>Afficher dans l'Explorateur</value></data>
   <data name="WtStageAll.Content" xml:space="preserve"><value>Tout indexer</value></data>
   <data name="WtStagedEmpty.Text" xml:space="preserve"><value>Indexez des fichiers, des hunks ou des lignes pour préparer le commit.</value></data>
-  <data name="WtStash.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Stash</value></data>
+  <data name="WtStash.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Remiser</value></data>
   <data name="WtStash.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Mettre les modifications de côté (Ctrl+Maj+S) ; clic droit : avec un message</value></data>
-  <data name="WtStashWithMessage.Text" xml:space="preserve"><value>Stash avec titre…</value></data>
+  <data name="WtStashWithMessage.Text" xml:space="preserve"><value>Remiser avec titre…</value></data>
   <data name="WtSummary.PlaceholderText" xml:space="preserve"><value>Résumé (obligatoire)</value></data>
   <data name="WtSummary.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Résumé du commit</value></data>
   <data name="WtSummaryCounter.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>50 recommandé · 72 max</value></data>
@@ -1315,11 +1342,11 @@ Stocké par Git LFS (déclaré dans {1}).</value></data>
   <data name="IssueBack.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Retour au graphe (Échap)</value></data>
   <data name="IssueRefresh.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Actualiser le ticket</value></data>
   <data name="IssueRefresh.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Actualiser</value></data>
-  <data name="IssueClose.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Fermer l'issue</value></data>
-  <data name="IssueCloseText.Text" xml:space="preserve"><value>Fermer l'issue</value></data>
+  <data name="IssueClose.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Fermer le ticket</value></data>
+  <data name="IssueCloseText.Text" xml:space="preserve"><value>Fermer le ticket</value></data>
   <data name="IssueCloseCompleted.Text" xml:space="preserve"><value>Fermer comme terminée</value></data>
   <data name="IssueCloseNotPlanned.Text" xml:space="preserve"><value>Fermer comme non planifiée</value></data>
-  <data name="IssueReopen.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Rouvrir l'issue</value></data>
+  <data name="IssueReopen.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Rouvrir le ticket</value></data>
   <data name="IssueReopenText.Text" xml:space="preserve"><value>Rouvrir</value></data>
   <data name="IssueEdit.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Modifier le titre et la description</value></data>
   <data name="IssueEdit.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Modifier le titre et la description</value></data>
@@ -1361,16 +1388,16 @@ Stocké par Git LFS (déclaré dans {1}).</value></data>
   <data name="Issue.DeleteComment.Title" xml:space="preserve"><value>Supprimer le commentaire ?</value></data>
   <data name="Issue.DeleteComment.Message" xml:space="preserve"><value>Le commentaire sera supprimé définitivement de l'hébergeur.</value></data>
   <data name="Issue.DeleteComment.Confirm" xml:space="preserve"><value>Supprimer</value></data>
-  <data name="Issue.Edit.Title" xml:space="preserve"><value>Modifier l'issue</value></data>
+  <data name="Issue.Edit.Title" xml:space="preserve"><value>Modifier le ticket</value></data>
   <data name="Issue.Edit.Confirm" xml:space="preserve"><value>Enregistrer</value></data>
   <data name="Issue.Edit.TitleHeader" xml:space="preserve"><value>Titre</value></data>
   <data name="Issue.Edit.BodyHeader" xml:space="preserve"><value>Description (Markdown)</value></data>
   <data name="Issue.Failure.CommentNotPosted" xml:space="preserve"><value>Commentaire non publié</value></data>
   <data name="Issue.Failure.CommentNotEdited" xml:space="preserve"><value>Commentaire non modifié</value></data>
   <data name="Issue.Failure.CommentNotDeleted" xml:space="preserve"><value>Commentaire non supprimé</value></data>
-  <data name="Issue.Failure.NotClosed" xml:space="preserve"><value>Issue non fermée</value></data>
-  <data name="Issue.Failure.NotReopened" xml:space="preserve"><value>Issue non rouverte</value></data>
-  <data name="Issue.Failure.NotEdited" xml:space="preserve"><value>Issue non modifiée</value></data>
+  <data name="Issue.Failure.NotClosed" xml:space="preserve"><value>Ticket non fermé</value></data>
+  <data name="Issue.Failure.NotReopened" xml:space="preserve"><value>Ticket non rouvert</value></data>
+  <data name="Issue.Failure.NotEdited" xml:space="preserve"><value>Ticket non modifié</value></data>
   <data name="Issue.Failure.OptionsUnavailable" xml:space="preserve"><value>Options indisponibles</value></data>
   <data name="Issue.Failure.ReactionNotSaved" xml:space="preserve"><value>Réaction non enregistrée</value></data>
   <data name="Issue.Failure.BrowserFailed" xml:space="preserve"><value>Impossible d'ouvrir le navigateur</value></data>
@@ -1398,8 +1425,8 @@ Stocké par Git LFS (déclaré dans {1}).</value></data>
   <data name="PrAutoMerge.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>L'hébergeur fusionne dès que les vérifications et les revues l'autorisent</value></data>
   <data name="PrAutoMergeText.Text" xml:space="preserve"><value>Fusion automatique</value></data>
   <data name="PrMergeCommit.Text" xml:space="preserve"><value>Commit de fusion</value></data>
-  <data name="PrMergeSquash.Text" xml:space="preserve"><value>Squash and merge</value></data>
-  <data name="PrMergeRebase.Text" xml:space="preserve"><value>Rebase and merge</value></data>
+  <data name="PrMergeSquash.Text" xml:space="preserve"><value>Fusionner par squash</value></data>
+  <data name="PrMergeRebase.Text" xml:space="preserve"><value>Rebaser et fusionner</value></data>
   <data name="PrDisableAutoMerge.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Désactiver la fusion automatique</value></data>
   <data name="PrDisableAutoMerge.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Désactiver la fusion automatique</value></data>
   <data name="PrVote.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Voter</value></data>
@@ -1616,21 +1643,21 @@ Stocké par Git LFS (déclaré dans {1}).</value></data>
   <data name="IssueMeta.Truncated" xml:space="preserve"><value>Listes tronquées : les éléments au-delà de la limite ne sont pas proposés.</value></data>
   <data name="IssueMeta.NoMilestone" xml:space="preserve"><value>Aucun jalon</value></data>
   <data name="Hosting.UnexpectedResponse" xml:space="preserve"><value>Réponse inattendue du service.</value></data>
-  <data name="Hosting.Issues" xml:space="preserve"><value>Issues</value></data>
-  <data name="Hosting.IssueFilter.Failed" xml:space="preserve"><value>Filtre des issues</value></data>
-  <data name="Hosting.SearchIssues.Title" xml:space="preserve"><value>Rechercher dans les issues</value></data>
+  <data name="Hosting.Issues" xml:space="preserve"><value>Tickets</value></data>
+  <data name="Hosting.IssueFilter.Failed" xml:space="preserve"><value>Filtre des tickets</value></data>
+  <data name="Hosting.SearchIssues.Title" xml:space="preserve"><value>Rechercher dans les tickets</value></data>
   <data name="Hosting.SearchIssues.Confirm" xml:space="preserve"><value>Rechercher</value></data>
   <data name="Hosting.SearchIssues.Header" xml:space="preserve"><value>Texte</value></data>
   <data name="Hosting.SearchIssues.Description" xml:space="preserve"><value>Qualificatifs acceptés : label:bug, milestone:v2, author:nom, no:assignee…</value></data>
   <data name="Hosting.CreateFailed" xml:space="preserve"><value>Création impossible</value></data>
   <data name="Hosting.TitleHeader" xml:space="preserve"><value>Titre</value></data>
-  <data name="Hosting.NewIssue.Title" xml:space="preserve"><value>Nouvelle issue</value></data>
+  <data name="Hosting.NewIssue.Title" xml:space="preserve"><value>Nouveau ticket</value></data>
   <data name="Hosting.NewIssue.Confirm" xml:space="preserve"><value>Créer</value></data>
   <data name="Hosting.NewIssue.BodyHeader" xml:space="preserve"><value>Description (facultative, Markdown)</value></data>
   <data name="Hosting.NewIssue.BodyPlaceholder" xml:space="preserve"><value>Ce qu'il faut savoir pour comprendre ou reproduire…</value></data>
-  <data name="Hosting.IssueCreated" xml:space="preserve"><value>Issue #{0} créée</value></data>
+  <data name="Hosting.IssueCreated" xml:space="preserve"><value>Ticket #{0} créé</value></data>
   <data name="Hosting.Pr.Title" xml:space="preserve"><value>Pull request</value></data>
-  <data name="Hosting.Pr.PushFirst" xml:space="preserve"><value>Publiez d'abord {0} sur {1} (Push), puis créez la pull request.</value></data>
+  <data name="Hosting.Pr.PushFirst" xml:space="preserve"><value>Publiez d'abord {0} sur {1} (Pousser), puis créez la pull request.</value></data>
   <data name="Hosting.Pr.Exists" xml:space="preserve"><value>{0} a déjà la pull request #{1}.</value></data>
   <data name="Hosting.Pr.NotRemoteBranch" xml:space="preserve"><value>{0} n'est pas une branche de {1}.</value></data>
   <data name="Hosting.Pr.SameBranch" xml:space="preserve"><value>{0} et la base sont la même branche sur {1}.</value></data>
@@ -1726,7 +1753,7 @@ Stocké par Git LFS (déclaré dans {1}).</value></data>
   <data name="Ai.Status.KeyRemoved" xml:space="preserve"><value>Clé supprimée.</value></data>
   <data name="Ai.Status.Testing" xml:space="preserve"><value>Test en cours…</value></data>
   <data name="Ai.Status.Works" xml:space="preserve"><value>Le moteur répond.</value></data>
-  <data name="PrefSshIntro.Text" xml:space="preserve"><value>La clé choisie est passée à ssh pour les fetch, pull et push de VIGO. Votre ~/.gitconfig et votre ~/.ssh/config ne sont pas modifiés ; un core.sshCommand défini dans Git reste prioritaire.</value></data>
+  <data name="PrefSshIntro.Text" xml:space="preserve"><value>La clé choisie est passée à ssh pour les récupérations, tirages et envois de VIGO. Votre ~/.gitconfig et votre ~/.ssh/config ne sont pas modifiés ; un core.sshCommand défini dans Git reste prioritaire.</value></data>
   <data name="PrefSshNoDefault.Text" xml:space="preserve"><value>Aucune clé choisie : ssh utilise ~/.ssh/config et les clés de noms standard (id_ed25519, id_rsa…).</value></data>
   <data name="PrefSshNoKey.Text" xml:space="preserve"><value>Aucune clé dans ~/.ssh : générez-en une ou importez celle d'un autre outil.</value></data>
   <data name="PrefSshList.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Clés SSH</value></data>
@@ -1773,7 +1800,7 @@ Stocké par Git LFS (déclaré dans {1}).</value></data>
   <data name="SshKeys.Action.Stop" xml:space="preserve"><value>Ne plus utiliser dans VIGO</value></data>
   <data name="SshKeys.Action.Use" xml:space="preserve"><value>Utiliser dans VIGO</value></data>
   <data name="SshKeys.Imported.Title" xml:space="preserve"><value>Clé {0} importée</value></data>
-  <data name="SshKeys.Imported.Message" xml:space="preserve"><value>VIGO l'utilise désormais pour les fetch, pull et push en SSH.</value></data>
+  <data name="SshKeys.Imported.Message" xml:space="preserve"><value>VIGO l'utilise désormais pour les récupérations, tirages et envois en SSH.</value></data>
   <data name="SshKeys.ImportFailed" xml:space="preserve"><value>Import de la clé impossible</value></data>
   <data name="SshKeys.Created.Title" xml:space="preserve"><value>Clé {0} créée</value></data>
   <data name="SshKeys.Created.Message" xml:space="preserve"><value>Copiez sa clé publique et ajoutez-la sur votre hébergeur (GitHub : Settings › SSH and GPG keys).</value></data>
@@ -1838,7 +1865,7 @@ Stocké par Git LFS (déclaré dans {1}).</value></data>
   <data name="PrefTokenBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Jeton d'accès personnel</value></data>
   <data name="PrefAzureScopesIntro.Text" xml:space="preserve"><value>Droits à donner au jeton lors de sa création (Azure DevOps : User settings › Personal access tokens) :</value></data>
   <data name="PrefAzureScopes.Text" xml:space="preserve"><value>•  Code : lecture et écriture
-•  Work Items : lecture
+•  Éléments de travail : lecture
 •  User Profile : lecture</value></data>
   <data name="PrefTokenConnect.Content" xml:space="preserve"><value>Connecter</value></data>
   <data name="PrefTokenCancel.Content" xml:space="preserve"><value>Annuler</value></data>
@@ -1876,7 +1903,7 @@ Stocké par Git LFS (déclaré dans {1}).</value></data>
   <data name="GitLogClear.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Effacer le journal</value></data>
   <data name="GitLogClear.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Effacer le journal</value></data>
   <data name="GitLogList.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Commandes git</value></data>
-  <data name="GitLogEmpty.Text" xml:space="preserve"><value>Aucune commande pour l'instant : les actions de VIGO (fetch, pull, push, commit…) apparaîtront ici.</value></data>
+  <data name="GitLogEmpty.Text" xml:space="preserve"><value>Aucune commande pour l'instant : les actions de VIGO (récupération, tirage, envoi, commit…) apparaîtront ici.</value></data>
   <data name="GitLog.Running" xml:space="preserve"><value>en cours…</value></data>
   <data name="GitLog.Canceled" xml:space="preserve"><value>annulée</value></data>
   <data name="GitLog.ExitCode" xml:space="preserve"><value>code {0} · {1}</value></data>
@@ -1888,16 +1915,16 @@ Stocké par Git LFS (déclaré dans {1}).</value></data>
   <data name="Palette.NoResult" xml:space="preserve"><value>Aucun résultat pour « {0} »</value></data>
   <data name="Palette.Cmd.Undo" xml:space="preserve"><value>Annuler : {0}</value></data>
   <data name="Palette.Cmd.Redo" xml:space="preserve"><value>Rétablir : {0}</value></data>
-  <data name="Palette.Cmd.Pull" xml:space="preserve"><value>Pull</value></data>
-  <data name="Palette.Cmd.Push" xml:space="preserve"><value>Push</value></data>
-  <data name="Palette.Cmd.Fetch" xml:space="preserve"><value>Fetch de tous les distants</value></data>
-  <data name="Palette.Cmd.RebasePull" xml:space="preserve"><value>Pull (rebase)</value></data>
-  <data name="Palette.Cmd.ForcePush" xml:space="preserve"><value>Push forcé (--force-with-lease)…</value></data>
+  <data name="Palette.Cmd.Pull" xml:space="preserve"><value>Tirer</value></data>
+  <data name="Palette.Cmd.Push" xml:space="preserve"><value>Pousser</value></data>
+  <data name="Palette.Cmd.Fetch" xml:space="preserve"><value>Récupérer tous les distants</value></data>
+  <data name="Palette.Cmd.RebasePull" xml:space="preserve"><value>Tirer (rebase)</value></data>
+  <data name="Palette.Cmd.ForcePush" xml:space="preserve"><value>Envoi forcé (--force-with-lease)…</value></data>
   <data name="Palette.Cmd.NewBranch" xml:space="preserve"><value>Nouvelle branche…</value></data>
   <data name="Palette.Cmd.NewTag" xml:space="preserve"><value>Nouveau tag…</value></data>
-  <data name="Palette.Cmd.StashPush" xml:space="preserve"><value>Stash des modifications</value></data>
-  <data name="Palette.Cmd.StashMessage" xml:space="preserve"><value>Stash avec titre…</value></data>
-  <data name="Palette.Cmd.StashPop" xml:space="preserve"><value>Pop du dernier stash</value></data>
+  <data name="Palette.Cmd.StashPush" xml:space="preserve"><value>Remiser les modifications</value></data>
+  <data name="Palette.Cmd.StashMessage" xml:space="preserve"><value>Remiser avec titre…</value></data>
+  <data name="Palette.Cmd.StashPop" xml:space="preserve"><value>Réappliquer la dernière remise</value></data>
   <data name="Palette.Cmd.StageAll" xml:space="preserve"><value>Tout indexer</value></data>
   <data name="Palette.Cmd.AddRemote" xml:space="preserve"><value>Ajouter un distant…</value></data>
   <data name="Palette.Cmd.AddSubmodule" xml:space="preserve"><value>Ajouter un submodule…</value></data>
@@ -1914,9 +1941,9 @@ Stocké par Git LFS (déclaré dans {1}).</value></data>
   <data name="Palette.Cmd.GitFlowHotfix" xml:space="preserve"><value>Git Flow : démarrer un hotfix…</value></data>
   <data name="Palette.Cmd.GitFlowFinish" xml:space="preserve"><value>Git Flow : terminer {0}…</value></data>
   <data name="Palette.Cmd.PrCreate" xml:space="preserve"><value>Créer une pull request pour {0}…</value></data>
-  <data name="Palette.Cmd.PrRefresh" xml:space="preserve"><value>Actualiser les pull requests et les issues</value></data>
-  <data name="Palette.Detail.Checkout" xml:space="preserve"><value>checkout</value></data>
-  <data name="Palette.Detail.CheckoutNew" xml:space="preserve"><value>checkout (nouvelle branche {0})</value></data>
+  <data name="Palette.Cmd.PrRefresh" xml:space="preserve"><value>Actualiser les pull requests et les tickets</value></data>
+  <data name="Palette.Detail.Checkout" xml:space="preserve"><value>basculer</value></data>
+  <data name="Palette.Detail.CheckoutNew" xml:space="preserve"><value>basculer (nouvelle branche {0})</value></data>
   <data name="Palette.Detail.Staged" xml:space="preserve"><value>{0} · indexé</value></data>
   <data name="Palette.Picker.Title" xml:space="preserve"><value>Fichiers du dépôt</value></data>
   <data name="Palette.Picker.History" xml:space="preserve"><value>Historique de quel fichier ?</value></data>
@@ -1981,11 +2008,11 @@ Stocké par Git LFS (déclaré dans {1}).</value></data>
   <data name="Shortcuts.Name.Preferences" xml:space="preserve"><value>Préférences</value></data>
   <data name="Shortcuts.Name.Quit" xml:space="preserve"><value>Quitter VIGO</value></data>
   <data name="Shortcuts.Name.OnlineHelp" xml:space="preserve"><value>Aide en ligne</value></data>
-  <data name="Shortcuts.Name.Fetch" xml:space="preserve"><value>Fetch de tous les distants</value></data>
-  <data name="Shortcuts.Name.Pull" xml:space="preserve"><value>Pull</value></data>
-  <data name="Shortcuts.Name.Push" xml:space="preserve"><value>Push</value></data>
+  <data name="Shortcuts.Name.Fetch" xml:space="preserve"><value>Récupérer tous les distants</value></data>
+  <data name="Shortcuts.Name.Pull" xml:space="preserve"><value>Tirer</value></data>
+  <data name="Shortcuts.Name.Push" xml:space="preserve"><value>Pousser</value></data>
   <data name="Shortcuts.Name.NewBranch" xml:space="preserve"><value>Nouvelle branche</value></data>
-  <data name="Shortcuts.Name.Stash" xml:space="preserve"><value>Stash des modifications</value></data>
+  <data name="Shortcuts.Name.Stash" xml:space="preserve"><value>Remiser les modifications</value></data>
   <data name="Shortcuts.Name.Undo" xml:space="preserve"><value>Annuler la dernière opération</value></data>
   <data name="Shortcuts.Name.Redo" xml:space="preserve"><value>Rétablir l'opération annulée</value></data>
   <data name="Shortcuts.Name.Terminal" xml:space="preserve"><value>Basculer le terminal</value></data>
@@ -2072,7 +2099,7 @@ Stocké par Git LFS (déclaré dans {1}).</value></data>
   <data name="Hosting.AzureTokenRefused" xml:space="preserve"><value>Azure DevOps a refusé ce jeton : vérifiez qu'il est valide, qu'il n'a pas expiré et qu'il couvre « User Profile (lecture) ». Un jeton limité à une organisation est refusé ici : renseignez alors le champ « Organisation ».</value></data>
   <data name="Hosting.AzureTokenRefusedOrg" xml:space="preserve"><value>Azure DevOps a refusé ce jeton pour l'organisation « {0} » : vérifiez le nom de l'organisation, que le jeton est valide, qu'il n'a pas expiré et qu'il couvre cette organisation.</value></data>
   <data name="Hosting.AzureTokenExpired" xml:space="preserve"><value>Azure DevOps a refusé le jeton : il a peut-être expiré ou été révoqué.</value></data>
-  <data name="Hosting.AzureForbidden" xml:space="preserve"><value>Azure DevOps refuse l'accès avec ce jeton : il lui faut les droits « Code (lecture et écriture) », « Work Items (lecture) » et « User Profile (lecture) ».</value></data>
+  <data name="Hosting.AzureForbidden" xml:space="preserve"><value>Azure DevOps refuse l'accès avec ce jeton : il lui faut les droits « Code (lecture et écriture) », « Éléments de travail (lecture) » et « User Profile (lecture) ».</value></data>
   <data name="Hosting.MicrosoftRefused" xml:space="preserve"><value>Microsoft a refusé la connexion ({0}).</value></data>
   <data name="Hosting.AzureSessionExpired" xml:space="preserve"><value>La connexion à Azure DevOps a expiré : reconnectez-vous dans Préférences › Intégrations.</value></data>
   <data name="Hosting.AzureSessionRevoked" xml:space="preserve"><value>La connexion à Azure DevOps a expiré ou été révoquée : reconnectez-vous dans Préférences › Intégrations.</value></data>
@@ -2121,12 +2148,12 @@ Stocké par Git LFS (déclaré dans {1}).</value></data>
   <data name="GitError.NoNewlineInCredential" xml:space="preserve"><value>Le nom d'utilisateur et le jeton ne peuvent pas contenir de saut de ligne.</value></data>
   <data name="GitError.NoCredentialHelper" xml:space="preserve"><value>Aucun gestionnaire d'identifiants n'est configuré (credential.helper) : le jeton ne peut pas être enregistré.</value></data>
   <data name="GitError.PathOutsideRepository" xml:space="preserve"><value>Chemin hors du dépôt.</value></data>
-  <data name="GitError.RebaseDropsAll" xml:space="preserve"><value>Tous les commits seraient supprimés : utilisez plutôt un reset.</value></data>
+  <data name="GitError.RebaseDropsAll" xml:space="preserve"><value>Tous les commits seraient supprimés : utilisez plutôt une réinitialisation.</value></data>
   <data name="GitError.RebaseFirstSquash" xml:space="preserve"><value>Le premier commit conservé ne peut pas être fusionné (squash / fixup) : aucun commit ne le précède.</value></data>
   <data name="GitError.RebaseEmptyReword" xml:space="preserve"><value>Le nouveau message d'un commit reformulé est vide.</value></data>
   <data name="GitError.GitDirNotFound" xml:space="preserve"><value>Répertoire git introuvable.</value></data>
   <data name="GitError.RebasePrepareFailed" xml:space="preserve"><value>Impossible de préparer le rebase interactif.</value></data>
-  <data name="GitError.WorktreeFolderRequired" xml:space="preserve"><value>Le dossier du worktree est obligatoire.</value></data>
+  <data name="GitError.WorktreeFolderRequired" xml:space="preserve"><value>Le dossier de l'arbre de travail est obligatoire.</value></data>
   <data name="Prevention.Conflict.One" xml:space="preserve"><value>Conflit avec {0} : {1} fichier</value></data>
   <data name="Prevention.Conflict.Other" xml:space="preserve"><value>Conflit avec {0} : {1} fichiers</value></data>
   <data name="Prevention.Possible.One" xml:space="preserve"><value>Conflit possible avec {0} : {1} fichier</value></data>
@@ -2162,30 +2189,30 @@ Stocké par Git LFS (déclaré dans {1}).</value></data>
   <data name="GitError.ServerNotFound" xml:space="preserve"><value>Serveur introuvable : vérifiez l'URL et la connexion réseau.</value></data>
   <data name="GitError.RemoteReadFailed" xml:space="preserve"><value>Lecture du dépôt distant impossible : vérifiez l'URL et vos droits d'accès.</value></data>
   <data name="GitError.NoUpstreamManyRemotes" xml:space="preserve"><value>La branche {0} n'a pas de branche amont et il y a plusieurs distants ({1}).</value></data>
-  <data name="GitError.CheckoutOverwrites" xml:space="preserve"><value>Des modifications locales seraient écrasées par le checkout de {0} : validez-les ou mettez-les de côté (stash), puis réessayez.</value></data>
+  <data name="GitError.CheckoutOverwrites" xml:space="preserve"><value>Des modifications locales seraient écrasées par la bascule sur {0} : validez-les ou mettez-les de côté (remise), puis réessayez.</value></data>
   <data name="GitError.OperationBeforeSwitch" xml:space="preserve"><value>Une fusion ou un rebase est en cours : terminez-le ou annulez-le avant de changer de branche.</value></data>
   <data name="GitError.LocalBranchExists" xml:space="preserve"><value>Une branche locale {0} existe déjà.</value></data>
-  <data name="GitError.BranchInOtherWorktree" xml:space="preserve"><value>La branche {0} est déjà extraite dans un autre worktree.</value></data>
+  <data name="GitError.BranchInOtherWorktree" xml:space="preserve"><value>La branche {0} est déjà extraite dans un autre arbre de travail.</value></data>
   <data name="GitError.CannotFastForward" xml:space="preserve"><value>{0} ne peut pas avancer jusqu'à {1} : les branches ont divergé.</value></data>
-  <data name="GitError.BranchCheckedOutMerge" xml:space="preserve"><value>La branche {0} est extraite (ici ou dans un autre worktree) : fusionnez depuis ce répertoire de travail.</value></data>
+  <data name="GitError.BranchCheckedOutMerge" xml:space="preserve"><value>La branche {0} est extraite (ici ou dans un autre arbre de travail) : fusionnez depuis ce répertoire de travail.</value></data>
   <data name="GitError.NothingToApply" xml:space="preserve"><value>{0} n'apporte aucune modification : ses changements sont déjà présents.</value></data>
   <data name="GitError.NothingToRevert" xml:space="preserve"><value>Rien à annuler : les changements de {0} ne sont plus présents.</value></data>
-  <data name="GitError.UncommittedWouldBeOverwritten" xml:space="preserve"><value>Des modifications non validées touchent des fichiers que cette opération doit modifier : validez-les ou mettez-les de côté (stash), puis réessayez.</value></data>
-  <data name="GitError.SoftResetDuringMerge" xml:space="preserve"><value>Reset soft impossible pendant une fusion : terminez-la ou abandonnez-la d'abord.</value></data>
-  <data name="GitError.ResetNeedsWorkTree" xml:space="preserve"><value>Ce reset demande un répertoire de travail (dépôt nu).</value></data>
+  <data name="GitError.UncommittedWouldBeOverwritten" xml:space="preserve"><value>Des modifications non validées touchent des fichiers que cette opération doit modifier : validez-les ou mettez-les de côté (remise), puis réessayez.</value></data>
+  <data name="GitError.SoftResetDuringMerge" xml:space="preserve"><value>Réinitialisation soft impossible pendant une fusion : terminez-la ou abandonnez-la d'abord.</value></data>
+  <data name="GitError.ResetNeedsWorkTree" xml:space="preserve"><value>Cette réinitialisation demande un répertoire de travail (dépôt nu).</value></data>
   <data name="GitError.FilesLocked" xml:space="preserve"><value>Des fichiers sont verrouillés (ouverts dans une autre application) : fermez-les, puis réessayez.</value></data>
   <data name="GitError.RefsChangedMeanwhile" xml:space="preserve"><value>Des branches ou des tags ont changé entre-temps : ils n'ont pas été modifiés.</value></data>
   <data name="GitError.StashBeforeFirstCommit" xml:space="preserve"><value>Impossible de mettre de côté avant le premier commit.</value></data>
   <data name="GitError.StashConflicts" xml:space="preserve"><value>Des fichiers sont en conflit : résolvez-les avant de mettre les modifications de côté.</value></data>
   <data name="GitError.NothingToStash" xml:space="preserve"><value>Aucune modification à mettre de côté.</value></data>
   <data name="GitError.NothingTrackedToStash" xml:space="preserve"><value>Aucune modification suivie à mettre de côté.</value></data>
-  <data name="GitError.StashOverwrites" xml:space="preserve"><value>Des modifications locales seraient écrasées par le stash : validez-les ou mettez-les de côté, puis réessayez.</value></data>
-  <data name="GitError.StashUntrackedExist" xml:space="preserve"><value>Des fichiers non suivis du stash existent déjà dans le répertoire de travail : déplacez-les, puis réessayez.</value></data>
-  <data name="GitError.StashApplyConflicts" xml:space="preserve"><value>Des fichiers sont en conflit : résolvez-les avant d'appliquer un stash.</value></data>
-  <data name="GitError.StashGone" xml:space="preserve"><value>Ce stash n'existe plus (supprimé ou appliqué entre-temps).</value></data>
-  <data name="GitError.OperationInProgress" xml:space="preserve"><value>Une opération (fusion, rebase, cherry-pick ou revert) est déjà en cours : terminez-la ou abandonnez-la d'abord.</value></data>
-  <data name="GitError.OverwritesStash" xml:space="preserve"><value>Des modifications locales seraient écrasées : validez-les ou mettez-les de côté (stash), puis réessayez.</value></data>
-  <data name="GitError.RebaseNeedsClean" xml:space="preserve"><value>Le rebase demande un répertoire de travail propre : validez vos modifications ou mettez-les de côté (stash).</value></data>
+  <data name="GitError.StashOverwrites" xml:space="preserve"><value>Des modifications locales seraient écrasées par la remise : validez-les ou mettez-les de côté, puis réessayez.</value></data>
+  <data name="GitError.StashUntrackedExist" xml:space="preserve"><value>Des fichiers non suivis de la remise existent déjà dans le répertoire de travail : déplacez-les, puis réessayez.</value></data>
+  <data name="GitError.StashApplyConflicts" xml:space="preserve"><value>Des fichiers sont en conflit : résolvez-les avant d'appliquer une remise.</value></data>
+  <data name="GitError.StashGone" xml:space="preserve"><value>Cette remise n'existe plus (supprimée ou appliquée entre-temps).</value></data>
+  <data name="GitError.OperationInProgress" xml:space="preserve"><value>Une opération (fusion, rebase, cherry-pick ou inversion) est déjà en cours : terminez-la ou abandonnez-la d'abord.</value></data>
+  <data name="GitError.OverwritesStash" xml:space="preserve"><value>Des modifications locales seraient écrasées : validez-les ou mettez-les de côté (remise), puis réessayez.</value></data>
+  <data name="GitError.RebaseNeedsClean" xml:space="preserve"><value>Le rebase demande un répertoire de travail propre : validez vos modifications ou mettez-les de côté (remise).</value></data>
   <data name="GitError.NoCommonHistory" xml:space="preserve"><value>{0} n'a aucun historique commun avec la branche courante : fusion refusée.</value></data>
   <data name="GitError.ThisBranch" xml:space="preserve"><value>Cette branche</value></data>
   <data name="GitError.FastForwardOnly" xml:space="preserve"><value>Avance rapide impossible (merge.ff=only dans votre configuration) : les branches ont divergé.</value></data>
@@ -2193,18 +2220,18 @@ Stocké par Git LFS (déclaré dans {1}).</value></data>
   <data name="GitError.ThisRef" xml:space="preserve"><value>Cette référence</value></data>
   <data name="GitError.CommitEmptyAfterResolve" xml:space="preserve"><value>Ce commit n'apporte plus rien une fois les conflits résolus : passez-le.</value></data>
   <data name="GitError.MarkResolvedFirst" xml:space="preserve"><value>Des fichiers sont encore en conflit : marquez-les comme résolus avant de continuer.</value></data>
-  <data name="GitError.BranchCheckedOutSwitch" xml:space="preserve"><value>La branche {0} est extraite (ici ou dans un autre worktree) : basculez d'abord sur une autre branche.</value></data>
+  <data name="GitError.BranchCheckedOutSwitch" xml:space="preserve"><value>La branche {0} est extraite (ici ou dans un autre arbre de travail) : basculez d'abord sur une autre branche.</value></data>
   <data name="GitError.TagExistsOnRemote" xml:space="preserve"><value>Le tag {0} existe déjà sur {1}, sur un autre commit.</value></data>
   <data name="GitError.AlreadyExists" xml:space="preserve"><value>{0} existe déjà.</value></data>
   <data name="GitError.RefConflict" xml:space="preserve"><value>{0} entre en conflit avec une référence existante (un nom ne peut pas être à la fois une branche et un dossier).</value></data>
   <data name="GitError.NotValidName" xml:space="preserve"><value>« {0} » n'est pas un nom valide.</value></data>
   <data name="GitError.RemoteExists" xml:space="preserve"><value>Le distant {0} existe déjà.</value></data>
-  <data name="GitError.ForcePushRefused" xml:space="preserve"><value>Push forcé refusé : {0} contient des commits que votre branche n'inclut pas. Faites un fetch, intégrez-les (rebase ou merge) ou vérifiez-les avant de forcer.</value></data>
-  <data name="GitError.PushRefused" xml:space="preserve"><value>Push refusé : {0} contient des commits absents en local. Faites un pull, puis poussez à nouveau.</value></data>
-  <data name="GitError.DivergedNoStrategy" xml:space="preserve"><value>Les branches locale et distante ont divergé et aucune stratégie n'est configurée (pull.rebase) : choisissez « Pull (fusion) » ou « Pull (rebase) » dans le menu du bouton Pull.</value></data>
-  <data name="GitError.FastForwardImpossible" xml:space="preserve"><value>Fast-forward impossible : les branches ont divergé. Choisissez « Pull (fusion) » ou « Pull (rebase) ».</value></data>
+  <data name="GitError.ForcePushRefused" xml:space="preserve"><value>Envoi forcé refusé : {0} contient des commits que votre branche n'inclut pas. Faites une récupération, intégrez-les (rebase ou merge) ou vérifiez-les avant de forcer.</value></data>
+  <data name="GitError.PushRefused" xml:space="preserve"><value>Envoi refusé : {0} contient des commits absents en local. Tirez d'abord, puis poussez à nouveau.</value></data>
+  <data name="GitError.DivergedNoStrategy" xml:space="preserve"><value>Les branches locale et distante ont divergé et aucune stratégie n'est configurée (pull.rebase) : choisissez « Tirer (fusion) » ou « Tirer (rebase) » dans le menu du bouton Tirer.</value></data>
+  <data name="GitError.FastForwardImpossible" xml:space="preserve"><value>Fast-forward impossible : les branches ont divergé. Choisissez « Tirer (fusion) » ou « Tirer (rebase) ».</value></data>
   <data name="GitError.NoUpstreamPushFirst" xml:space="preserve"><value>La branche courante n'a pas de branche amont : poussez-la d'abord.</value></data>
-  <data name="GitError.PullOverwrites" xml:space="preserve"><value>Des modifications locales seraient écrasées : validez-les ou mettez-les de côté avant le pull.</value></data>
+  <data name="GitError.PullOverwrites" xml:space="preserve"><value>Des modifications locales seraient écrasées : validez-les ou mettez-les de côté avant de tirer.</value></data>
   <data name="GitError.RemoteBranchDefault" xml:space="preserve"><value>la branche distante</value></data>
   <data name="GitError.NotARepository" xml:space="preserve"><value>« {0} » n'est pas un dépôt Git.</value></data>
   <data name="GitError.MissingInVersion" xml:space="preserve"><value>« {0} » n'existe pas dans cette version.</value></data>
@@ -2230,12 +2257,12 @@ Stocké par Git LFS (déclaré dans {1}).</value></data>
   <data name="GitError.FileProtocolRefused" xml:space="preserve"><value>Git refuse le protocole « file » pour les submodules (réglage protocol.file.allow).</value></data>
   <data name="GitError.RepoNotFoundCheckUrl" xml:space="preserve"><value>Dépôt introuvable : vérifiez l'URL.</value></data>
   <data name="GitError.SubmoduleNotFound" xml:space="preserve"><value>Submodule introuvable.</value></data>
-  <data name="GitError.WorktreeBranchUsed" xml:space="preserve"><value>Cette branche est déjà extraite dans un autre worktree : choisissez une autre branche ou créez-en une nouvelle.</value></data>
+  <data name="GitError.WorktreeBranchUsed" xml:space="preserve"><value>Cette branche est déjà extraite dans un autre arbre de travail : choisissez une autre branche ou créez-en une nouvelle.</value></data>
   <data name="GitError.BranchNameExists" xml:space="preserve"><value>Une branche de ce nom existe déjà.</value></data>
   <data name="GitError.WorktreeFolderNotEmpty" xml:space="preserve"><value>Le dossier {0} existe déjà et n'est pas vide.</value></data>
-  <data name="GitError.WorktreeDirty" xml:space="preserve"><value>Ce worktree contient des modifications ou des fichiers non suivis : elles seraient perdues.</value></data>
-  <data name="GitError.WorktreeLocked" xml:space="preserve"><value>Ce worktree est verrouillé (git worktree lock).</value></data>
-  <data name="GitError.MainWorktreeRemove" xml:space="preserve"><value>Le worktree principal ne peut pas être supprimé.</value></data>
+  <data name="GitError.WorktreeDirty" xml:space="preserve"><value>Cet arbre de travail contient des modifications ou des fichiers non suivis : elles seraient perdues.</value></data>
+  <data name="GitError.WorktreeLocked" xml:space="preserve"><value>Cet arbre de travail est verrouillé (git worktree lock).</value></data>
+  <data name="GitError.MainWorktreeRemove" xml:space="preserve"><value>L'arbre de travail principal ne peut pas être supprimé.</value></data>
   <data name="GitError.BranchOrCommitNotFound" xml:space="preserve"><value>Branche ou commit introuvable.</value></data>
   <data name="Hosting.NoIssueFilter" xml:space="preserve"><value>Le filtrage des tickets n'est pas encore disponible pour cet hébergeur.</value></data>
   <data name="Hosting.NoPullDetail" xml:space="preserve"><value>Le détail des pull requests n'est pas encore disponible pour cet hébergeur.</value></data>
@@ -2452,16 +2479,16 @@ Stocké par Git LFS (déclaré dans {1}).</value></data>
   <data name="WorkItem.PullStatus.Abandoned" xml:space="preserve"><value>Abandonnée</value></data>
   <data name="Hosting.AzureListNeedsOrganization" xml:space="preserve"><value>Azure DevOps a refusé la liste des organisations : ce jeton est sans doute limité à une organisation. Reconnectez-vous dans Préférences › Intégrations en renseignant l’organisation.</value></data>
   <data name="Stash.ApplyFiles.Failed" xml:space="preserve"><value>Impossible d’appliquer les fichiers de {0}</value></data>
-  <data name="Stash.ApplyFiles.DoneOne" xml:space="preserve"><value>Le fichier a été fusionné avec vos changements ; le stash est conservé.</value></data>
-  <data name="Stash.ApplyFiles.DoneMany" xml:space="preserve"><value>{0} fichiers ont été fusionnés avec vos changements ; le stash est conservé.</value></data>
-  <data name="GitError.StashFilesNoChange" xml:space="preserve"><value>Le stash ne modifie pas ces fichiers suivis (les fichiers non suivis d’un stash ne sont pas pris en charge).</value></data>
-  <data name="GitError.StashFilesFailed" xml:space="preserve"><value>Les modifications du stash ne peuvent pas être appliquées à ces fichiers.</value></data>
-  <data name="CommitDetails.Stash.ApplyOne" xml:space="preserve"><value>Appliquer le fichier depuis le stash</value></data>
-  <data name="CommitDetails.Stash.ApplyMany" xml:space="preserve"><value>Appliquer {0} fichiers depuis le stash</value></data>
+  <data name="Stash.ApplyFiles.DoneOne" xml:space="preserve"><value>Le fichier a été fusionné avec vos changements ; la remise est conservée.</value></data>
+  <data name="Stash.ApplyFiles.DoneMany" xml:space="preserve"><value>{0} fichiers ont été fusionnés avec vos changements ; la remise est conservée.</value></data>
+  <data name="GitError.StashFilesNoChange" xml:space="preserve"><value>La remise ne modifie pas ces fichiers suivis (les fichiers non suivis d’une remise ne sont pas pris en charge).</value></data>
+  <data name="GitError.StashFilesFailed" xml:space="preserve"><value>Les modifications de la remise ne peuvent pas être appliquées à ces fichiers.</value></data>
+  <data name="CommitDetails.Stash.ApplyOne" xml:space="preserve"><value>Appliquer le fichier depuis la remise</value></data>
+  <data name="CommitDetails.Stash.ApplyMany" xml:space="preserve"><value>Appliquer {0} fichiers depuis la remise</value></data>
   <data name="GraphStashApplyItem.Text" xml:space="preserve"><value>Appliquer</value></data>
-  <data name="GraphStashPopItem.Text" xml:space="preserve"><value>Pop (appliquer et supprimer)</value></data>
+  <data name="GraphStashPopItem.Text" xml:space="preserve"><value>Réappliquer (appliquer et supprimer)</value></data>
   <data name="WtFolderDiscard.Text" xml:space="preserve"><value>Rejeter toutes les modifications du dossier</value></data>
-  <data name="WtFolderStash.Text" xml:space="preserve"><value>Mettre le dossier de côté (stash)</value></data>
+  <data name="WtFolderStash.Text" xml:space="preserve"><value>Mettre le dossier de côté (remise)</value></data>
   <data name="WtFolderPatch.Text" xml:space="preserve"><value>Créer un patch des modifications du dossier…</value></data>
   <data name="WtFolderOpen.Text" xml:space="preserve"><value>Ouvrir le dossier</value></data>
   <data name="WtFolderNewFile.Text" xml:space="preserve"><value>Créer un fichier dans ce dossier…</value></data>

@@ -451,7 +451,7 @@ public sealed partial class RefsPanelViewModel : ObservableObject, IDisposable
                     CheckoutLabel = row.Kind == RefRowKind.PullRequest ? CheckoutLabel(row) : null,
                     CanShowPullRequest = row.Kind == RefRowKind.PullRequest && _hosting?.CanShowPullRequest == true,
                     CanShowIssue = row.Kind == RefRowKind.Issue && _hosting?.CanShowIssue == true,
-                    OpenLabel = "Ouvrir dans le navigateur",
+                    OpenLabel = Loc.Get("Refs.Menu.OpenInBrowser"),
                     OpenUrl = url,
                     CopyText = url,
                     CopyLabel = Loc.Get("Refs.Menu.CopyLink"),
@@ -821,6 +821,12 @@ public sealed partial class RefsPanelViewModel : ObservableObject, IDisposable
     // Always called on the UI thread in the application; the lock only keeps two rebuilds from interleaving when there
     // is no UI thread to serialize them (tests, where the graph and the remotes load on pool threads).
     private readonly object _rebuildLock = new();
+
+    /// <summary>The rows as they are between two rebuilds (tests: a rebuild on a pool thread would break a plain enumeration of <see cref="Rows"/>).</summary>
+    internal IReadOnlyList<RefRow> SnapshotRows()
+    {
+        lock (_rebuildLock) return [.. Rows.Select(i => i.Row)];
+    }
 
     private void Rebuild()
     {
