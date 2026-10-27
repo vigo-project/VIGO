@@ -309,9 +309,25 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
-            <Grid>
+            <!-- Amend, profile and signing, above the message -->
+            <StackPanel Orientation="Horizontal" Spacing="14">
+                <CheckBox x:Uid="WtAmend" MinWidth="0" MinHeight="24" FontSize="{ThemeResource VigoFontSize12}" Padding="6,0,0,0" VerticalContentAlignment="Center"
+                          IsChecked="{x:Bind ViewModel.CommitForm.IsAmend, Mode=TwoWay}" IsEnabled="{x:Bind ViewModel.CommitForm.CanAmend, Mode=OneWay}" />
+                <TextBlock Text="{x:Bind ViewModel.CommitForm.ProfileLabel, Mode=OneWay}" FontSize="{ThemeResource VigoFontSize12}" VerticalAlignment="Center"
+                           Foreground="{ThemeResource VigoText3Brush}" Visibility="{x:Bind ViewModel.CommitForm.HasProfile, Mode=OneWay}"
+                           ToolTipService.ToolTip="{x:Bind ViewModel.CommitForm.ProfileIdentity, Mode=OneWay}" />
+                <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center"
+                            Visibility="{x:Bind ViewModel.CommitForm.IsSigned, Mode=OneWay}">
+                    <FontIcon Style="{StaticResource VigoIcon}" FontSize="14" Foreground="{ThemeResource VigoSuccessBrush}"
+                              Glyph="{x:Bind controls:FluentIcons.ShieldKeyhole}" />
+                    <TextBlock Text="{x:Bind ViewModel.CommitForm.SigningLabel, Mode=OneWay}" FontSize="{ThemeResource VigoFontSize12}" Foreground="{ThemeResource VigoText2Brush}" />
+                </StackPanel>
+            </StackPanel>
+
+            <Grid Grid.Row="1">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
@@ -341,7 +357,7 @@
             </Grid>
 
             <!-- Counter next to the field, not over it: the right edge of the TextBox holds its clear button. -->
-            <Grid Grid.Row="1" ColumnSpacing="8">
+            <Grid Grid.Row="2" ColumnSpacing="8">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
@@ -354,26 +370,15 @@
                            Foreground="{ThemeResource VigoText3Brush}" />
             </Grid>
 
-            <TextBox x:Uid="WtDescription" Grid.Row="2" Text="{x:Bind ViewModel.CommitForm.Description, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+            <TextBox x:Uid="WtDescription" Grid.Row="3" Text="{x:Bind ViewModel.CommitForm.Description, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                      AcceptsReturn="True" TextWrapping="Wrap" MinHeight="64" MaxHeight="180"
                      FontSize="{ThemeResource VigoFontSize13}" Padding="10,6" ScrollViewer.VerticalScrollBarVisibility="Auto"
                      CornerRadius="{StaticResource VigoRadiusControl}" />
 
-            <StackPanel Grid.Row="3" Orientation="Horizontal" Spacing="14">
-                <CheckBox x:Uid="WtAmend" MinWidth="0" MinHeight="24" FontSize="{ThemeResource VigoFontSize12}" Padding="6,0,0,0" VerticalContentAlignment="Center"
-                          IsChecked="{x:Bind ViewModel.CommitForm.IsAmend, Mode=TwoWay}" IsEnabled="{x:Bind ViewModel.CommitForm.CanAmend, Mode=OneWay}" />
-                <TextBlock Text="{x:Bind ViewModel.CommitForm.ProfileLabel, Mode=OneWay}" FontSize="{ThemeResource VigoFontSize12}" VerticalAlignment="Center"
-                           Foreground="{ThemeResource VigoText3Brush}" Visibility="{x:Bind ViewModel.CommitForm.HasProfile, Mode=OneWay}"
-                           ToolTipService.ToolTip="{x:Bind ViewModel.CommitForm.ProfileIdentity, Mode=OneWay}" />
-                <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center"
-                            Visibility="{x:Bind ViewModel.CommitForm.IsSigned, Mode=OneWay}">
-                    <FontIcon Style="{StaticResource VigoIcon}" FontSize="14" Foreground="{ThemeResource VigoSuccessBrush}"
-                              Glyph="{x:Bind controls:FluentIcons.ShieldKeyhole}" />
-                    <TextBlock Text="{x:Bind ViewModel.CommitForm.SigningLabel, Mode=OneWay}" FontSize="{ThemeResource VigoFontSize12}" Foreground="{ThemeResource VigoText2Brush}" />
-                </StackPanel>
-            </StackPanel>
+            <CheckBox x:Uid="WtPushAfter" Grid.Row="4" MinWidth="0" MinHeight="24" FontSize="{ThemeResource VigoFontSize12}" Padding="6,0,0,0" VerticalContentAlignment="Center"
+                      IsChecked="{x:Bind ViewModel.CommitForm.PushAfter, Mode=TwoWay}" IsEnabled="{x:Bind ViewModel.CommitForm.CanPush, Mode=OneWay}" />
 
-            <Grid Grid.Row="4" Height="32">
+            <Grid Grid.Row="5" Height="32">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="1" />
@@ -383,7 +388,12 @@
                         Command="{x:Bind ViewModel.CommitForm.CommitCommand}"
                         ToolTipService.ToolTip="{x:Bind ViewModel.CommitForm.CommitTooltip, Mode=OneWay}"
                         AutomationProperties.Name="{x:Bind ViewModel.CommitForm.CommitLabel, Mode=OneWay}">
-                    <TextBlock Text="{x:Bind ViewModel.CommitForm.CommitLabel, Mode=OneWay}" TextTrimming="CharacterEllipsis" FontSize="{ThemeResource VigoFontSize13}" />
+                    <!-- A ring turns while the commit, then the push, run: the label says which. -->
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <ProgressRing Width="14" Height="14" MinWidth="14" MinHeight="14" IsActive="{x:Bind ViewModel.CommitForm.IsWorking, Mode=OneWay}"
+                                      Visibility="{x:Bind ViewModel.CommitForm.IsWorking, Mode=OneWay}" />
+                        <TextBlock Text="{x:Bind ViewModel.CommitForm.CommitLabel, Mode=OneWay}" TextTrimming="CharacterEllipsis" FontSize="{ThemeResource VigoFontSize13}" />
+                    </StackPanel>
                 </Button>
                 <Border Grid.Column="1" Background="{ThemeResource VigoStrokeBrush}" />
                 <Button x:Uid="WtCommitMore" Grid.Column="2" Style="{StaticResource VigoAccentButton}" Height="32" Width="30" Padding="0" CornerRadius="0,4,4,0"
@@ -391,7 +401,7 @@
                     <FontIcon Style="{StaticResource VigoIcon}" FontSize="12" Glyph="{x:Bind controls:FluentIcons.ChevronDown}" />
                     <Button.Flyout>
                         <MenuFlyout Placement="TopEdgeAlignedRight">
-                            <MenuFlyoutItem x:Uid="WtMenuCommit" Command="{x:Bind ViewModel.CommitForm.CommitCommand}">
+                            <MenuFlyoutItem x:Uid="WtMenuCommit" Command="{x:Bind ViewModel.CommitForm.CommitOnlyCommand}">
                                 <MenuFlyoutItem.Icon>
                                     <FontIcon Glyph="{x:Bind controls:FluentIcons.Checkmark}" FontFamily="{StaticResource VigoIconFont}" />
                                 </MenuFlyoutItem.Icon>

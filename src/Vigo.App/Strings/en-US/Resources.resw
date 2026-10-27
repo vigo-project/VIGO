@@ -79,7 +79,11 @@
   <data name="CommitForm.CommitFailed" xml:space="preserve"><value>Could not commit</value></data>
   <data name="CommitForm.CommitMerge" xml:space="preserve"><value>Commit the merge</value></data>
   <data name="CommitForm.CommitMergeOn" xml:space="preserve"><value>Commit the merge on {0}</value></data>
-  <data name="CommitForm.CommitOnBranch" xml:space="preserve"><value>Commit {0} on {1}</value></data>
+  <data name="CommitForm.CommitFiles" xml:space="preserve"><value>Commit {0}</value></data>
+  <data name="CommitForm.AndPush" xml:space="preserve"><value>{0} and push</value></data>
+  <data name="CommitForm.Committing" xml:space="preserve"><value>Committing…</value></data>
+  <data name="CommitForm.Amending" xml:space="preserve"><value>Amending…</value></data>
+  <data name="CommitForm.Pushing" xml:space="preserve"><value>Pushing…</value></data>
   <data name="CommitForm.CommittedTitle" xml:space="preserve"><value>Commit {0} created</value></data>
   <data name="CommitForm.FilesMany" xml:space="preserve"><value>{0} files</value></data>
   <data name="CommitForm.FilesOne" xml:space="preserve"><value>1 file</value></data>
@@ -1196,6 +1200,8 @@ Stored by Git LFS (declared in {1}).</value></data>
   <data name="Worktree.Remove.Message" xml:space="preserve"><value>The folder {0} will be deleted. {1}</value></data>
   <data name="Worktree.Remove.Title" xml:space="preserve"><value>Remove worktree {0}?</value></data>
   <data name="WtAmend.Content" xml:space="preserve"><value>Amend</value></data>
+  <data name="WtPushAfter.Content" xml:space="preserve"><value>Push after committing</value></data>
+  <data name="WtPushAfter.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>The button commits, then pushes the branch</value></data>
   <data name="WtAmend.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Modify the last commit (amend)</value></data>
   <data name="WtCommitMore.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Other ways to commit</value></data>
   <data name="WtCommitMore.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Commit and push…</value></data>
@@ -1213,7 +1219,7 @@ Stored by Git LFS (declared in {1}).</value></data>
   <data name="WtGroupStaged.Text" xml:space="preserve"><value>Staged</value></data>
   <data name="WtGroupUnstaged.Text" xml:space="preserve"><value>Unstaged</value></data>
   <data name="WtMenuCommit.KeyboardAcceleratorTextOverride" xml:space="preserve"><value>Ctrl+Enter</value></data>
-  <data name="WtMenuCommit.Text" xml:space="preserve"><value>Commit</value></data>
+  <data name="WtMenuCommit.Text" xml:space="preserve"><value>Commit without pushing</value></data>
   <data name="WtMenuCommitPush.KeyboardAcceleratorTextOverride" xml:space="preserve"><value>Ctrl+Shift+Enter</value></data>
   <data name="WtMenuCommitPush.Text" xml:space="preserve"><value>Commit and push</value></data>
   <data name="WtMenuNoVerify.Text" xml:space="preserve"><value>Commit with --no-verify</value></data>

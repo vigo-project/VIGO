@@ -1,4 +1,6 @@
-## Unreleased
+## 0.30.0 — 2026-10-27
+- Formulaire de commit : un loader tourne sur le bouton pendant la validation puis l'envoi (« Validation en cours… », « Envoi en cours… »).
+- Formulaire de commit : la ligne Amend / profil / signature passe au-dessus du message, une case « Pousser après la validation » est ajoutée, et le bouton s'intitule « Valider X fichiers » ou « Valider X fichiers et pousser ».
 - Profils Git : un profil porte désormais toute la signature des commits et des tags ; la config Git globale n'est utilisée que sans profil. Un profil sans clé ne signe plus, même si la config globale l'impose (fin de l'erreur « gpg failed to sign the data »). Si vos commits étaient signés par la config globale, activez la signature dans votre profil.
 - Préférences › Profils : le bouton « Créer depuis la config Git » crée un profil à partir de votre config globale (identité, clé et format de signature).
 

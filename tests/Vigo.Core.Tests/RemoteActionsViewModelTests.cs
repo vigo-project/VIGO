@@ -183,6 +183,44 @@ public sealed class RemoteActionsViewModelTests : IDisposable
     }
 
     [Fact]
+    public async Task The_push_after_committing_box_makes_the_button_push_and_a_loader_follows_the_phases()
+    {
+        using var tab = await OpenAsync();
+        _mine.WriteFile("b.txt", "b\n").Stage("b.txt");
+        await tab.WorkingTree.RefreshAsync();
+        var form = tab.WorkingTree.CommitForm;
+        form.Summary = "Add b";
+        var phases = new List<CommitPhase>();
+        form.PropertyChanged += (_, e) => { if (e.PropertyName == nameof(CommitFormViewModel.Phase)) phases.Add(form.Phase); };
+        Assert.True(form.CanPush);
+        Assert.Equal("Valider 1 fichier", form.CommitLabel);
+
+        form.PushAfter = true;
+        Assert.Equal("Valider 1 fichier et pousser", form.CommitLabel);
+        await form.CommitCommand.ExecuteAsync(null);
+
+        Assert.Equal(_mine.Head(), RemoteHead());
+        Assert.Equal([CommitPhase.Committing, CommitPhase.Pushing, CommitPhase.None], phases);
+        Assert.False(form.IsWorking);
+    }
+
+    [Fact]
+    public async Task Without_the_box_the_button_only_commits()
+    {
+        using var tab = await OpenAsync();
+        _mine.WriteFile("b.txt", "b\n").Stage("b.txt");
+        await tab.WorkingTree.RefreshAsync();
+        var form = tab.WorkingTree.CommitForm;
+        form.Summary = "Add b";
+        var remoteBefore = RemoteHead();
+
+        await form.CommitCommand.ExecuteAsync(null);
+
+        Assert.Equal(remoteBefore, RemoteHead());
+        Assert.NotEqual(_mine.Head(), RemoteHead());
+    }
+
+    [Fact]
     public async Task Detached_HEAD_cannot_pull_nor_push()
     {
         _mine.Git("checkout", "--quiet", "--detach");

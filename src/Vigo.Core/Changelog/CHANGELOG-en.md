@@ -1,4 +1,6 @@
-## Unreleased
+## 0.30.0 — 2026-10-27
+- Commit form: a loader spins on the button while committing, then pushing ("Committing…", "Pushing…").
+- Commit form: the amend / profile / signing row moves above the message, a "Push after committing" box is added, and the button reads "Commit X files" or "Commit X files and push".
 - Git profiles: a profile now carries all the signing of commits and tags; the global Git config is only used without a profile. A profile without a key no longer signs, even when the global config requires it (no more "gpg failed to sign the data"). If your commits were signed by the global config, turn signing on in your profile.
 - Preferences › Profiles: the "Create from the Git config" button creates a profile from your global config (identity, signing key and format).
 

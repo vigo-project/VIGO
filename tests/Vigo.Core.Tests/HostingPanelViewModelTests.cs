@@ -41,6 +41,9 @@ public sealed class HostingPanelViewModelTests : IDisposable
         await tab.LoadAsync();
         await tab.RefActions.LoadRemotesAsync();
         await tab.Hosting.RefreshAsync();
+        // Opening the tab starts refreshes of its own (remotes loaded, refs changed) that cancel each other: the awaited one may
+        // have been cancelled, its replacement still running. Wait for it, or it would overwrite what a test does next.
+        await WaitUntilAsync(() => tab.Hosting.State != HostingState.Loading);
         return tab;
     }
 

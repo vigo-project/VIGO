@@ -21,6 +21,14 @@ public enum SummaryLengthLevel
     Danger,
 }
 
+/// <summary>What the commit form is busy with (the button shows a loader).</summary>
+public enum CommitPhase
+{
+    None,
+    Committing,
+    Pushing,
+}
+
 /// <summary>
 /// Commit form at the bottom of the working directory panel (mockup: showWip): summary with its 50 / 72 counter,
 /// description, amend, signing indicator, "Valider N fichiers sur branche".
@@ -66,7 +74,7 @@ public sealed partial class CommitFormViewModel : ObservableObject, IDisposable
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(SummaryLengthText), nameof(SummaryLengthLevel), nameof(CanCommit), nameof(CommitTooltip))]
-    [NotifyCanExecuteChangedFor(nameof(CommitCommand), nameof(CommitSkippingHooksCommand), nameof(CommitAndPushCommand))]
+    [NotifyCanExecuteChangedFor(nameof(CommitCommand), nameof(CommitOnlyCommand), nameof(CommitSkippingHooksCommand), nameof(CommitAndPushCommand))]
     public partial string Summary { get; set; } = string.Empty;
 
     [ObservableProperty]
@@ -75,7 +83,7 @@ public sealed partial class CommitFormViewModel : ObservableObject, IDisposable
     /// <summary>Replace the HEAD commit instead of creating a new one.</summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CanCommit), nameof(CommitLabel), nameof(CommitTooltip))]
-    [NotifyCanExecuteChangedFor(nameof(CommitCommand), nameof(CommitSkippingHooksCommand), nameof(CommitAndPushCommand))]
+    [NotifyCanExecuteChangedFor(nameof(CommitCommand), nameof(CommitOnlyCommand), nameof(CommitSkippingHooksCommand), nameof(CommitAndPushCommand))]
     public partial bool IsAmend { get; set; }
 
     /// <summary>"Signé GPG", "Signé SSH"…: commits are signed according to the config; null when they are not.</summary>
@@ -141,7 +149,9 @@ public sealed partial class CommitFormViewModel : ObservableObject, IDisposable
     private bool IsRebasing => _tree.Status?.Operation is { Kind: RepositoryOperationKind.Rebase, IsEditStop: false };
 
     /// <summary>Summary given, no conflict, something staged (or amending, or concluding a merge), no operation running.</summary>
-    public bool CanCommit =>
+    public bool CanCommit => Phase == CommitPhase.None && ReadyToCommit;
+
+    private bool ReadyToCommit =>
         !_tree.Actions.IsBusy
         && _tree.Status is not null
         && ConflictCount == 0
@@ -152,30 +162,54 @@ public sealed partial class CommitFormViewModel : ObservableObject, IDisposable
     /// <summary>Push run by "Valider et pousser" after a successful commit (set by the repository tab).</summary>
     public Func<Task>? PushAfterCommit { get; set; }
 
-    /// <summary>Commit possible and a branch is checked out (a detached HEAD cannot be pushed).</summary>
-    public bool CanCommitAndPush => CanCommit && PushAfterCommit is not null && _tree.Status?.Branch is not null;
+    /// <summary>A branch is checked out and the push is wired (a detached HEAD cannot be pushed): the "push after committing" box is enabled.</summary>
+    public bool CanPush => PushAfterCommit is not null && _tree.Status?.Branch is not null;
+
+    /// <summary>Commit possible and pushable.</summary>
+    public bool CanCommitAndPush => CanCommit && CanPush;
+
+    /// <summary>"Pousser après la validation": the commit button (and Ctrl+Enter) also pushes.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CommitLabel))]
+    public partial bool PushAfter { get; set; }
+
+    /// <summary>What the form is busy with, shown as a loader on the button: the commit, then the push.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsWorking), nameof(CanCommit), nameof(CommitLabel), nameof(CommitTooltip))]
+    [NotifyCanExecuteChangedFor(nameof(CommitCommand), nameof(CommitOnlyCommand), nameof(CommitSkippingHooksCommand), nameof(CommitAndPushCommand))]
+    public partial CommitPhase Phase { get; private set; }
+
+    public bool IsWorking => Phase != CommitPhase.None;
 
     /// <summary>Label of the commit button (mockup).</summary>
     public string CommitLabel
     {
         get
         {
+            // The loader of the button says what is running (the amend flag is reset once the commit is created).
+            if (Phase == CommitPhase.Committing)
+                return Loc.Get(IsAmend ? "CommitForm.Amending" : "CommitForm.Committing");
+            if (Phase == CommitPhase.Pushing)
+                return Loc.Get("CommitForm.Pushing");
             // The operation banner says what is left to do in a rebase, conflicts included.
             if (IsRebasing)
                 return Loc.Get("CommitForm.Rebasing");
             if (ConflictCount > 0)
                 return ConflictCount == 1 ? Loc.Get("CommitForm.ResolveOne") : Loc.Format("CommitForm.ResolveMany", ConflictCount.ToString("N0", CultureInfo.CurrentCulture));
             if (IsConcluding && !IsAmend)
-                return _tree.Status?.Branch is { } target ? Loc.Format("CommitForm.CommitMergeOn", target) : Loc.Get("CommitForm.CommitMerge");
+                return WithPush(_tree.Status?.Branch is { } target ? Loc.Format("CommitForm.CommitMergeOn", target) : Loc.Get("CommitForm.CommitMerge"));
             if (IsAmend && _tree.Status?.Head is { } head)
-                return Loc.Format("CommitForm.AmendLabel", head.ToShortString());
+                return WithPush(Loc.Format("CommitForm.AmendLabel", head.ToShortString()));
             if (StagedCount == 0)
                 return Loc.Get("CommitForm.NothingStaged");
 
             var files = StagedCount == 1 ? Loc.Get("CommitForm.FilesOne") : Loc.Format("CommitForm.FilesMany", StagedCount.ToString("N0", CultureInfo.CurrentCulture));
-            return _tree.Status?.Branch is { } branch ? Loc.Format("CommitForm.CommitOnBranch", files, branch) : Loc.Format("CommitForm.CommitDetached", files);
+            return _tree.Status?.Branch is null ? Loc.Format("CommitForm.CommitDetached", files) : WithPush(Loc.Format("CommitForm.CommitFiles", files));
         }
     }
+
+    /// <summary>"… et pousser" when the box is checked and the push is possible.</summary>
+    private string WithPush(string label) => PushAfter && CanPush ? Loc.Format("CommitForm.AndPush", label) : label;
 
     /// <summary>Why the button is disabled, or what it does.</summary>
     public string CommitTooltip =>
@@ -269,23 +303,43 @@ public sealed partial class CommitFormViewModel : ObservableObject, IDisposable
         _tree.Actions.PropertyChanged -= OnActionsPropertyChanged;
     }
 
+    /// <summary>The commit button (Ctrl+Enter): pushes too when "Pousser après la validation" is checked.</summary>
     [RelayCommand(CanExecute = nameof(CanCommit))]
-    private async Task CommitAsync() => await RunCommitAsync(skipHooks: false);
+    private Task CommitAsync() => CommitThenPushAsync(skipHooks: false, push: PushAfter);
+
+    /// <summary>"Valider" of the menu: the commit alone, whatever the box says.</summary>
+    [RelayCommand(CanExecute = nameof(CanCommit))]
+    private Task CommitOnlyAsync() => CommitThenPushAsync(skipHooks: false, push: false);
 
     /// <summary>"Valider avec --no-verify": the pre-commit and commit-msg hooks are skipped.</summary>
     [RelayCommand(CanExecute = nameof(CanCommit))]
-    private async Task CommitSkippingHooksAsync() => await RunCommitAsync(skipHooks: true);
+    private Task CommitSkippingHooksAsync() => CommitThenPushAsync(skipHooks: true, push: PushAfter);
 
     /// <summary>"Valider et pousser" (Ctrl+Maj+Entrée): pushes once the commit is created.</summary>
     [RelayCommand(CanExecute = nameof(CanCommitAndPush))]
-    private async Task CommitAndPushAsync()
+    private Task CommitAndPushAsync() => CommitThenPushAsync(skipHooks: false, push: true);
+
+    /// <summary>The commit, then the push when asked and possible; <see cref="Phase"/> drives the loader of the button.</summary>
+    private async Task CommitThenPushAsync(bool skipHooks, bool push)
     {
-        if (CanCommitAndPush && await RunCommitAsync(skipHooks: false) && PushAfterCommit is { } push) await push();
+        if (!CanCommit) return;
+        var pushes = push && CanPush;
+        Phase = CommitPhase.Committing;
+        try
+        {
+            if (!await RunCommitAsync(skipHooks) || !pushes || PushAfterCommit is not { } pushNow) return;
+            Phase = CommitPhase.Pushing;
+            await pushNow();
+        }
+        finally
+        {
+            Phase = CommitPhase.None;
+        }
     }
 
     private async Task<bool> RunCommitAsync(bool skipHooks)
     {
-        if (!CanCommit || _tree.Status is not { } status) return false;
+        if (!ReadyToCommit || _tree.Status is not { } status) return false;
 
         var amend = IsAmend;
         if (amend && status is { Upstream: { } upstream, Ahead: 0, Head: { } head })
@@ -404,9 +458,11 @@ public sealed partial class CommitFormViewModel : ObservableObject, IDisposable
     {
         OnPropertyChanged(nameof(CanAmend));
         OnPropertyChanged(nameof(CanCommit));
+        OnPropertyChanged(nameof(CanPush));
         OnPropertyChanged(nameof(CommitLabel));
         OnPropertyChanged(nameof(CommitTooltip));
         CommitCommand.NotifyCanExecuteChanged();
+        CommitOnlyCommand.NotifyCanExecuteChanged();
         CommitSkippingHooksCommand.NotifyCanExecuteChanged();
         CommitAndPushCommand.NotifyCanExecuteChanged();
         NotifyGenerateChanged();

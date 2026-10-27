@@ -79,7 +79,11 @@
   <data name="CommitForm.CommitFailed" xml:space="preserve"><value>Impossible de valider</value></data>
   <data name="CommitForm.CommitMerge" xml:space="preserve"><value>Valider la fusion</value></data>
   <data name="CommitForm.CommitMergeOn" xml:space="preserve"><value>Valider la fusion sur {0}</value></data>
-  <data name="CommitForm.CommitOnBranch" xml:space="preserve"><value>Valider {0} sur {1}</value></data>
+  <data name="CommitForm.CommitFiles" xml:space="preserve"><value>Valider {0}</value></data>
+  <data name="CommitForm.AndPush" xml:space="preserve"><value>{0} et pousser</value></data>
+  <data name="CommitForm.Committing" xml:space="preserve"><value>Validation en cours…</value></data>
+  <data name="CommitForm.Amending" xml:space="preserve"><value>Modification en cours…</value></data>
+  <data name="CommitForm.Pushing" xml:space="preserve"><value>Envoi en cours…</value></data>
   <data name="CommitForm.CommittedTitle" xml:space="preserve"><value>Commit {0} créé</value></data>
   <data name="CommitForm.FilesMany" xml:space="preserve"><value>{0} fichiers</value></data>
   <data name="CommitForm.FilesOne" xml:space="preserve"><value>1 fichier</value></data>
@@ -1196,6 +1200,8 @@ Stocké par Git LFS (déclaré dans {1}).</value></data>
   <data name="Worktree.Remove.Message" xml:space="preserve"><value>Le dossier {0} sera supprimé. {1}</value></data>
   <data name="Worktree.Remove.Title" xml:space="preserve"><value>Supprimer le worktree {0} ?</value></data>
   <data name="WtAmend.Content" xml:space="preserve"><value>Amend</value></data>
+  <data name="WtPushAfter.Content" xml:space="preserve"><value>Pousser après la validation</value></data>
+  <data name="WtPushAfter.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Le bouton valide puis pousse la branche</value></data>
   <data name="WtAmend.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Modifier le dernier commit (amend)</value></data>
   <data name="WtCommitMore.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Autres façons de valider</value></data>
   <data name="WtCommitMore.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Valider et pousser…</value></data>
@@ -1213,7 +1219,7 @@ Stocké par Git LFS (déclaré dans {1}).</value></data>
   <data name="WtGroupStaged.Text" xml:space="preserve"><value>Indexés</value></data>
   <data name="WtGroupUnstaged.Text" xml:space="preserve"><value>Non indexés</value></data>
   <data name="WtMenuCommit.KeyboardAcceleratorTextOverride" xml:space="preserve"><value>Ctrl+Entrée</value></data>
-  <data name="WtMenuCommit.Text" xml:space="preserve"><value>Valider</value></data>
+  <data name="WtMenuCommit.Text" xml:space="preserve"><value>Valider sans pousser</value></data>
   <data name="WtMenuCommitPush.KeyboardAcceleratorTextOverride" xml:space="preserve"><value>Ctrl+Maj+Entrée</value></data>
   <data name="WtMenuCommitPush.Text" xml:space="preserve"><value>Valider et pousser</value></data>
   <data name="WtMenuNoVerify.Text" xml:space="preserve"><value>Valider avec --no-verify</value></data>

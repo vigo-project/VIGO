@@ -34,7 +34,7 @@ public sealed class CommitFormViewModelTests
         await tab.LoadAsync();
         var form = tab.WorkingTree.CommitForm;
 
-        Assert.Equal("Valider 1 fichier sur main", form.CommitLabel);
+        Assert.Equal("Valider 1 fichier", form.CommitLabel);
         Assert.False(form.CanCommit);
         form.Summary = "Change a";
         form.Description = "Why\r\nit matters";
