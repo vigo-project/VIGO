@@ -222,6 +222,22 @@ public sealed partial class PullRequestViewModel : HostedDiscussionViewModel, ID
         ArrangeFiles();
     }
 
+    /// <summary>Collapses every folder of the tree.</summary>
+    [RelayCommand]
+    private void CollapseAllFolders()
+    {
+        _collapsed.UnionWith(FileListLayout.FolderPaths(Files));
+        ArrangeFiles();
+    }
+
+    /// <summary>Expands every folder of the tree.</summary>
+    [RelayCommand]
+    private void ExpandAllFolders()
+    {
+        _collapsed.Clear();
+        ArrangeFiles();
+    }
+
     private void ArrangeFiles() => FileListLayout.Sync(FileRows, FileListLayout.Arrange(Files, ShowAsTree, _collapsed));
 
     /// <summary>Thread the editor must scroll to once it shows it (set by <see cref="OpenThread"/>); null when none was asked.</summary>
@@ -916,6 +932,7 @@ public sealed partial class PullRequestViewModel : HostedDiscussionViewModel, ID
         OnPropertyChanged(nameof(HasLabels));
         _sidesLoading?.Cancel();
         _diffComputing?.Cancel();
+        _statsComputing?.Cancel();
         _fullSides.Clear();
         SelectedFile = null;
         Diff = null;
@@ -944,6 +961,7 @@ public sealed partial class PullRequestViewModel : HostedDiscussionViewModel, ID
 
         ArrangeFiles();
         SelectedFile = Files.FirstOrDefault();
+        if (Accounts is not null && Hosting.Repository is { } hosted && Accounts.ComputesPullRequestDiffs(hosted.Provider)) _ = ComputeAllStatsAsync();
     }
 
     private void ShowDiff(PullRequestFileRow? row)
@@ -1035,6 +1053,31 @@ public sealed partial class PullRequestViewModel : HostedDiscussionViewModel, ID
         catch (FormatException)
         {
             DiffMessage = Loc.Get("Pr.Diff.ComputedUnreadable");
+        }
+    }
+
+    private CancellationTokenSource? _statsComputing;
+
+    // Azure DevOps gives no counts: they are computed for every file in the background, one file at a time, so that the list
+    // does not show "+0" until each file is opened. The versions are not kept (memory); a failure leaves the file at +0.
+    private async Task ComputeAllStatsAsync()
+    {
+        _statsComputing?.Cancel();
+        var source = _statsComputing = CancellationTokenSource.CreateLinkedTokenSource(Lifetime);
+        if (Accounts is null || Repository is not { } repository || Pull is not { } pull) return;
+
+        foreach (var row in Files.ToList())
+        {
+            if (source.IsCancellationRequested) return;
+            if (row.HasStats || row.File.Patch is not null) continue;
+            var result = await Accounts.GetPullRequestFileSidesAsync(repository, pull, row.File, ProfileId?.Invoke(), source.Token);
+            if (source.IsCancellationRequested) return;
+            if (result.Value is not Success<DiffSides> { Value: var sides }) continue;
+            var compared = await Task.Run(() => TextDiff.Compare(sides.Original, sides.Modified), CancellationToken.None);
+            if (source.IsCancellationRequested) return;
+            if (compared is null || row.HasStats) continue;
+            row.SetStats(compared.Additions, compared.Deletions);
+            OnPropertyChanged(nameof(TotalsText));
         }
     }
 

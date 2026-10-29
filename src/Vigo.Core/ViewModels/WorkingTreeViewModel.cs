@@ -562,6 +562,28 @@ public sealed partial class WorkingTreeViewModel : ObservableObject, IDisposable
         return desired;
     }
 
+    /// <summary>Collapses every folder of the tree, in one group.</summary>
+    [RelayCommand]
+    private void CollapseAllFolders(FileGroup group)
+    {
+        var (collapsed, files) = group switch
+        {
+            FileGroup.Conflicted => (_collapsedConflicted, Conflicted),
+            FileGroup.Unstaged => (_collapsedUnstaged, Unstaged),
+            _ => (_collapsedStaged, Staged),
+        };
+        collapsed.UnionWith(FileListLayout.FolderPaths(files));
+        ArrangeFiles();
+    }
+
+    /// <summary>Expands every folder of the tree, in one group.</summary>
+    [RelayCommand]
+    private void ExpandAllFolders(FileGroup group)
+    {
+        (group switch { FileGroup.Conflicted => _collapsedConflicted, FileGroup.Unstaged => _collapsedUnstaged, _ => _collapsedStaged }).Clear();
+        ArrangeFiles();
+    }
+
     private void ArrangeFiles()
     {
         FileListLayout.Sync(ConflictedRows, Arranged(Conflicted, _collapsedConflicted, FileGroup.Conflicted));

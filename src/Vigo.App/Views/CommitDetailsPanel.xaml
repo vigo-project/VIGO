@@ -237,6 +237,7 @@
                             </StackPanel>
                             <controls:FileListModeSwitch x:Name="FilesModeSwitch" Grid.Column="2" VerticalAlignment="Center" />
                         </Grid>
+                        <controls:FolderToggleBar Rows="{x:Bind ViewModel.FileRows}" ToggleRequested="OnToggleFolders" />
                         <ItemsRepeater ItemsSource="{x:Bind ViewModel.FileRows}" ItemTemplate="{StaticResource FileRowSelector}" Margin="-6,0" />
                     </StackPanel>
                 </StackPanel>

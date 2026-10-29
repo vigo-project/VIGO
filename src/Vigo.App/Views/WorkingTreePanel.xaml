@@ -271,6 +271,7 @@
                             <Run Text="{x:Bind ViewModel.ConflictedCount, Mode=OneWay}" FontWeight="Normal" Foreground="{ThemeResource VigoText3Brush}" />
                         </TextBlock>
                     </Grid>
+                    <controls:FolderToggleBar Rows="{x:Bind ViewModel.ConflictedRows}" ToggleRequested="OnToggleConflictedFolders" />
                     <ItemsRepeater ItemsSource="{x:Bind ViewModel.ConflictedRows}" ItemTemplate="{StaticResource FileRowSelector}" />
                 </StackPanel>
 
@@ -282,6 +283,7 @@
                     <Button x:Uid="WtStageAll" Style="{StaticResource GroupButton}" HorizontalAlignment="Right" Command="{x:Bind ViewModel.StageAllCommand}"
                             Visibility="{x:Bind views:WorkingTreePanel.Collapsed(ViewModel.IsUnstagedEmpty), Mode=OneWay}" />
                 </Grid>
+                <controls:FolderToggleBar Rows="{x:Bind ViewModel.UnstagedRows}" ToggleRequested="OnToggleUnstagedFolders" />
                 <ItemsRepeater ItemsSource="{x:Bind ViewModel.UnstagedRows}" ItemTemplate="{StaticResource FileRowSelector}" />
                 <TextBlock x:Uid="WtUnstagedEmpty" Style="{StaticResource EmptyText}"
                            Visibility="{x:Bind ViewModel.IsUnstagedEmpty, Mode=OneWay}" />
@@ -294,6 +296,7 @@
                     <Button x:Uid="WtUnstageAll" Style="{StaticResource GroupButton}" HorizontalAlignment="Right" Command="{x:Bind ViewModel.UnstageAllCommand}"
                             Visibility="{x:Bind views:WorkingTreePanel.Collapsed(ViewModel.IsStagedEmpty), Mode=OneWay}" />
                 </Grid>
+                <controls:FolderToggleBar Rows="{x:Bind ViewModel.StagedRows}" ToggleRequested="OnToggleStagedFolders" />
                 <ItemsRepeater ItemsSource="{x:Bind ViewModel.StagedRows}" ItemTemplate="{StaticResource FileRowSelector}" />
                 <TextBlock x:Uid="WtStagedEmpty" Style="{StaticResource EmptyText}"
                            Visibility="{x:Bind ViewModel.IsStagedEmpty, Mode=OneWay}" />

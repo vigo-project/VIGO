@@ -13,6 +13,23 @@ public sealed partial class GitService
 
     private Task<bool?>? _mergeTreeSupported;
 
+    /// <summary><c>git merge-file --object-id</c> appeared in git 2.43 (<c>--zdiff3</c> in 2.35).</summary>
+    private static readonly Version MergeFileObjectIdVersion = new(2, 43);
+
+    private Task<Version?>? _gitVersion;
+
+    private Task<Version?> ReadGitVersionAsync(CancellationToken cancellationToken) => _gitVersion ??= ParseGitVersionAsync(cancellationToken);
+
+    private async Task<Version?> ParseGitVersionAsync(CancellationToken cancellationToken)
+    {
+        var version = await GetGitVersionAsync(cancellationToken);
+        return version.Value is Success<string> { Value: var text } && TryParseVersion(text, out var parsed) ? parsed : null;
+    }
+
+    /// <summary>The installed git is known to be older than 2.43: conflicts are read from temporary files.</summary>
+    private async Task<bool> IsLegacyMergeFileAsync(CancellationToken cancellationToken) =>
+        await ReadGitVersionAsync(cancellationToken) is { } version && version < MergeFileObjectIdVersion;
+
     public async Task<GitResult<ConflictTarget>> GetConflictTargetAsync(string repositoryPath, CancellationToken cancellationToken = default)
     {
         var branch = await ReadOptionalAsync(repositoryPath, ["symbolic-ref", "--quiet", "--short", "HEAD"], cancellationToken);

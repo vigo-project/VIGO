@@ -477,6 +477,7 @@
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
                         <Grid Height="32" Padding="12,0,8,0" ColumnSpacing="8">
@@ -488,7 +489,8 @@
                                        Foreground="{ThemeResource VigoText2Brush}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
                             <controls:FileListModeSwitch x:Name="FilesModeSwitch" Grid.Column="1" VerticalAlignment="Center" />
                         </Grid>
-                        <ListView x:Name="FileList" x:Uid="PrFileList" Grid.Row="1" SelectionMode="Single" Padding="0,0,0,6" ItemsSource="{x:Bind ViewModel.FileRows, Mode=OneWay}"
+                        <controls:FolderToggleBar Grid.Row="1" Rows="{x:Bind ViewModel.FileRows, Mode=OneWay}" ToggleRequested="OnToggleFolders" />
+                        <ListView x:Name="FileList" x:Uid="PrFileList" Grid.Row="2" SelectionMode="Single" Padding="0,0,0,6" ItemsSource="{x:Bind ViewModel.FileRows, Mode=OneWay}"
                                   ItemTemplateSelector="{StaticResource PullRequestFileSelector}"
                                   ItemContainerStyle="{StaticResource PullRequestRowContainer}" SelectionChanged="OnFileSelectionChanged"
                                   ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.HorizontalScrollMode="Disabled" />

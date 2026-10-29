@@ -44,6 +44,16 @@ public sealed class FileListLayoutTests
     }
 
     [Fact]
+    public void Collapsing_every_folder_path_leaves_only_the_top_level_rows()
+    {
+        var files = Files("src/App/Views/a.cs", "src/b.cs", "docs/c.md", "d.txt");
+        var collapsed = FileListLayout.FolderPaths(files).ToHashSet();
+
+        Assert.Equal(["docs", "src", "src/App", "src/App/Views"], collapsed.Order());
+        Assert.Equal(["docs/@0", "src/@0", "d.txt@0"], Describe(FileListLayout.Arrange(files, asTree: true, collapsed)));
+    }
+
+    [Fact]
     public void Collapsed_folder_hides_its_files_and_keeps_its_count()
     {
         var rows = FileListLayout.Arrange(Files("src/App/a.cs", "src/b.cs", "c.txt"), asTree: true, new HashSet<string> { "src" });

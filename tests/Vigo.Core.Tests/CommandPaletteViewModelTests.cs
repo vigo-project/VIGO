@@ -122,6 +122,26 @@ public sealed class CommandPaletteViewModelTests
     }
 
     [Fact]
+    public async Task The_last_three_commands_run_come_first_without_a_query_and_are_not_repeated()
+    {
+        var source = new FakeSource(
+            Entry(PaletteGroup.Commands, "A"), Entry(PaletteGroup.Commands, "B"), Entry(PaletteGroup.Commands, "C"),
+            Entry(PaletteGroup.Commands, "D"), Entry(PaletteGroup.Commands, "E"));
+        var recent = new List<string>();
+        foreach (var label in new[] { "A", "B", "C", "D", "B" })
+        {
+            var palette = new CommandPaletteViewModel(source, recent: recent);
+            await palette.RunAsync(palette.Items.First(i => i.Entry.Label == label));
+        }
+
+        var sut = new CommandPaletteViewModel(source, recent: recent);
+
+        Assert.Equal(["B", "D", "C", "A", "E"], Labels(sut));
+        Assert.Equal(PaletteGroup.Recent, sut.Items[0].Entry.Group);
+        Assert.Equal(["A", "E"], Labels(new CommandPaletteViewModel(source, "> ", recent)).Where(l => l is "A" or "E"));
+    }
+
+    [Fact]
     public async Task A_repository_tab_offers_its_branches_files_and_commits()
     {
         using var repo = TestRepoBuilder.Create();

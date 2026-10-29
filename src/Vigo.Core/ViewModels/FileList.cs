@@ -125,6 +125,15 @@ public static class FileListLayout
         return rows;
     }
 
+    /// <summary>Every folder that holds a file of <paramref name="files"/>, ancestors included ("a", "a/b"): what "collapse all" collapses.</summary>
+    public static IEnumerable<string> FolderPaths(IEnumerable<FileListRow> files) => files
+        .SelectMany(f =>
+        {
+            var parts = f.Path.Split('/');
+            return Enumerable.Range(1, parts.Length - 1).Select(n => string.Join('/', parts.Take(n)));
+        })
+        .Distinct(StringComparer.Ordinal);
+
     /// <summary>Order of two paths as <see cref="Arrange"/> shows them: in a tree, a folder's subfolders come before its files.</summary>
     public static int Compare(string a, string b, bool asTree)
     {

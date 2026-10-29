@@ -53,6 +53,10 @@ public sealed partial class CommitDetailsPanel : UserControl
         }
     } = null!;
 
+
+    private void OnToggleFolders(object? sender, bool collapse) =>
+        (collapse ? ViewModel.CollapseAllFoldersCommand : ViewModel.ExpandAllFoldersCommand).Execute(null);
+
     /// <summary>Shared layout (description height, Path / Tree mode); set once by the repository view, before loading.</summary>
     public LayoutState? Layout
     {

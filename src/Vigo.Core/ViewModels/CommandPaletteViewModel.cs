@@ -7,6 +7,7 @@ namespace Vigo.Core.ViewModels;
 /// <summary>Groups of the command palette, in display order.</summary>
 public enum PaletteGroup
 {
+    Recent,
     Commands,
     Branches,
     Files,
@@ -62,9 +63,16 @@ public sealed partial class CommandPaletteViewModel : ObservableObject
 
     private readonly IPaletteSource _source;
 
-    public CommandPaletteViewModel(IPaletteSource source, string query = "")
+    // Labels of the last commands run, most recent first; shared by the palettes of a window (the shell owns the list).
+    private readonly List<string> _recent;
+    private const int RecentLimit = 3;
+    private readonly Action? _recentChanged;
+
+    public CommandPaletteViewModel(IPaletteSource source, string query = "", List<string>? recent = null, Action? recentChanged = null)
     {
         _source = source;
+        _recent = recent ?? [];
+        _recentChanged = recentChanged;
         Query = query;
         Refresh();
     }
@@ -116,6 +124,7 @@ public sealed partial class CommandPaletteViewModel : ObservableObject
 
     public Task RunAsync(PaletteItem item)
     {
+        if (item.Entry.Group is PaletteGroup.Commands or PaletteGroup.Recent) Remember(item.Entry.Label);
         if (item.Entry.Picker is { } picker) return PickAsync(picker);
         _pickings++;
         Closed?.Invoke(this, EventArgs.Empty);
@@ -177,12 +186,34 @@ public sealed partial class CommandPaletteViewModel : ObservableObject
         HasNoResult = Items.Count == 0;
     }
 
+    private void Remember(string label)
+    {
+        _recent.Remove(label);
+        _recent.Insert(0, label);
+        if (_recent.Count > RecentLimit) _recent.RemoveRange(RecentLimit, _recent.Count - RecentLimit);
+        _recentChanged?.Invoke();
+    }
+
+    // The recent commands that still exist, as entries of the Recent group.
+    private IEnumerable<PaletteEntry> RecentEntries() =>
+        _recent.Select(label => _source.Entries.FirstOrDefault(e => e.Group == PaletteGroup.Commands && e.Label == label))
+            .OfType<PaletteEntry>().Select(e => e with { Group = PaletteGroup.Recent });
+
+    // Without a query, a recent command is shown once, in the Recent group.
+    private bool HiddenByRecent(PaletteEntry entry, PaletteGroup? scope, string text) =>
+        scope is null && text.Length == 0 && entry.Group == PaletteGroup.Commands && _recent.Contains(entry.Label);
+
     private List<PaletteEntry> Search(PaletteGroup? scope, string text)
     {
         var result = new List<PaletteEntry>();
         foreach (var group in Enum.GetValues<PaletteGroup>())
         {
             if (scope is not null && scope != group) continue;
+            if (group == PaletteGroup.Recent)
+            {
+                if (scope is null && text.Length == 0) result.AddRange(RecentEntries());
+                continue;
+            }
             var limit = scope is not null ? ScopedLimit : group == PaletteGroup.Commands ? int.MaxValue : text.Length == 0 ? BrowseLimit : SearchLimit;
             if (group == PaletteGroup.Commits)
             {
@@ -192,7 +223,7 @@ public sealed partial class CommandPaletteViewModel : ObservableObject
             }
 
             result.AddRange(_source.Entries
-                .Where(e => e.Group == group)
+                .Where(e => e.Group == group && !HiddenByRecent(e, scope, text))
                 .Select((e, index) => (Entry: e, Index: index, Score: Score(e, text)))
                 .Where(x => x.Score >= 0)
                 .OrderBy(x => x.Score)
@@ -276,6 +307,7 @@ public sealed partial class CommandPaletteViewModel : ObservableObject
 
     private static string TitleOf(PaletteGroup group) => group switch
     {
+        PaletteGroup.Recent => Loc.Get("Palette.Group.Recent"),
         PaletteGroup.Commands => Loc.Get("Palette.Group.Commands"),
         PaletteGroup.Branches => Loc.Get("Palette.Group.Branches"),
         PaletteGroup.Files => Loc.Get("Palette.Group.Files"),
