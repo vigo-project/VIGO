@@ -306,6 +306,8 @@ public sealed class PullRequestFileRow(PullRequestFile file, int commentCount) :
 
     public int Deletions => _computed?.Deletions ?? File.Deletions;
 
+    internal bool HasStats => _computed is not null;
+
     internal void SetStats(int additions, int deletions)
     {
         _computed = (additions, deletions);

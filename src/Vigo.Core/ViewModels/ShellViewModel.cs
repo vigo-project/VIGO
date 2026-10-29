@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+﻿using System.Collections.Immutable;
+using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
@@ -78,6 +79,7 @@ public sealed partial class ShellViewModel : ObservableObject
         _inputs = inputs;
         _cloneDialog = cloneDialog;
         _preferences = preferences;
+        _recentCommands = [.. preferences?.Current.RecentPaletteCommands ?? []];
         _sshKeys = sshKeys;
         _accounts = accounts;
         _urlLauncher = urlLauncher;
@@ -227,11 +229,19 @@ public sealed partial class ShellViewModel : ObservableObject
     private Task ToggleDensityAsync() =>
         _preferences?.UpdateAsync(p => p with { Density = p.Density == Density.Compact ? Density.Normal : Density.Compact }) ?? Task.CompletedTask;
 
+    private readonly List<string> _recentCommands;
+
     /// <summary>
     /// Command palette (Ctrl+P) over the application commands and, in a repository tab, its commands, branches,
     /// modified files and loaded commits. <paramref name="query"/> may start with a scope prefix (&gt;, @, #).
     /// </summary>
-    public CommandPaletteViewModel CreatePalette(string query = "") => new(new ShellPaletteSource(this), query);
+    public CommandPaletteViewModel CreatePalette(string query = "") => new(new ShellPaletteSource(this), query, _recentCommands, SaveRecentCommands);
+
+    private void SaveRecentCommands()
+    {
+        var recent = _recentCommands.ToImmutableArray();
+        if (_preferences is { } preferences) _ = preferences.UpdateAsync(p => p with { RecentPaletteCommands = recent });
+    }
 
     /// <summary>"Nouvelle fenêtre" (Ctrl+Maj+N): an application window with a welcome tab.</summary>
     [RelayCommand(CanExecute = nameof(CanOpenWindows))]

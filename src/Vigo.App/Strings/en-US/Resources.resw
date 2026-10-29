@@ -1907,6 +1907,9 @@ Stored by Git LFS (declared in {1}).</value></data>
   <data name="GitLog.Running" xml:space="preserve"><value>running…</value></data>
   <data name="GitLog.Canceled" xml:space="preserve"><value>canceled</value></data>
   <data name="GitLog.ExitCode" xml:space="preserve"><value>code {0} · {1}</value></data>
+  <data name="FolderToggle.CollapseAll" xml:space="preserve"><value>Collapse all</value></data>
+  <data name="FolderToggle.ExpandAll" xml:space="preserve"><value>Expand all</value></data>
+  <data name="Palette.Group.Recent" xml:space="preserve"><value>Recently used</value></data>
   <data name="Palette.Group.Commands" xml:space="preserve"><value>Commands</value></data>
   <data name="Palette.Group.Branches" xml:space="preserve"><value>Branches</value></data>
   <data name="Palette.Group.Files" xml:space="preserve"><value>Modified files</value></data>
@@ -2179,6 +2182,7 @@ Stored by Git LFS (declared in {1}).</value></data>
   <data name="GitError.SizeUnreadable" xml:space="preserve"><value>Size of "{0}" is unreadable.</value></data>
   <data name="GitError.NoLongerConflicted" xml:space="preserve"><value>"{0}" is no longer in conflict.</value></data>
   <data name="GitError.MergeUnreadable" xml:space="preserve"><value>Merge of "{0}" is unreadable: {1}</value></data>
+  <data name="GitError.MergeFileUnsupported" xml:space="preserve"><value>Reading a conflict needs git 2.43 or newer. Update git, or resolve the file with another tool.</value></data>
   <data name="GitError.PathRefused" xml:space="preserve"><value>Path outside the repository refused: {0}</value></data>
   <data name="GitError.InvalidUrl" xml:space="preserve"><value>Invalid URL: "{0}".</value></data>
   <data name="GitError.DestinationFullPath" xml:space="preserve"><value>The destination folder must be a full path (C:\…).</value></data>

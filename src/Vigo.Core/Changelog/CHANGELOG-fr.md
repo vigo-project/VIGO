@@ -1,3 +1,10 @@
+## 0.32.0 — 2026-10-29
+- Listes de fichiers en arborescence : un bouton « Tout réduire » / « Tout développer » au-dessus de la première ligne réduit ou développe tous les dossiers d'un coup.
+- Conflits : l'éditeur de conflits fonctionne maintenant avec un git antérieur à 2.43 (il échouait avec « unknown option `zdiff3' » sous git 2.34).
+- Palette de commandes : les trois dernières commandes utilisées apparaissent en tête, sous « Utilisées récemment », quand la recherche est vide.
+- Pull requests (Azure DevOps) : les compteurs +/− de tous les fichiers sont maintenant calculés en arrière-plan au lieu d'afficher « +0 » tant que le fichier n'est pas ouvert.
+- Terminal : la hauteur des lignes est arrondie au pixel entier, les lignes ne semblent plus bouger au clignotement du curseur ou à l'affichage d'une sortie.
+
 ## 0.31.0 — 2026-10-27
 - Français : « Checkout » devient « Basculer », « issue » devient « ticket », la case Amend s'appelle « Modifier le dernier commit » et les modes de fusion des pull requests sont traduits. Les noms de touches des raccourcis (Entrée / Enter, Maj / Shift…) suivent la langue choisie.
 - Formulaire de commit : la case « Pousser après la validation » se décoche une fois le push fait.

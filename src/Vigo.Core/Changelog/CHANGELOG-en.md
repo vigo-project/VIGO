@@ -1,3 +1,10 @@
+## 0.32.0 — 2026-10-29
+- File lists as a tree: a "Collapse all" / "Expand all" button above the first row collapses or expands every folder at once.
+- Conflicts: the conflict editor now works with git older than 2.43 (it failed with "unknown option `zdiff3'" on git 2.34).
+- Command palette: the last three commands used appear first, under "Recently used", when the search box is empty.
+- Pull requests (Azure DevOps): the +/− counts of every file are now computed in the background instead of showing "+0" until the file is opened.
+- Terminal: the row height is rounded to whole pixels, so the lines no longer seem to move when the cursor blinks or output arrives.
+
 ## 0.31.0 — 2026-10-27
 - French: "Checkout" becomes "Basculer", "issue" becomes "ticket", the Amend box reads "Modifier le dernier commit" and the pull request merge modes are translated. The key names of the shortcuts (Entrée / Enter, Maj / Shift…) follow the chosen language.
 - Commit form: the "Push after committing" box unchecks itself once the push is done.

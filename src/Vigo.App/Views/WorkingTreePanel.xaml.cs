@@ -54,6 +54,16 @@ public sealed partial class WorkingTreePanel : UserControl
         }
     }
 
+
+    private void OnToggleConflictedFolders(object? sender, bool collapse) => ToggleFolders(FileGroup.Conflicted, collapse);
+
+    private void OnToggleUnstagedFolders(object? sender, bool collapse) => ToggleFolders(FileGroup.Unstaged, collapse);
+
+    private void OnToggleStagedFolders(object? sender, bool collapse) => ToggleFolders(FileGroup.Staged, collapse);
+
+    private void ToggleFolders(FileGroup group, bool collapse) =>
+        (collapse ? ViewModel.CollapseAllFoldersCommand : ViewModel.ExpandAllFoldersCommand).Execute(group);
+
     /// <summary>Shared layout (Path / Tree mode); set once by the repository view, before loading.</summary>
     public LayoutState? Layout
     {

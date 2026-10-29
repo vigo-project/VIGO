@@ -232,6 +232,9 @@ public sealed record UserPreferences
     /// <summary>Tab icon chosen per repository (path of the repository → Fluent System Icons name); absent keeps the default icon.</summary>
     public ImmutableDictionary<string, string> RepositoryIcons { get; init; } = ImmutableDictionary<string, string>.Empty;
 
+    /// <summary>Labels of the last commands run from the command palette, most recent first.</summary>
+    public ImmutableArray<string> RecentPaletteCommands { get; init; } = [];
+
     /// <summary>Version whose release notes were shown at launch; another version shows its own once.</summary>
     public string? LastSeenVersion { get; init; }
 

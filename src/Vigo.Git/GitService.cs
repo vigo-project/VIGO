@@ -277,12 +277,16 @@ public sealed partial class GitService(GitCli cli) : IGitService
         }
 
         // Exit code: number of conflicts (capped at 127); negative (255) on error.
-        var merged = await cli.RunAsync(top,
+        // The version tells which merge-file the installed git has; the failure fallback below covers an unknown version.
+        var merged = await IsLegacyMergeFileAsync(cancellationToken) ? await MergeFileLegacyAsync(top, path, cancellationToken) : await cli.RunAsync(top,
             ["merge-file", "-p", "--zdiff3", "--object-id", $"--marker-size={ConflictReader.MarkerSize}",
                 "-L", "ours", "-L", "base", "-L", "theirs", ours.ObjectId, baseId, theirs.ObjectId],
             127, cancellationToken);
         if (merged is Failure f && $"{f.Message} {f.Details}".Contains("binary", StringComparison.OrdinalIgnoreCase))
             return new Success<ConflictFile>(new ConflictFile(path, kind, true, true, IsBinary: true, []));
+        // An older git (--zdiff3 is git 2.35, --object-id git 2.43) has the same merge from temporary files.
+        if (merged is Failure { } old && $"{old.Message} {old.Details}".Contains("unknown option", StringComparison.OrdinalIgnoreCase))
+            merged = await MergeFileLegacyAsync(top, path, cancellationToken);
         if (merged is not Success<CliOutput> m) return Propagate<ConflictFile>(merged);
 
         try
@@ -295,6 +299,42 @@ public sealed partial class GitService(GitCli cli) : IGitService
         catch (FormatException ex)
         {
             return new Failure(Loc.Format("GitError.MergeUnreadable", path, ex.Message), Exception: ex);
+        }
+    }
+
+    /// <summary>
+    /// <c>merge-file</c> for a git older than 2.43 (no <c>--object-id</c>, and no <c>--zdiff3</c> before 2.35): the three
+    /// stages are written to temporary files by <c>checkout-index</c>, then merged with <c>--diff3</c> (same markers).
+    /// </summary>
+    internal async Task<GitResult<CliOutput>> MergeFileLegacyAsync(string top, string path, CancellationToken cancellationToken)
+    {
+        var extracted = await cli.RunAsync(top, ["--literal-pathspecs", "checkout-index", "--stage=all", "--temp", "--", path], cancellationToken);
+        if (extracted is not Success<CliOutput> x) return extracted;
+
+        // "<stage 1> <stage 2> <stage 3>\t<path>": "." for a stage that does not exist (added on both sides: empty base).
+        var names = x.Value.StandardOutput.Split('\t')[0].Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (names.Length != 3) return new Failure(Loc.Get("GitError.MergeFileUnsupported"));
+        string[] files = [.. names.Where(n => n != ".").Select(n => Path.Combine(top, n))];
+        try
+        {
+            var @base = names[0];
+            if (@base == ".")
+            {
+                @base = $".merge_file_empty_{Guid.NewGuid():N}";
+                await File.WriteAllBytesAsync(Path.Combine(top, @base), [], cancellationToken);
+                files = [.. files, Path.Combine(top, @base)];
+            }
+            return await cli.RunAsync(top,
+                ["merge-file", "-p", "--diff3", $"--marker-size={ConflictReader.MarkerSize}", "-L", "ours", "-L", "base", "-L", "theirs", names[1], @base, names[2]],
+                127, cancellationToken);
+        }
+        finally
+        {
+            foreach (var file in files)
+            {
+                try { File.Delete(file); }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
+            }
         }
     }
 

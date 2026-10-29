@@ -64,6 +64,10 @@ public sealed partial class PullRequestView : UserControl
     private LayoutState? _layout;
     private double _dragStartWidth;
 
+
+    private void OnToggleFolders(object? sender, bool collapse) =>
+        (collapse ? ViewModel?.CollapseAllFoldersCommand : ViewModel?.ExpandAllFoldersCommand)?.Execute(null);
+
     /// <summary>Layout shared by every tab (width of the files list, Path / Tree mode); set once by the repository view.</summary>
     public LayoutState? Layout
     {

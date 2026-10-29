@@ -223,7 +223,9 @@ public sealed partial class TerminalView : UserControl, IDisposable
         _terminal.Theme = BuildTheme();
         _terminal.FontFamily = new FontFamily(terminal.FontFamily is { Length: > 0 } family ? $"{family.Replace(",", string.Empty, StringComparison.Ordinal)}, {DefaultFonts}" : DefaultFonts);
         _terminal.FontSize = terminal.FontSize;
-        _terminal.LineHeight = terminal.LineHeight;
+        // A fractional row height (12 px × 1.15 = 13.8 px) is rounded differently from one redraw to the next: rows seem to move.
+        var scale = XamlRoot?.RasterizationScale ?? 1.0;
+        _terminal.LineHeight = Math.Round(terminal.FontSize * terminal.LineHeight * scale) / scale / terminal.FontSize;
         _terminal.CursorStyle = CursorOf(terminal.Cursor);
         _terminal.CursorBlink = true;
         UpdateDim();

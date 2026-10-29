@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    "Collapse all" / "Expand all" button shown just above the first row of a changed-files list in tree mode. The label
+    follows the rows: "Collapse all" while a folder is expanded, "Expand all" once every folder is collapsed.
+    Hidden when the list holds no folder (path mode). Texts: Loc (ADR-075), the label changes at run time.
+-->
+<UserControl
+    x:Class="Vigo.App.Controls.FolderToggleBar"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    IsTabStop="False" Visibility="Collapsed">
+    <Button x:Name="ToggleButton" Style="{StaticResource VigoSubtleButton}" HorizontalAlignment="Left" Height="22" MinHeight="22"
+            Padding="8,0" Margin="6,0,0,0" Click="OnClick">
+        <TextBlock x:Name="Label" FontSize="{ThemeResource VigoFontSize11}" Foreground="{ThemeResource VigoText3Brush}" />
+    </Button>
+</UserControl>

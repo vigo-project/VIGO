@@ -256,6 +256,22 @@ public sealed partial class CommitDetailsViewModel : ObservableObject, IDisposab
         ArrangeFiles();
     }
 
+    /// <summary>Collapses every folder of the tree.</summary>
+    [RelayCommand]
+    private void CollapseAllFolders()
+    {
+        _collapsed.UnionWith(FileListLayout.FolderPaths(Files));
+        ArrangeFiles();
+    }
+
+    /// <summary>Expands every folder of the tree.</summary>
+    [RelayCommand]
+    private void ExpandAllFolders()
+    {
+        _collapsed.Clear();
+        ArrangeFiles();
+    }
+
     private void ArrangeFiles() =>
         FileListLayout.Sync(FileRows, FileListLayout.Arrange(Files, ShowAsTree, _collapsed));
 
