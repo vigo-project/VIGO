@@ -1,4 +1,4 @@
-## Unreleased
+## 0.33.0 — 2026-10-30
 - Blame, side-by-side diff, unified diff (line and hunk staging included) and conflict editor: shown in a native editor (LoomEditor), without WebView2: faster to open, TextMate syntax coloring.
 - Pull requests: the review in the diff (comments, replies, resolving, pending comments) moves to the native editor too; a "Comment" button appears as soon as text is selected.
 - Pull requests, issues and work items: #12, !34 and @login in descriptions and comments link to the service, and Azure DevOps mentions show the person's name.

@@ -1,4 +1,4 @@
-## Unreleased
+## 0.33.0 — 2026-10-30
 - Blame, diff côte à côte, diff unifié (indexation par ligne et par hunk comprise) et éditeur de conflits : affichés dans un éditeur natif (LoomEditor), sans WebView2 : ouverture plus rapide, coloration TextMate.
 - Pull requests : la revue dans le diff (commentaires, réponses, résolution, commentaires en attente) passe aussi dans l'éditeur natif ; un bouton « Commenter » apparaît dès qu'on sélectionne du texte.
 - Pull requests, issues et work items : #12, !34 et @login dans les descriptions et les commentaires renvoient vers le service, et les mentions Azure DevOps affichent le nom de la personne.
