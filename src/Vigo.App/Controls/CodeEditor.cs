@@ -102,7 +102,18 @@ public sealed partial class CodeEditor : UserControl
     }
 
     /// <summary>Shows a unified diff; <paramref name="staging"/> null for a read-only one.</summary>
-    public void ShowDiff(string path, DiffDocument document, IReadOnlyList<int> selected, EditorStaging? staging, bool keepScroll) =>
+    /// <remarks>
+    /// <paramref name="native"/> false keeps it in the page, for the inline review of a pull request until the review
+    /// moves to the native editor (ADR-090).
+    /// </remarks>
+    public void ShowDiff(string path, DiffDocument document, IReadOnlyList<int> selected, EditorStaging? staging, bool keepScroll, bool native = true)
+    {
+        if (_closed) return;
+        if (native) ShowNativeDiff(path, document, selected, staging, keepScroll);
+        else ShowPageDiff(path, document, selected, staging, keepScroll);
+    }
+
+    private void ShowPageDiff(string path, DiffDocument document, IReadOnlyList<int> selected, EditorStaging? staging, bool keepScroll) =>
         Send(w =>
         {
             w.WriteString("type", "diff");
@@ -133,13 +144,25 @@ public sealed partial class CodeEditor : UserControl
             w.WriteBoolean("keepScroll", keepScroll);
         }, content: true);
 
-    public void SetSelection(IReadOnlyList<int> lines) => Send(w =>
+    public void SetSelection(IReadOnlyList<int> lines)
+    {
+        if (IsNativeDiffShown) SetNativeDiffSelection(lines);
+        else SendSelection(lines);
+    }
+
+    private void SendSelection(IReadOnlyList<int> lines) => Send(w =>
     {
         w.WriteString("type", "selection");
         WriteNumbers(w, "lines", lines);
     });
 
-    public void RevealHunk(int hunk) => Send(w =>
+    public void RevealHunk(int hunk)
+    {
+        if (IsNativeDiffShown) RevealNativeHunk(hunk);
+        else SendRevealHunk(hunk);
+    }
+
+    private void SendRevealHunk(int hunk) => Send(w =>
     {
         w.WriteString("type", "revealHunk");
         w.WriteNumber("hunk", hunk);

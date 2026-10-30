@@ -309,7 +309,8 @@ public sealed partial class PullRequestView : UserControl
                 Editor.ShowSideBySide(sides, native: false);
                 break;
             case FileDiff shown:
-                Editor.ShowDiff(shown.Path, DiffDocument.Build(shown), [], staging: null, keepScroll: false);
+                // The inline review still lives in the editor page (ADR-090).
+                Editor.ShowDiff(shown.Path, DiffDocument.Build(shown), [], staging: null, keepScroll: false, native: false);
                 break;
             default:
                 Editor.Clear();

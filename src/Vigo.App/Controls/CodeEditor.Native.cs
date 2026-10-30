@@ -51,12 +51,15 @@ public sealed partial class CodeEditor
     private LoomDiff? _diff;
     private string? _diffPath;
 
-    static CodeEditor() =>
+    static CodeEditor()
+    {
         CustomDecorationStyles.Register(BlameSelectedClass, new CustomDecorationStyle
         {
             Background = ThemeColorOf(Light.Selected),
             DarkBackground = ThemeColorOf(Dark.Selected),
         });
+        RegisterDiffStyles();
+    }
 
     private Loom EnsureNative()
     {
@@ -67,6 +70,9 @@ public sealed partial class CodeEditor
             // The blame column lines up with the lines of the file: no wrapping there.
             WordWrap = LoomWordWrap.Off,
             MinimapEnabled = false,
+            // As the page: line numbers, no folding, a thin decorations margin.
+            FoldingEnabled = false,
+            LineDecorationsWidth = 8,
         };
         // The commit of the caret's line is the selected one: a click or the arrow keys select it.
         editor.SelectionChanged += (_, _) =>
@@ -122,7 +128,10 @@ public sealed partial class CodeEditor
 
     /// <summary>The native editor on screen, for the focus; null when the page (or nothing) is shown.</summary>
     private Control? NativeFocusTarget =>
-        ReferenceEquals(Content, _blameHost) ? _native : ReferenceEquals(Content, _diff) ? (_diff!.IsLoaded ? _diff.Modified : _diff) : null;
+        ReferenceEquals(Content, _blameHost) ? _native
+        : ReferenceEquals(Content, _diff) ? (_diff!.IsLoaded ? _diff.Modified : _diff)
+        : IsNativeDiffShown ? _unified
+        : null;
 
     // ---------------------------------------------------------------- side by side
 
@@ -196,6 +205,7 @@ public sealed partial class CodeEditor
 
     private void ClearNative()
     {
+        ClearNativeDiff();
         if (_diff is not null)
         {
             _diffPath = null;
@@ -214,6 +224,7 @@ public sealed partial class CodeEditor
 
     private void ReleaseNative()
     {
+        ReleaseNativeDiff();
         // Win2D: the device resources are freed when the tab is closed, not on Unloaded.
         _blameColumn?.RemoveFromVisualTree();
         _blameColumn = null;
@@ -230,6 +241,7 @@ public sealed partial class CodeEditor
     {
         var dark = ActualTheme != ElementTheme.Light;
         var theme = dark ? DarkTheme.Value : LightTheme.Value;
+        ApplyNativeDiffTheme(theme, dark);
         if (_native is { } editor)
         {
             ApplyEditorSettings(editor, theme, wrap: false);
@@ -241,6 +253,7 @@ public sealed partial class CodeEditor
         {
             var wrap = Appearance.Current.Editor.WordWrap;
             diff.Theme = theme;
+            diff.LineHeight = LineHeightOf(Appearance.Current.Editor);
             // Original / Modified throw until the template is applied: set again on Loaded.
             if (diff.IsLoaded)
             {
@@ -261,7 +274,12 @@ public sealed partial class CodeEditor
         editor.LineNumbersEnabled = settings.LineNumbers;
         editor.FontLigatures = settings.Ligatures;
         editor.WordWrap = wrap ? LoomWordWrap.On : LoomWordWrap.Off;
+        editor.LineHeight = LineHeightOf(settings);
     }
+
+    /// <summary>The density's line height is for the default size; it grows with the chosen one (as the page did).</summary>
+    private static double LineHeightOf(EditorSettings settings) =>
+        Math.Round(Appearance.Current.Metrics.CodeLineHeight * settings.FontSize / UserPreferences.DefaultEditorFontSize);
 
     // ---------------------------------------------------------------- blame column
 
@@ -294,33 +312,41 @@ public sealed partial class CodeEditor
             FontFamily = family, FontSize = (float)Appearance.Scaled(11), WordWrapping = CanvasWordWrapping.NoWrap,
             VerticalAlignment = CanvasVerticalAlignment.Center,
         };
-        using var avatarFormat = new CanvasTextFormat
-        {
-            FontFamily = family, FontSize = 8, FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
-            HorizontalAlignment = CanvasHorizontalAlignment.Center, VerticalAlignment = CanvasVerticalAlignment.Center,
-        };
-
         var scrollTop = editor.ScrollTop;
         var h = (float)height;
+        // 18 px as in the page, smaller when the rows are (compact density, small font): 1 px above and below.
+        var avatar = Math.Min(18f, h - 2);
+        using var avatarFormat = new CanvasTextFormat
+        {
+            FontFamily = family, FontSize = 8 * avatar / 18, FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
+            HorizontalAlignment = CanvasHorizontalAlignment.Center, VerticalAlignment = CanvasVerticalAlignment.Center,
+        };
         var first = Math.Max(1, (int)(scrollTop / height) + 1);
         var last = Math.Min(count, (int)((scrollTop + sender.ActualHeight) / height) + 1);
+
+        // Backgrounds, block separators and age bars first: a separator drawn later would cut the avatar above it.
         for (var line = first; line <= last; line++)
         {
             var c = CommitOfLine(line);
             var top = (float)(editor.GetTopForLineNumber(line, false) - scrollTop);
-            var firstOfBlock = line == 1 || c != CommitOfLine(line - 1);
             if (c >= 0 && c == _blameSelected) ds.FillRectangle(0, top, width, h, palette.Selected);
-            if (firstOfBlock && line > 1) ds.DrawLine(0, top + 0.5f, width, top + 0.5f, palette.Stroke);
-            if (c < 0 || c >= _blameCommits.Count) continue;
-            var commit = _blameCommits[c];
-            ds.FillRectangle(0, top, 3, h, WithAlpha(palette.Accent, (byte)(255 * (0.15 + 0.85 * commit.Age))));
-            if (!firstOfBlock) continue;
+            if (line > 1 && c != CommitOfLine(line - 1)) ds.DrawLine(0, top + 0.5f, width, top + 0.5f, palette.Stroke);
+            if (c >= 0 && c < _blameCommits.Count)
+                ds.FillRectangle(0, top, 3, h, WithAlpha(palette.Accent, (byte)(255 * (0.15 + 0.85 * _blameCommits[c].Age))));
+        }
 
+        // Then avatar, subject and date on the first line of each block.
+        for (var line = first; line <= last; line++)
+        {
+            var c = CommitOfLine(line);
+            if (c < 0 || c >= _blameCommits.Count || (line > 1 && c == CommitOfLine(line - 1))) continue;
+            var commit = _blameCommits[c];
+            var top = (float)(editor.GetTopForLineNumber(line, false) - scrollTop);
             var x = 13f;
             var cy = top + h / 2;
-            ds.FillCircle(x + 9, cy, 9, Appearance.Current.Lanes[(int)((uint)commit.ColorIndex % Appearance.Current.Lanes.Length)]);
-            ds.DrawText(commit.Initials, new Rect(x, cy - 9, 18, 18), Colors.White, avatarFormat);
-            x += 18 + 8;
+            ds.FillCircle(x + avatar / 2, cy, avatar / 2, Appearance.Current.Lanes[(int)((uint)commit.ColorIndex % Appearance.Current.Lanes.Length)]);
+            ds.DrawText(commit.Initials, new Rect(x, cy - avatar / 2, avatar, avatar), Colors.White, avatarFormat);
+            x += avatar + 8;
             var right = width - 10;
             using var date = new CanvasTextLayout(ds, commit.Date, dateFormat, 0, h);
             var dateWidth = (float)date.LayoutBounds.Width;
