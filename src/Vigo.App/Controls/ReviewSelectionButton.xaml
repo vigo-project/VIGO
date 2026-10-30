@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    "Commenter" under the end of a selection of the native diff (ADR-090, review step R2), as the page's selection button: shown
+    in a popup while a selection exists and the review can be commented.
+-->
+<UserControl
+    x:Class="Vigo.App.Controls.ReviewSelectionButton"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Vigo.App.Controls"
+    FontFamily="{ThemeResource VigoFont}">
+
+    <!-- No focus on click: the editor keeps its selection active. -->
+    <Button x:Name="ActionButton" Style="{StaticResource VigoAccentButton}" AllowFocusOnInteraction="False" Click="OnClick">
+        <StackPanel Orientation="Horizontal" Spacing="6">
+            <FontIcon Style="{StaticResource VigoIcon}" FontSize="14" Glyph="{x:Bind controls:FluentIcons.Comment}" />
+            <TextBlock x:Name="LabelText" />
+        </StackPanel>
+    </Button>
+</UserControl>

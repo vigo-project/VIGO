@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Markdown input of the native review (ADR-090, review step R2): a toolbar that inserts Markdown, the text, the action
+    buttons, and the preview under them that follows the text. The proposals after #, ! and @ show in a popup under the caret.
+-->
+<UserControl
+    x:Class="Vigo.App.Controls.ReviewMarkdownBox"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Vigo.App.Controls"
+    xmlns:models="using:Vigo.Core.Models"
+    FontFamily="{ThemeResource VigoFont}">
+
+    <StackPanel Spacing="6">
+        <!-- The toolbar never takes the focus: the text keeps its selection. -->
+        <StackPanel x:Name="Toolbar" Orientation="Horizontal" Spacing="2">
+            <Button x:Name="HeadingButton" Style="{StaticResource VigoToolbarButton}" Width="26" Height="24" Click="OnHeadingClick" Content="H" FontWeight="SemiBold" />
+            <Button x:Name="BoldButton" Style="{StaticResource VigoToolbarButton}" Width="26" Height="24" Click="OnBoldClick">
+                <FontIcon Style="{StaticResource VigoIcon}" FontSize="14" Glyph="{x:Bind controls:FluentIcons.TextBold}" />
+            </Button>
+            <Button x:Name="ItalicButton" Style="{StaticResource VigoToolbarButton}" Width="26" Height="24" Click="OnItalicClick">
+                <FontIcon Style="{StaticResource VigoIcon}" FontSize="14" Glyph="{x:Bind controls:FluentIcons.TextItalic}" />
+            </Button>
+            <Button x:Name="StrikeButton" Style="{StaticResource VigoToolbarButton}" Width="26" Height="24" Click="OnStrikeClick">
+                <TextBlock Text="S" TextDecorations="Strikethrough" />
+            </Button>
+            <Button x:Name="CodeButton" Style="{StaticResource VigoToolbarButton}" Width="26" Height="24" Click="OnCodeClick">
+                <FontIcon Style="{StaticResource VigoIcon}" FontSize="14" Glyph="{x:Bind controls:FluentIcons.Code}" />
+            </Button>
+            <Button x:Name="LinkButton" Style="{StaticResource VigoToolbarButton}" Width="26" Height="24" Click="OnLinkClick">
+                <FontIcon Style="{StaticResource VigoIcon}" FontSize="14" Glyph="{x:Bind controls:FluentIcons.Globe}" />
+            </Button>
+            <Button x:Name="QuoteButton" Style="{StaticResource VigoToolbarButton}" Width="26" Height="24" Click="OnQuoteClick" Content="&gt;" FontWeight="SemiBold" />
+            <Button x:Name="BulletButton" Style="{StaticResource VigoToolbarButton}" Width="26" Height="24" Click="OnBulletClick">
+                <FontIcon Style="{StaticResource VigoIcon}" FontSize="14" Glyph="{x:Bind controls:FluentIcons.TextBulletListLtr}" />
+            </Button>
+            <Button x:Name="NumberButton" Style="{StaticResource VigoToolbarButton}" Width="26" Height="24" Click="OnNumberClick" Content="1." FontWeight="SemiBold" />
+            <Button x:Name="SuggestButton" Style="{StaticResource VigoToolbarButton}" Width="26" Height="24" Click="OnSuggestClick" Visibility="Collapsed">
+                <FontIcon Style="{StaticResource VigoIcon}" FontSize="14" Glyph="{x:Bind controls:FluentIcons.DocumentEdit}" />
+            </Button>
+            <ToggleButton x:Name="PreviewToggle" Height="24" MinHeight="0" Padding="8,0" Margin="6,0,0,0" FontSize="{ThemeResource VigoFontSize11}"
+                          Click="OnPreviewClick" />
+        </StackPanel>
+        <Grid>
+            <TextBox x:Name="Input" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="66" MaxHeight="320" IsSpellCheckEnabled="True"
+                     FontSize="{ThemeResource VigoFontSize13}" ScrollViewer.VerticalScrollBarVisibility="Auto"
+                     TextChanged="OnInputTextChanged" SelectionChanged="OnInputSelectionChanged" PreviewKeyDown="OnInputPreviewKeyDown" KeyDown="OnInputKeyDown"
+                     LostFocus="OnInputLostFocus" />
+            <Popup x:Name="ReferencePopup" ShouldConstrainToRootBounds="False">
+                <Border Style="{StaticResource VigoCard}" Padding="4" MinWidth="220" MaxWidth="420">
+                    <!-- No focus on click: the text box keeps it, and its caret. -->
+                    <ListView x:Name="ReferenceList" AllowFocusOnInteraction="False" IsItemClickEnabled="True" SelectionMode="Single"
+                              MaxHeight="240" ItemClick="OnReferenceClick">
+                        <ListView.ItemTemplate>
+                            <DataTemplate x:DataType="models:ReferenceSuggestion">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="{x:Bind Label}" Style="{StaticResource VigoStrongText}" FontSize="{ThemeResource VigoFontSize12}" />
+                                    <TextBlock Text="{x:Bind Detail}" FontSize="{ThemeResource VigoFontSize12}" Foreground="{ThemeResource VigoText3Brush}"
+                                               TextTrimming="CharacterEllipsis" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </Border>
+            </Popup>
+        </Grid>
+        <StackPanel Orientation="Horizontal" Spacing="8">
+            <Button x:Name="PrimaryButton" Style="{StaticResource VigoAccentButton}" Click="OnPrimaryClick" />
+            <Button x:Name="SecondaryButton" Style="{StaticResource VigoStandardButton}" Click="OnSecondaryClick" Visibility="Collapsed" />
+            <Button x:Name="CancelButton" Style="{StaticResource VigoStandardButton}" Click="OnCancelClick" />
+        </StackPanel>
+        <Border x:Name="PreviewPanel" Padding="8,6" CornerRadius="{StaticResource VigoRadiusControl}" Background="{ThemeResource VigoLayer2Brush}">
+            <Grid>
+                <controls:MarkdownView x:Name="PreviewView" />
+                <TextBlock x:Name="EmptyPreview" FontSize="{ThemeResource VigoFontSize12}" Foreground="{ThemeResource VigoText3Brush}" />
+            </Grid>
+        </Border>
+    </StackPanel>
+</UserControl>

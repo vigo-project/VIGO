@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    A card of the native review that is not a thread (ADR-090, review step R2): the comment kept for the review (dashed warning
+    border, "En attente", its Markdown, "Retirer"), or the box of a new comment under the line or the selection it is about.
+-->
+<UserControl
+    x:Class="Vigo.App.Controls.ReviewNoteCard"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Vigo.App.Controls"
+    FontFamily="{ThemeResource VigoFont}">
+
+    <Grid>
+        <Border x:Name="Frame" Style="{StaticResource VigoCard}" />
+        <!-- A border has no dashes: a rectangle draws the frame of a kept comment. -->
+        <Rectangle x:Name="DashedFrame" RadiusX="8" RadiusY="8" StrokeThickness="1" StrokeDashArray="4,3" Visibility="Collapsed"
+                   Stroke="{ThemeResource VigoWarningBrush}" Fill="{ThemeResource VigoCardBrush}" />
+        <StackPanel Padding="10,8" Spacing="8">
+            <Grid ColumnSpacing="8" MinHeight="22">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock x:Name="WhereText" VerticalAlignment="Center" FontFamily="{StaticResource VigoMonoFont}"
+                           FontSize="{ThemeResource VigoFontSize11}" Foreground="{ThemeResource VigoText3Brush}" />
+                <Border x:Name="PendingBadge" Grid.Column="1" Padding="6,1" CornerRadius="8" VerticalAlignment="Center"
+                        Background="{ThemeResource VigoWarningSoftBrush}" Visibility="Collapsed">
+                    <TextBlock x:Name="PendingText" FontSize="{ThemeResource VigoFontSize11}" FontWeight="SemiBold"
+                               Foreground="{ThemeResource VigoText2Brush}" />
+                </Border>
+                <Button x:Name="RemoveButton" Grid.Column="3" Style="{StaticResource VigoStandardButton}" Height="24"
+                        Foreground="{ThemeResource VigoDangerBrush}" Visibility="Collapsed" Click="OnRemoveClick" />
+            </Grid>
+            <controls:MarkdownView x:Name="BodyView" Visibility="Collapsed" />
+            <Border x:Name="BoxHost" />
+        </StackPanel>
+    </Grid>
+</UserControl>

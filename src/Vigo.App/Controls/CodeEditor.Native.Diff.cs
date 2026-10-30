@@ -96,6 +96,8 @@ public sealed partial class CodeEditor
         var gutter = _unifiedGutter = new CanvasControl { Width = 1 };
         gutter.Draw += OnDrawDiffGutter;
         gutter.PointerPressed += OnDiffGutterPressed;
+        gutter.PointerMoved += OnDiffGutterMoved;
+        gutter.PointerExited += OnDiffGutterExited;
         gutter.PointerWheelChanged += (_, e) => ScrollWithWheel(editor, gutter, e);
 
         _sticky = new DiffHunkHeader { VerticalAlignment = VerticalAlignment.Top, Visibility = Visibility.Collapsed };
@@ -158,6 +160,8 @@ public sealed partial class CodeEditor
         var document = _doc!;
         RemoveDiffZones(editor);
         AddReviewZones(_unifiedReview, editor, (side, line) => DocLine(document, side, line), null, IsNativeDiffShown, _unifiedZones, _zoneAbove);
+        // A click on a line of the gutter starts a comment (a pull request has no staging).
+        if (_staging is null) ToolTipService.SetToolTip(_unifiedGutter, _canComment ? EditorReviewLabels.Current.CommentOnLine : null);
         for (var i = 0; i < document.Hunks.Count; i++)
         {
             var header = new DiffHunkHeader();
@@ -434,7 +438,13 @@ public sealed partial class CodeEditor
                 if (doc.OldNumbers[i] > 0) ds.DrawText(Number(doc.OldNumbers[i]), new Rect(numbersLeft, top, numberWidth, rowH), palette.Text3, numberFormat);
                 if (doc.NewNumbers[i] > 0) ds.DrawText(Number(doc.NewNumbers[i]), new Rect(numbersLeft + numberWidth + charWidth, top, numberWidth, rowH), palette.Text3, numberFormat);
             }
-            if (changed)
+            if (line == _commentHoverLine)
+            {
+                // The "+" that starts a comment, over the sign.
+                ds.FillRoundedRectangle(new Rect(signLeft + SignWidth / 2 - 7, top + rowH / 2 - 7, 14, 14), 3, 3, palette.Accent);
+                ds.DrawText("+", new Rect(signLeft, top, SignWidth, rowH), Colors.White, signFormat);
+            }
+            else if (changed)
             {
                 ds.DrawText(kind == DiffDocument.Added ? "+" : "−", new Rect(signLeft, top, SignWidth, rowH),
                     kind == DiffDocument.Added ? palette.AddText : palette.DelText, signFormat);
@@ -469,17 +479,33 @@ public sealed partial class CodeEditor
     /// <summary>A click on a changed line's box (or anywhere on its row of the gutter) selects it; Shift for a range.</summary>
     private void OnDiffGutterPressed(object sender, PointerRoutedEventArgs e)
     {
-        if (_doc is not { } doc || _staging is null || _unified is not { } editor) return;
-        var y = e.GetCurrentPoint(_unifiedGutter).Position.Y + editor.ScrollTop;
-        var line = LineAtOrAbove(editor, y);
-        var top = editor.GetTopForLineNumber(line, false);
-        if (y >= top + RowHeight(editor, line, top)) return;
+        if (_doc is not { } doc || _unified is not { } editor) return;
+        var line = UnifiedGutterLine(e);
+        if (line == 0) return;
+        if (_staging is null)
+        {
+            // A pull request: the click starts a comment on the line (or the selection that covers it).
+            if (!_canComment || UnifiedSide(line) is null) return;
+            CommentUnifiedLine(line);
+            e.Handled = true;
+            return;
+        }
         var kind = line - 1 < doc.Kinds.Length ? doc.Kinds[line - 1] : DiffDocument.Context;
         if (kind is not (DiffDocument.Added or DiffDocument.Deleted)) return;
         LineToggled?.Invoke(this, (line, e.KeyModifiers.HasFlag(VirtualKeyModifiers.Shift)));
         // The keys of the selection (S, Delete) go through the editor.
         editor.Focus(FocusState.Pointer);
         e.Handled = true;
+    }
+
+    /// <summary>The line of the unified diff under the pointer in the gutter; 0 over a zone.</summary>
+    private int UnifiedGutterLine(PointerRoutedEventArgs e)
+    {
+        if (_unified is not { } editor || editor.Model.LineCount == 0) return 0;
+        var y = e.GetCurrentPoint(_unifiedGutter).Position.Y + editor.ScrollTop;
+        var line = LineAtOrAbove(editor, y);
+        var top = editor.GetTopForLineNumber(line, false);
+        return y < top + RowHeight(editor, line, top) ? line : 0;
     }
 
     /// <summary>The wheel over a column drawn beside an editor scrolls the editor.</summary>

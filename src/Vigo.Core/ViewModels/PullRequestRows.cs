@@ -129,7 +129,7 @@ public sealed partial class TimelineRow(TimelineEntry entry, string date, bool c
 }
 
 /// <summary>Comment of a discussion thread on the diff, ready to draw.</summary>
-public sealed class ThreadCommentRow(ReviewThreadComment comment, string date)
+public sealed class ThreadCommentRow(ReviewThreadComment comment, string date, bool canReact = false)
 {
     public ReviewThreadComment Comment { get; } = comment;
 
@@ -144,6 +144,18 @@ public sealed class ThreadCommentRow(ReviewThreadComment comment, string date)
     public IReadOnlyList<MarkdownBlock> Body { get; } = MarkdownParser.Parse(comment.Body);
 
     public bool HasBody => Body.Count > 0;
+
+    /// <summary>Reactions given to the comment; clicking one adds or removes the signed-in account's own when <see cref="CanReact"/>.</summary>
+    public ObservableCollection<ReactionChip> Reactions { get; } =
+        [.. (comment.Reactions ?? []).Select(r => new ReactionChip(comment.Id, r.Kind, r.Count))];
+
+    public bool HasReactions => Reactions.Count > 0;
+
+    /// <summary>The service takes reactions to review comments (GitHub) and the screen may write.</summary>
+    public bool CanReact { get; } = canReact && comment.Id != 0;
+
+    /// <summary>Reactions shown without buttons (the account cannot react).</summary>
+    public bool ShowReadOnlyReactions => HasReactions && !CanReact;
 
     public override string ToString() => $"{Author}, {DateText}";
 }

@@ -1,5 +1,7 @@
 ## Unreleased
 - Blame, diff côte à côte, diff unifié (indexation par ligne et par hunk comprise) et éditeur de conflits : affichés dans un éditeur natif (LoomEditor), sans WebView2 : ouverture plus rapide, coloration TextMate.
+- Pull requests : la revue dans le diff (commentaires, réponses, résolution, commentaires en attente) passe aussi dans l'éditeur natif ; un bouton « Commenter » apparaît dès qu'on sélectionne du texte.
+- Pull requests GitHub : les réactions des commentaires du diff s'affichent, et on peut en ajouter ou en retirer.
 - Éditeur de conflits : « ours » et « theirs » sont traduits (« Notre version », « Leur version », « La nôtre », « La leur »).
 
 ## 0.32.0 — 2026-10-29

@@ -134,8 +134,7 @@ Logs : `%LOCALAPPDATA%\VIGO\logs\vigo-AAAAMMJJ.log`.
   retenu doit être compatible AOT. **Mécanisme (ADR-075)** : `src/Vigo.App/Strings/{fr-FR,en-US}/Resources.resw` ; XAML :
   `x:Uid` (sans point, ex. `PrefAutoFetchTitle` → `PrefAutoFetchTitle.Text`) ; code sans UI : `Loc.Get("Zone.Cle")` /
   `Loc.Format("Zone.Cle", args)` (Vigo.Core). Même clé dans les deux `.resw` (test `LocalizationResourcesTests`).
-  Changement de langue = redémarrage ; `VIGO_LANGUAGE=en|fr` (Debug) pour les rejeux. `VIGO_NATIVE_REVIEW=1` (tous builds, AOT compris) : diff d'une PR dans
-  l'éditeur natif avec les fils en lecture seule (R1, ADR-090), jusqu'à R2.
+  Changement de langue = redémarrage ; `VIGO_LANGUAGE=en|fr` (Debug) pour les rejeux.
 - **Changelog** (J7.23) : toute nouvelle fonctionnalité (ou correctif visible) ajoute une ligne, orientée utilisateur, dans
   `src/Vigo.Core/Changelog/CHANGELOG-fr.md` **et** `CHANGELOG-en.md`, dans la section de la prochaine version, en tête de
   fichier (`## x.y.z — AAAA-MM-JJ` ; tant que la version n'est pas fixée : `## Unreleased`, à renommer avant le tag). La

@@ -155,12 +155,15 @@ public sealed partial class CodeEditor
         // Alt+Up / Alt+Down: previous / next change (before the accelerators of the view, which move between hunks).
         diff.PreviewKeyDown += (_, e) =>
         {
+            // Not while a box of the review is typed in (its caret moves with Alt+arrows too).
+            if (e.OriginalSource is TextBox) return;
             if (e.Key is not (VirtualKey.Up or VirtualKey.Down)
                 || !Microsoft.UI.Input.InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Menu).HasFlag(CoreVirtualKeyStates.Down)) return;
             if (e.Key == VirtualKey.Up) diff.GoToPreviousChange();
             else diff.GoToNextChange();
             e.Handled = true;
         };
+        diff.AddCommentRequested += (_, e) => OnDiffAddCommentRequested(e.Side, e.StartLineNumber, e.LineNumber, e.TextRange);
         // The two inner editors exist once the template is applied.
         diff.Loaded += (_, _) =>
         {
@@ -214,6 +217,7 @@ public sealed partial class CodeEditor
 
     private void ClearNative()
     {
+        ClearNativeReview();
         ClearNativeDiff();
         ClearNativeConflict();
         if (_diff is not null)
@@ -234,6 +238,7 @@ public sealed partial class CodeEditor
 
     private void ReleaseNative()
     {
+        ClearNativeReview();
         ReleaseNativeDiff();
         ReleaseNativeConflict();
         // Win2D: the device resources are freed when the tab is closed, not on Unloaded.

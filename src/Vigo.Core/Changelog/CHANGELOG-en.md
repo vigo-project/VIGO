@@ -1,5 +1,7 @@
 ## Unreleased
 - Blame, side-by-side diff, unified diff (line and hunk staging included) and conflict editor: shown in a native editor (LoomEditor), without WebView2: faster to open, TextMate syntax coloring.
+- Pull requests: the review in the diff (comments, replies, resolving, pending comments) moves to the native editor too; a "Comment" button appears as soon as text is selected.
+- GitHub pull requests: reactions on the diff comments are shown, and can be added or removed.
 
 ## 0.32.0 — 2026-10-29
 - File lists as a tree: a "Collapse all" / "Expand all" button above the first row collapses or expands every folder at once.

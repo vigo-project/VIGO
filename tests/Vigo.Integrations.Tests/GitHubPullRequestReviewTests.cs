@@ -51,7 +51,8 @@ public sealed class GitHubPullRequestReviewTests
         var (client, recorder) = Create(readJson: Header, json: """
             {"data":{"repository":{"pullRequest":{"reviewThreads":{"nodes":[
               {"id":"PRRT_1","isResolved":false,"isOutdated":false,"path":"src/cache.cs","line":12,"originalLine":10,"diffSide":"RIGHT",
-               "comments":{"nodes":[{"databaseId":11,"body":"Why a lock?","createdAt":"2026-10-12T08:21:00Z","author":{"login":"linus"}},
+               "comments":{"nodes":[{"databaseId":11,"body":"Why a lock?","createdAt":"2026-10-12T08:21:00Z","author":{"login":"linus"},
+                                     "reactionGroups":[{"content":"THUMBS_UP","reactors":{"totalCount":2}},{"content":"HEART","reactors":{"totalCount":0}}]},
                                     {"databaseId":12,"body":"Thread safety","createdAt":"2026-10-12T08:25:00Z","author":{"login":"octocat"}}]}},
               {"id":"PRRT_2","isResolved":true,"isOutdated":true,"path":"a.cs","line":null,"originalLine":4,"diffSide":"LEFT",
                "comments":{"nodes":[{"databaseId":13,"body":"Old","createdAt":"2026-10-12T08:00:00Z","author":null}]}}]}}}}}
@@ -68,6 +69,8 @@ public sealed class GitHubPullRequestReviewTests
         Assert.Equal(("PRRT_1", "src/cache.cs", 12, ReviewSide.New, false, false), (open.Id, open.Path, open.Line, open.Side, open.IsResolved, open.IsOutdated));
         Assert.Equal([11L, 12L], open.Comments.Select(c => c.Id));
         Assert.Equal("linus", open.Comments[0].Author);
+        Assert.Equal([new ReactionCount(ReactionKind.ThumbsUp, 2)], open.Comments[0].Reactions!);
+        Assert.Empty(open.Comments[1].Reactions!);
         var old = detail.ReviewThreads[1];
         Assert.Equal((ReviewSide.Old, true, true, 4), (old.Side, old.IsResolved, old.IsOutdated, old.Line));
         Assert.Equal("?", old.Comments[0].Author);

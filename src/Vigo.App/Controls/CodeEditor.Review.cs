@@ -39,8 +39,13 @@ public sealed partial class CodeEditor
     /// <summary>The page asks for proposals after a <c>#</c>, <c>!</c> or <c>@</c>; answer with <see cref="ShowReferences"/>.</summary>
     public event EventHandler<EditorReferenceRequest>? ReferenceRequested;
 
-    /// <summary>Gives the page the proposals it asked for (a request that was replaced by a newer one is ignored by the page).</summary>
-    public void ShowReferences(int key, IReadOnlyList<ReferenceSuggestion> items) => Send(w =>
+    /// <summary>Gives the box the proposals it asked for (a request that was replaced by a newer one is ignored by the box).</summary>
+    public void ShowReferences(int key, IReadOnlyList<ReferenceSuggestion> items)
+    {
+        if (!ShowNativeReferences(key, items)) SendReferences(key, items);
+    }
+
+    private void SendReferences(int key, IReadOnlyList<ReferenceSuggestion> items) => Send(w =>
     {
         w.WriteString("type", "refResults");
         w.WriteNumber("key", key);
@@ -59,6 +64,9 @@ public sealed partial class CodeEditor
     /// <summary>A link of a comment was clicked (http / https address; the page never navigates by itself).</summary>
     public event EventHandler<string>? LinkClicked;
 
+    /// <summary>A reaction chosen on a comment of a thread (native review): the account's own is added or removed.</summary>
+    public event EventHandler<(long CommentId, ReactionKind Kind)>? ReviewReactionToggled;
+
     /// <summary>"Retirer" clicked on a comment kept for the review (index in the list sent).</summary>
     public event EventHandler<int>? ReviewDraftRemoved;
 
@@ -74,7 +82,8 @@ public sealed partial class CodeEditor
         string? revealThread = null, int revealToken = 0)
     {
         if (_closed) return;
-        SetNativeReview(enabled ? threads : [], revealThread, revealToken);
+        SetNativeReview(
+            file, enabled && canComment, canDraft, canComplete, enabled ? threads : [], enabled ? drafts : [], revealThread, revealToken);
         var json = Serialize(w =>
         {
             w.WriteString("type", "review");
@@ -149,8 +158,13 @@ public sealed partial class CodeEditor
         if (_ready) _view!.CoreWebView2.PostWebMessageAsJson(json);
     }
 
-    /// <summary>Tells the page how the write a box was waiting for ended (the box closes, or stays with its text).</summary>
-    public void ReviewDone(int key, bool ok) => Send(w =>
+    /// <summary>Tells the box how the write it was waiting for ended (the box closes, or stays with its text).</summary>
+    public void ReviewDone(int key, bool ok)
+    {
+        if (!NativeReviewDone(key, ok)) SendReviewDone(key, ok);
+    }
+
+    private void SendReviewDone(int key, bool ok) => Send(w =>
     {
         w.WriteString("type", "reviewResult");
         w.WriteNumber("key", key);

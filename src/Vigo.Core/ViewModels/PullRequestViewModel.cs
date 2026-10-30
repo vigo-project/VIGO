@@ -806,6 +806,21 @@ public sealed partial class PullRequestViewModel : HostedDiscussionViewModel, ID
         return true;
     }
 
+    /// <summary>The comments of the review threads take reactions (GitHub).</summary>
+    public bool CanReactInThreads => CanReview && Hosting.Repository is { } r && Accounts!.SupportsReviewCommentReactions(r.Provider);
+
+    /// <summary>Adds the signed-in account's reaction to a comment of a review thread, or removes it (as in the conversation).</summary>
+    public async Task ToggleThreadReactionAsync(long commentId, ReactionKind kind)
+    {
+        if (Repository is not { } repository || Accounts is null || !CanReactInThreads) return;
+        if (Detail?.ReviewThreads.FirstOrDefault(t => t.Comments.Any(c => c.Id == commentId)) is not { } thread) return;
+        var comment = await WriteAsync(Loc.Get("Issue.Failure.ReactionNotSaved"),
+            ct => Accounts.ToggleReviewCommentReactionAsync(repository, commentId, kind, ProfileId?.Invoke(), ct));
+        if (comment is null) return;
+        // The service gives the comment back: its text and author are kept, only the reactions are taken.
+        ReplaceThread(thread with { Comments = [.. thread.Comments.Select(c => c.Id == commentId ? c with { Reactions = comment.Reactions } : c)] });
+    }
+
     /// <summary>Marks the thread resolved, or opens it again.</summary>
     [RelayCommand]
     private async Task ToggleResolvedAsync(ThreadRow row) => await SetThreadResolvedAsync(row.Thread.Id, !row.Thread.IsResolved);
@@ -844,7 +859,7 @@ public sealed partial class PullRequestViewModel : HostedDiscussionViewModel, ID
             var now = Time.GetUtcNow();
             foreach (var thread in detail.ReviewThreads.Where(t => t.Path == file.Path))
                 FileThreads.Add(new ThreadRow(thread,
-                    [.. thread.Comments.Select(c => new ThreadCommentRow(c, RelativeTime.Format(c.CreatedAt, now, Time.LocalTimeZone)))], CanReview));
+                    [.. thread.Comments.Select(c => new ThreadCommentRow(c, RelativeTime.Format(c.CreatedAt, now, Time.LocalTimeZone), CanReactInThreads))], CanReview));
         }
         OnPropertyChanged(nameof(HasFileThreads));
         BumpReviewRevision();

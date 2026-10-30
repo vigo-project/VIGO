@@ -10,9 +10,10 @@ using LoomRange = LoomEditor.Core.Text.Range;
 namespace Vigo.App.Controls;
 
 /// <summary>
-/// Discussions of a pull request in the native diffs (ADR-090, review step R1, read only): a <see cref="ReviewThreadCard"/> in a
-/// view zone under the line each thread is about, and its range highlighted. A thread whose line the unified diff does not show
-/// goes after the last line. A card is measured when its zone is added; afterwards the zone follows its real height
+/// Discussions of a pull request in the native diffs (ADR-090, review steps R1 and R2): a <see cref="ReviewThreadCard"/> in a
+/// view zone under the line each thread is about, and its range highlighted; the comments kept for the review and the box of a
+/// new comment the same way (<see cref="ReviewNoteCard"/>; writing: CodeEditor.Native.ReviewWrite.cs). A thread whose line the
+/// unified diff does not show goes after the last line. A card is measured when its zone is added; afterwards the zone follows its real height
 /// (<c>SetViewZoneHeight</c>: pictures loaded, thread unfolded, new width) without being laid out again.
 /// </summary>
 public sealed partial class CodeEditor
@@ -26,9 +27,9 @@ public sealed partial class CodeEditor
     private static readonly EditorDecorationOptions ReviewLines = new() { IsWholeLine = true, ClassName = "vigo-rv-range" };
 
     /// <summary>A card shown in a zone: the zone it is in, the line the zone follows, the card's height.</summary>
-    private sealed class ReviewEntry(ReviewThreadCard card, string zone, int after, double height)
+    private sealed class ReviewEntry(FrameworkElement card, string zone, int after, double height)
     {
-        public ReviewThreadCard Card { get; } = card;
+        public FrameworkElement Card { get; } = card;
         public string Zone { get; } = zone;
         public int After { get; } = after;
         public double Height { get; set; } = height;
@@ -43,6 +44,10 @@ public sealed partial class CodeEditor
         public Loom? Editor;
         // The zone heights above the lines (unified diff only: its gutter needs them).
         public Dictionary<int, double>? ZoneAbove;
+        // The boxes on screen, by key (the focus goes back to the same box once the cards are laid out again).
+        public readonly Dictionary<string, ReviewMarkdownBox> Boxes = [];
+        // "Commenter" on a right click (not set while the review cannot be commented).
+        public MenuFlyout? Flyout;
     }
 
     private IReadOnlyList<ThreadRow> _threads = [];
@@ -61,9 +66,30 @@ public sealed partial class CodeEditor
             Background = ThemeColorOf(Light.Selected), DarkBackground = ThemeColorOf(Dark.Selected),
         });
 
-    private void SetNativeReview(IReadOnlyList<ThreadRow> threads, string? revealThread, int revealToken)
+    private void SetNativeReview(
+        string file, bool canComment, bool canDraft, bool canComplete, IReadOnlyList<ThreadRow> threads,
+        IReadOnlyList<(int Index, ReviewDraftRow Row)> drafts, string? revealThread, int revealToken)
     {
+        // Another file: its boxes are gone (as in the page).
+        if (file != _reviewFile)
+        {
+            CloseComposer();
+            _reviewFile = file;
+            _replies.Clear();
+            _openReplies.Clear();
+            _resolving.Clear();
+            _expandedThreads.Clear();
+        }
+        _canComment = canComment;
+        _canDraft = canDraft;
+        _canComplete = canComplete;
+        if (!canComment)
+        {
+            CloseComposer();
+            HideSelectionButton();
+        }
         _threads = threads;
+        _drafts = drafts;
         _revealThread = revealThread;
         _revealToken = revealToken;
         QueueReviewLayout();
@@ -78,8 +104,11 @@ public sealed partial class CodeEditor
         {
             _reviewLayoutQueued = false;
             if (_closed) return;
+            // The box being typed in is created again: it gets the focus back, with its caret.
+            _focusBox ??= FocusedBox();
             if (_doc is not null && _unified is { } unified) AddUnifiedZones(unified);
             LayoutSideReview();
+            _focusBox = null;
         });
     }
 
@@ -88,6 +117,9 @@ public sealed partial class CodeEditor
         // Original / Modified throw until the template is applied: laid out again on Loaded.
         if (_diff is not { IsLoaded: true } diff || _diffPath is null) return;
         var onScreen = ReferenceEquals(Content, diff);
+        // LoomEditor's "+" on the line numbers raises AddCommentRequested, which opens the box (the editor adds no thread itself).
+        diff.Original.CommentGutterButtonEnabled = _canComment;
+        diff.Modified.CommentGutterButtonEnabled = _canComment;
         LayoutSide(_originalReview, diff.Original, ReviewSide.Old, onScreen);
         LayoutSide(_modifiedReview, diff.Modified, ReviewSide.New, onScreen);
     }
@@ -130,8 +162,9 @@ public sealed partial class CodeEditor
         editor.ActualWidth - (_diff is { RenderOverviewRuler: true, IsLoaded: true } diff && ReferenceEquals(editor, diff.Modified) ? DiffOverviewWidth : 0);
 
     /// <summary>
-    /// Adds a zone with a new card for each thread (of <paramref name="side"/> only, or all), and highlights the ranges. The zone
-    /// ids go to <paramref name="zones"/>, the heights to <paramref name="zoneAbove"/> (keyed by the line under the zone) when given.
+    /// Adds a zone with a new card for each thread, kept comment and the box of a new comment (of <paramref name="side"/> only, or
+    /// all), and highlights their ranges. The zone ids go to <paramref name="zones"/>, the heights to <paramref name="zoneAbove"/>
+    /// (keyed by the line under the zone) when given.
     /// </summary>
     private void AddReviewZones(
         ReviewSurface surface, Loom editor, Func<ReviewSide, int, int?> modelLine, ReviewSide? side, bool onScreen,
@@ -143,28 +176,36 @@ public sealed partial class CodeEditor
             surface.Decorations = editor.CreateDecorationsCollection(Array.Empty<EditorDecoration>());
             // A new width wraps the comments differently: the cards take it, their zones follow their height.
             editor.LayoutChanged += (_, _) => FitCards(surface, editor);
+            surface.Flyout = CommentFlyout(editor, side);
+            WatchSelection(editor, side);
         }
+        editor.ContextFlyout = _canComment ? surface.Flyout : null;
         surface.ZoneAbove = zoneAbove;
         surface.Entries.Clear();
+        surface.Boxes.Clear();
+        var labels = EditorReviewLabels.Current;
         var width = CardWidth(editor, null);
         var ranges = new List<EditorDecoration>();
         var count = editor.Model.LineCount;
-        foreach (var row in _threads)
-        {
-            var thread = row.Thread;
-            if (side is { } only && thread.Side != only) continue;
-            var line = thread.Line is { } l ? modelLine(thread.Side, l) : null;
-            var start = thread.Line is { } last ? modelLine(thread.Side, thread.StartLine ?? last) : null;
-            if (line is { } end && start is { } first)
-            {
-                ranges.Add(thread.StartColumn is { } sc && thread.EndColumn is { } ec
-                    ? new EditorDecoration(new LoomRange(first, sc, end, ec), ReviewRange)
-                    : new EditorDecoration(new LoomRange(first, 1, end, 1), ReviewLines));
-            }
 
-            // A new card and host per zone: an element left in a removed zone may still have it as parent (crash 0x800f1000).
-            var card = new ReviewThreadCard(row) { Width = width };
-            card.Show(outsideDiff: line is null, _expandedThreads.Contains(thread.Id));
+        // The model line of an anchor (null when the editor does not show it); its range is highlighted.
+        int? Anchor(ReviewSide itemSide, int? line, int? startLine, int? startColumn, int? endColumn)
+        {
+            if (line is not { } last) return null;
+            var (first, end) = (modelLine(itemSide, startLine ?? last), modelLine(itemSide, last));
+            if (first is { } f && end is { } e)
+            {
+                ranges.Add(startColumn is { } sc && endColumn is { } ec
+                    ? new EditorDecoration(new LoomRange(f, sc, e, ec), ReviewRange)
+                    : new EditorDecoration(new LoomRange(f, 1, e, 1), ReviewLines));
+            }
+            return end;
+        }
+
+        // A new card and host per zone: an element left in a removed zone may still have it as parent (crash 0x800f1000).
+        ReviewEntry Place(FrameworkElement card, int? line)
+        {
+            card.Width = width;
             card.Measure(new Size(width, double.PositiveInfinity));
             var height = card.DesiredSize.Height;
             // The host does not limit the card: its real height is known from SizeChanged.
@@ -181,6 +222,19 @@ public sealed partial class CodeEditor
             var entry = new ReviewEntry(card, zone, after, height);
             surface.Entries.Add(entry);
             card.SizeChanged += (_, e) => OnCardResized(surface, editor, entry, e.NewSize.Height);
+            return entry;
+        }
+
+        foreach (var row in _threads)
+        {
+            var thread = row.Thread;
+            if (side is { } only && thread.Side != only) continue;
+            var line = Anchor(thread.Side, thread.Line, thread.StartLine, thread.StartColumn, thread.EndColumn);
+            var card = new ReviewThreadCard(row);
+            card.Show(outsideDiff: line is null, _expandedThreads.Contains(thread.Id));
+            AddThreadActions(surface, card);
+            card.ReactionToggled += (_, reaction) => ReviewReactionToggled?.Invoke(this, reaction);
+            var entry = Place(card, line);
             card.Toggled += (_, _) =>
             {
                 if (!_expandedThreads.Remove(thread.Id)) _expandedThreads.Add(thread.Id);
@@ -190,8 +244,32 @@ public sealed partial class CodeEditor
             if (onScreen && thread.Id == _revealThread && _revealToken > 0 && _revealToken != _revealedToken)
             {
                 _revealedToken = _revealToken;
-                editor.ScrollTop = Math.Max(0, editor.GetTopForLineNumber(Math.Max(1, after), false) - editor.ActualHeight / 3);
+                editor.ScrollTop = Math.Max(0, editor.GetTopForLineNumber(Math.Max(1, entry.After), false) - editor.ActualHeight / 3);
             }
+        }
+
+        foreach (var (index, row) in _drafts)
+        {
+            var draft = row.Comment;
+            if (side is { } only && draft.Side != only) continue;
+            var line = Anchor(draft.Side, draft.Line, draft.StartLine, draft.StartColumn, draft.EndColumn);
+            var card = ReviewNoteCard.Draft(RangeText(draft.StartLine, draft.Line), draft.Body);
+            card.RemoveClicked += (_, _) => ReviewDraftRemoved?.Invoke(this, index);
+            Place(card, line);
+        }
+
+        if (_composer is { } composer && (side is null || side == composer.Side))
+        {
+            var line = Anchor(composer.Side, composer.Line, composer.StartLine, composer.StartColumn, composer.EndColumn);
+            var box = NewBox(surface, ComposerKey, composer.State, labels.Placeholder, labels.Comment, _canDraft ? labels.AddToReview : null, composer.Suggestion);
+            box.Submitted += (_, draft) => SubmitComment(composer, draft, box.Body);
+            box.Canceled += (_, _) =>
+            {
+                if (!ReferenceEquals(_composer, composer)) return;
+                CloseComposer();
+                QueueReviewLayout();
+            };
+            Place(ReviewNoteCard.Composer($"{labels.CommentOn} {RangeText(composer.StartLine, composer.Line)}", box), line);
         }
         surface.Decorations!.Set(ranges);
     }

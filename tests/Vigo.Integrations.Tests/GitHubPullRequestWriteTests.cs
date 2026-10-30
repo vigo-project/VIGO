@@ -433,6 +433,22 @@ public sealed class GitHubPullRequestWriteTests
     }
 
     [Fact]
+    public async Task A_reaction_on_a_review_comment_goes_to_the_pull_request_comment_endpoints()
+    {
+        var script = new Script((HttpStatusCode.OK, """[{"id":6,"user":{"login":"Octocat"}}]"""), (HttpStatusCode.NoContent, string.Empty), (HttpStatusCode.OK, CommentJson));
+        var client = new GitHubClient(new HttpClient(script), "client-1");
+
+        var result = await client.ToggleReviewCommentReactionAsync("tok", Atlas, 99, ReactionKind.ThumbsUp, "octocat", Ct);
+
+        var comment = Assert.IsType<Success<ReviewThreadComment>>(result.Value).Value;
+        Assert.Equal((99L, "octocat", "Hi"), (comment.Id, comment.Author, comment.Body));
+        Assert.Equal([new ReactionCount(ReactionKind.ThumbsUp, 2), new ReactionCount(ReactionKind.Heart, 1)], comment.Reactions!);
+        Assert.Equal((HttpMethod.Get, Api + "/pulls/comments/99/reactions?content=%2B1&per_page=100"), (script.Calls[0].Method, script.Calls[0].Url));
+        Assert.Equal((HttpMethod.Delete, Api + "/pulls/comments/99/reactions/6"), (script.Calls[1].Method, script.Calls[1].Url));
+        Assert.Equal(Api + "/pulls/comments/99", script.Calls[2].Url);
+    }
+
+    [Fact]
     public async Task A_reaction_the_account_already_gave_is_removed()
     {
         var script = new Script((HttpStatusCode.OK, """[{"id":5,"user":{"login":"ada"}},{"id":6,"user":{"login":"Octocat"}}]"""), (HttpStatusCode.NoContent, string.Empty), (HttpStatusCode.OK, CommentJson));

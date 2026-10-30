@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Discussion thread of a pull request in the native diff (ADR-090, review step R1, read only): where it is, its state, the
-    comments with their Markdown. Shown in a view zone of the editor under the line it is about. A resolved thread is folded
-    to its number of comments until "Afficher" is clicked.
+    Discussion thread of a pull request in the native diff (ADR-090, review steps R1 and R2): where it is, its state, the
+    comments with their Markdown, and when the account may write, "Résoudre" / "Rouvrir" and the reply box. Shown in a view
+    zone of the editor under the line it is about. A resolved thread is folded to its number of comments until "Afficher" is
+    clicked.
 -->
 <UserControl
     x:Class="Vigo.App.Controls.ReviewThreadCard"
@@ -21,6 +22,7 @@
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <TextBlock x:Name="WhereText" VerticalAlignment="Center" FontFamily="{StaticResource VigoMonoFont}"
                            FontSize="{ThemeResource VigoFontSize11}" Foreground="{ThemeResource VigoText3Brush}" />
@@ -36,6 +38,8 @@
                 </Border>
                 <HyperlinkButton x:Name="ToggleButton" Grid.Column="4" Padding="4,0" MinHeight="0" VerticalAlignment="Center"
                                  FontSize="{ThemeResource VigoFontSize12}" Visibility="Collapsed" Click="OnToggleClick" />
+                <Button x:Name="ResolveButton" Grid.Column="5" Style="{StaticResource VigoStandardButton}" Height="24" Visibility="Collapsed"
+                        Click="OnResolveClick" />
             </Grid>
             <TextBlock x:Name="SummaryText" FontSize="{ThemeResource VigoFontSize12}" Foreground="{ThemeResource VigoText3Brush}"
                        Visibility="Collapsed" />
@@ -57,10 +61,52 @@
                                 <TextBlock Text="{x:Bind DateText}" FontSize="{ThemeResource VigoFontSize11}" Foreground="{ThemeResource VigoText3Brush}" VerticalAlignment="Center" />
                             </StackPanel>
                             <controls:MarkdownView Blocks="{x:Bind Body}" Visibility="{x:Bind HasBody}" />
+                            <!-- Reactions: a click toggles the account's own, "+" opens the picker (as in the conversation). -->
+                            <StackPanel Orientation="Horizontal" Spacing="4" Visibility="{x:Bind CanReact}">
+                                <ItemsControl ItemsSource="{x:Bind Reactions}" Visibility="{x:Bind HasReactions}" IsTabStop="False">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <StackPanel Orientation="Horizontal" Spacing="4" />
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="vm:ReactionChip">
+                                            <Button Style="{StaticResource VigoStandardButton}" Height="24" Padding="8,0" Click="OnReactionClick"
+                                                    ToolTipService.ToolTip="{x:Bind ToolTip}" AutomationProperties.Name="{x:Bind ToolTip}">
+                                                <TextBlock Text="{x:Bind Text}" FontSize="{ThemeResource VigoFontSize12}" />
+                                            </Button>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                                <Button x:Uid="IssueAddReaction" Style="{StaticResource VigoSubtleButton}" Height="24" Padding="6,0" Click="OnAddReactionClick">
+                                    <FontIcon Style="{StaticResource VigoIcon}" FontSize="12" Glyph="{x:Bind controls:FluentIcons.Add}" />
+                                </Button>
+                            </StackPanel>
+                            <ItemsControl ItemsSource="{x:Bind Reactions}" Visibility="{x:Bind ShowReadOnlyReactions}" IsTabStop="False">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <StackPanel Orientation="Horizontal" Spacing="4" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:ReactionChip">
+                                        <Border Padding="8,2" CornerRadius="12" Background="{ThemeResource VigoLayer2Brush}"
+                                                ToolTipService.ToolTip="{x:Bind ToolTip}" AutomationProperties.Name="{x:Bind ToolTip}">
+                                            <TextBlock Text="{x:Bind Text}" FontSize="{ThemeResource VigoFontSize12}" />
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
                         </StackPanel>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
+            <StackPanel x:Name="ReplyArea" Visibility="Collapsed">
+                <!-- Looks like an empty text field: a click opens the reply box. -->
+                <Button x:Name="ReplyPlaceholder" Style="{StaticResource VigoStandardButton}" HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Left" FontWeight="Normal" Foreground="{ThemeResource VigoText3Brush}" Click="OnReplyClick" />
+                <Border x:Name="ReplyHost" />
+            </StackPanel>
         </StackPanel>
     </Border>
 </UserControl>

@@ -24,7 +24,6 @@ public sealed partial class PullRequestView : UserControl
 
     // What the editor shows, to send it again only when it changes.
     private object? _shown;
-    private bool _shownNative;
 
     public PullRequestView()
     {
@@ -45,6 +44,7 @@ public sealed partial class PullRequestView : UserControl
         Editor.ReviewReplied += OnReviewReplied;
         Editor.ReviewResolveRequested += OnReviewResolveRequested;
         Editor.ReviewDraftRemoved += (_, index) => _viewModel?.RemoveDraftAt(index);
+        Editor.ReviewReactionToggled += (_, reaction) => _ = _viewModel?.ToggleThreadReactionAsync(reaction.CommentId, reaction.Kind);
         Editor.LinkClicked += OnEditorLinkClicked;
         Editor.ReferenceRequested += OnReferenceRequested;
         ActualThemeChanged += (_, _) => UpdateStateBadge();
@@ -200,8 +200,8 @@ public sealed partial class PullRequestView : UserControl
         });
     }
 
-    // The discussions of the file, the comments kept for the review and the right to comment go to the editor page, which draws
-    // them under the lines (J6.11). Sent before the diff itself, so that a new file shows its own threads at once.
+    // The discussions of the file, the comments kept for the review and the right to comment go to the editor, which draws
+    // them under the lines (J6.11; native since ADR-090, step R2). Sent before the diff itself, so that a new file shows its own threads at once.
     private void SendReview()
     {
         var vm = _viewModel;
@@ -301,22 +301,15 @@ public sealed partial class PullRequestView : UserControl
         DiffMessage.Visibility = message is null ? Visibility.Collapsed : Visibility.Visible;
         Editor.Visibility = diff is null || Editor.Failed ? Visibility.Collapsed : Visibility.Visible;
         object? content = diff is null ? null : vm!.IsSideBySide ? (object?)vm.Sides ?? diff : diff;
-        // Writing in the review (comment, reply, resolve) still lives in the editor page (ADR-090, step R2): the native editor
-        // shows the threads read only, when the service lets the screen write nothing.
-        var native = vm is { CanReview: false };
-        // Replays of the native review before R2, also in the AOT build: VIGO_NATIVE_REVIEW=1 forces the native editor (writing is
-        // then unavailable). No effect unless set; removed with R2.
-        native |= Environment.GetEnvironmentVariable("VIGO_NATIVE_REVIEW") == "1";
-        if (ReferenceEquals(content, _shown) && native == _shownNative) return;
+        if (ReferenceEquals(content, _shown)) return;
         _shown = content;
-        _shownNative = native;
         switch (content)
         {
             case DiffSides sides:
-                Editor.ShowSideBySide(sides, native);
+                Editor.ShowSideBySide(sides);
                 break;
             case FileDiff shown:
-                Editor.ShowDiff(shown.Path, DiffDocument.Build(shown), [], staging: null, keepScroll: false, native);
+                Editor.ShowDiff(shown.Path, DiffDocument.Build(shown), [], staging: null, keepScroll: false);
                 break;
             default:
                 Editor.Clear();

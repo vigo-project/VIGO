@@ -272,6 +272,17 @@ public interface IHostingClient
     /// <summary>The service lets the screen reply to threads on the diff, resolve them and send a review (J6.9e).</summary>
     bool SupportsPullRequestReview => false;
 
+    /// <summary>Reactions can be given to the comments of review threads (<see cref="ToggleReviewCommentReactionAsync"/>).</summary>
+    bool SupportsReviewCommentReactions => false;
+
+    /// <summary>
+    /// Adds the reaction of the account <paramref name="login"/> to a comment of a review thread, or removes it when already there;
+    /// returns the comment as the service now has it.
+    /// </summary>
+    Task<GitResult<ReviewThreadComment>> ToggleReviewCommentReactionAsync(
+        string token, HostRepository repository, long commentId, ReactionKind reaction, string login, CancellationToken cancellationToken = default) =>
+        Task.FromResult<GitResult<ReviewThreadComment>>(NotWritable);
+
     /// <summary>Adds a reply to <paramref name="thread"/>.</summary>
     Task<GitResult<ReviewThreadComment>> ReplyToReviewThreadAsync(
         string token, HostRepository repository, PullRequest pullRequest, ReviewThread thread, string body, CancellationToken cancellationToken = default) =>
@@ -625,6 +636,13 @@ public sealed class HostAccounts(
 
     /// <summary>The pull request screen can reply to threads, resolve them and send reviews for this provider (J6.9e).</summary>
     public bool SupportsPullRequestReview(HostingProvider provider) => _clients.TryGetValue(provider, out var c) && c.SupportsPullRequestReview;
+
+    public bool SupportsReviewCommentReactions(HostingProvider provider) => _clients.TryGetValue(provider, out var c) && c.SupportsReviewCommentReactions;
+
+    public Task<GitResult<ReviewThreadComment>> ToggleReviewCommentReactionAsync(
+        HostRepository repository, long commentId, ReactionKind reaction, string? profileId = null, CancellationToken cancellationToken = default) =>
+        CallAsync(repository, (client, token) => client.ToggleReviewCommentReactionAsync(
+            token, repository, commentId, reaction, AccountOf(repository.Provider, profileId)?.Login ?? string.Empty, cancellationToken), profileId, cancellationToken);
 
     public Task<GitResult<ReviewThreadComment>> ReplyToReviewThreadAsync(
         HostRepository repository, PullRequest pullRequest, ReviewThread thread, string body, string? profileId = null, CancellationToken cancellationToken = default) =>
