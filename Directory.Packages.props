@@ -12,7 +12,7 @@
     <!-- Integrated terminal (native control, VT engine and ConPTY; brings LoomTerminal.Presentation, .Core and .Pty) -->
     <PackageVersion Include="LoomTerminal.WinUI" Version="0.1.0-alpha.2" />
     <!-- Code editor (native control ported from Monaco, Win2D; brings LoomEditor.Rendering, .View, .TextMate, .Themes and .Core) -->
-    <PackageVersion Include="LoomEditor.WinUI" Version="0.2.0-alpha.1" />
+    <PackageVersion Include="LoomEditor.WinUI" Version="0.2.0-alpha.2" />
     <!-- Markdown of pull requests and issues (parser only; rendered by the app) -->
     <PackageVersion Include="Markdig" Version="1.4.0" />
     <!-- Hosting / logs -->

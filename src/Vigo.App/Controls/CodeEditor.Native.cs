@@ -163,6 +163,7 @@ public sealed partial class CodeEditor
         diff.OriginalText = sides.Original;
         diff.ModifiedText = sides.Modified;
         ShowNative(diff);
+        // Not loaded yet (first diff, or after another kind of diff): the control waits for its next load.
         RevealFirstChange(diff);
     }
 

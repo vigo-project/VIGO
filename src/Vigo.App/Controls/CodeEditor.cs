@@ -325,8 +325,8 @@ public sealed partial class CodeEditor : UserControl
     public void Clear()
     {
         ClearNative();
-        // The page is not started just to be cleared.
-        if (_view is not null) Send(w => w.WriteString("type", "clear"), content: true);
+        // The page is not started just to be cleared, nor put back on screen: that would unload a native editor shown.
+        if (_view is not null) Send(w => w.WriteString("type", "clear"), content: true, show: false);
     }
 
     /// <summary>Gives the keyboard focus to the editor.</summary>
@@ -626,10 +626,10 @@ public sealed partial class CodeEditor : UserControl
     /// Posts a message now, or once the page is ready (starting it if needed). A new <paramref name="content"/>
     /// replaces what is still waiting: only the last diff opened before the page is ready is shown.
     /// </summary>
-    private void Send(Action<Utf8JsonWriter> write, bool content = false)
+    private void Send(Action<Utf8JsonWriter> write, bool content = false, bool show = true)
     {
         if (_closed) return;
-        if (content && _view is not null && !ReferenceEquals(Content, _view)) Content = _view;
+        if (content && show && _view is not null && !ReferenceEquals(Content, _view)) Content = _view;
         var json = Serialize(write);
         if (_ready)
         {
