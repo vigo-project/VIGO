@@ -11,6 +11,9 @@ public sealed class AiBackendTests
 {
     private static CancellationToken Ct => TestContext.Current.CancellationToken;
 
+    // Copies stdin to stdout: a stand-in for a tool that reads the prompt and prints the message.
+    private static readonly string Echo = OperatingSystem.IsWindows() ? "findstr ^" : "cat";
+
     private sealed class FakeVault(string? key) : ISecretVault
     {
         public string? Retrieve(string name) => key;
@@ -96,10 +99,9 @@ public sealed class AiBackendTests
     [Fact]
     public async Task Cli_gets_the_prompt_on_stdin_and_returns_stdout()
     {
-        // findstr "^" copies stdin to stdout: a stand-in for a tool that reads the prompt and prints the message.
         var sut = new CliAiBackend();
 
-        var result = await sut.CompleteAsync(new AiRequest("Add feature\n\nBecause.", null, "findstr ^"), Ct);
+        var result = await sut.CompleteAsync(new AiRequest("Add feature\n\nBecause.", null, Echo), Ct);
 
         Assert.Contains("Add feature", Assert.IsType<Success<string>>(result.Value).Value, StringComparison.Ordinal);
     }
@@ -109,13 +111,14 @@ public sealed class AiBackendTests
     {
         var sut = new CliAiBackend();
 
-        var result = await sut.CompleteAsync(new AiRequest("p", null, "findstr /Z"), Ct);
+        var result = await sut.CompleteAsync(new AiRequest("p", null, OperatingSystem.IsWindows() ? "findstr /Z" : "cat --no-such-option"), Ct);
 
         Assert.IsType<Failure>(result.Value);
     }
-    [Fact]
+    [Fact, Trait("Platform", "Windows")]
     public async Task A_cmd_script_is_refused_when_the_prompt_is_an_argument()
     {
+        Assert.SkipUnless(OperatingSystem.IsWindows(), "cmd scripts run on Windows only.");
         var folder = Directory.CreateTempSubdirectory("vigo-ai-").FullName;
         try
         {
@@ -144,9 +147,9 @@ public sealed class AiBackendTests
     [InlineData("a b", false)]
     public async Task The_model_name_is_checked_before_it_reaches_the_command_line(string model, bool allowed)
     {
-        var result = await new CliAiBackend().CompleteAsync(new AiRequest("p", model, "findstr ^"), Ct);
+        var result = await new CliAiBackend().CompleteAsync(new AiRequest("p", model, Echo), Ct);
 
-        // findstr rejects the --model flag it is given, so "allowed" means: not refused by the name check.
+        // findstr (cat) rejects the --model flag it is given, so "allowed" means: not refused by the name check.
         var refused = result.Value is Failure f && f.Message == Loc.Get("Ai.Cli.ModelRefused");
         Assert.Equal(allowed, !refused);
     }

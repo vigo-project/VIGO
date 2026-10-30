@@ -17,7 +17,7 @@ public sealed class RepositoryWatcherTests
     [InlineData(@"C:\repo\.git\objects\ab\cdef", false)]
     [InlineData(@"C:\repo\.git\index", false)]
     public void Working_directory_events_inside_the_git_directory_are_ignored(string path, bool relevant) =>
-        Assert.Equal(relevant, RepositoryWatcher.IsWorkTreePathRelevant(path, GitDir));
+        Assert.Equal(relevant, RepositoryWatcher.IsWorkTreePathRelevant(TestPaths.Native(path), TestPaths.Native(GitDir)));
 
     [Theory]
     [InlineData(@"C:\repo\.git\index", false, false)]

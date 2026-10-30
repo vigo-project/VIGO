@@ -2,6 +2,7 @@ using Vigo.Core.Models;
 using Vigo.Core.Results;
 using Vigo.Core.Services;
 using Vigo.Core.ViewModels;
+using Vigo.TestUtilities;
 
 namespace Vigo.Core.Tests;
 
@@ -14,7 +15,7 @@ public sealed class CloneViewModelTests : IDisposable
     private readonly Preferences _preferences;
 
     public CloneViewModelTests() =>
-        _preferences = new Preferences(_store, new UserPreferences { LastCloneParent = @"D:\work" });
+        _preferences = new Preferences(_store, new UserPreferences { LastCloneParent = TestPaths.Native(@"D:\work") });
 
     private static CancellationToken Ct => TestContext.Current.CancellationToken;
 
@@ -30,30 +31,38 @@ public sealed class CloneViewModelTests : IDisposable
     [InlineData("  ", "")]
     [InlineData("https://host/MP-People%20-%20Portail%20IJ%20-%20Existant", "MP-People - Portail IJ - Existant")]
     [InlineData("https://host/team/My%20Repo.git", "My Repo")]
-    [InlineData("https://host/team/a%3Ab%2Fc", "abc")]
+    [InlineData("https://host/team/a%2Fc", "ac")]
     [InlineData("https://host/team/100%", "100%")]
     [InlineData("https://host/team/bad%ZZname", "bad%ZZname")]
     public void Repository_name_comes_from_the_url(string url, string expected) =>
         Assert.Equal(expected, CloneViewModel.RepositoryName(url));
 
+    [Fact, Trait("Platform", "Windows")]
+    public void Repository_name_drops_the_characters_a_windows_folder_cannot_hold()
+    {
+        // Path.GetInvalidFileNameChars: ':' is only invalid in a Windows file name.
+        Assert.SkipUnless(OperatingSystem.IsWindows(), "Windows file name rules.");
+        Assert.Equal("abc", CloneViewModel.RepositoryName("https://host/team/a%3Ab%2Fc"));
+    }
+
     [Fact]
     public async Task Destination_follows_the_url_until_edited_and_browse_changes_the_parent()
     {
         var sut = CreateSut();
-        Assert.Equal(@"D:\work", sut.Destination);
+        Assert.Equal(TestPaths.Native(@"D:\work"), sut.Destination);
         Assert.False(sut.CanClone);
 
         sut.Url = "https://github.com/atlas/api.git";
-        Assert.Equal(@"D:\work\api", sut.Destination);
+        Assert.Equal(TestPaths.Native(@"D:\work\api"), sut.Destination);
         Assert.True(sut.CanClone);
 
-        _picker.Next = @"E:\src";
+        _picker.Next = TestPaths.Native(@"E:\src");
         await sut.BrowseCommand.ExecuteAsync(null);
-        Assert.Equal(@"E:\src\api", sut.Destination);
+        Assert.Equal(TestPaths.Native(@"E:\src\api"), sut.Destination);
 
-        sut.Destination = @"E:\elsewhere";
+        sut.Destination = TestPaths.Native(@"E:\elsewhere");
         sut.Url = "https://github.com/atlas/web.git";
-        Assert.Equal(@"E:\elsewhere", sut.Destination);
+        Assert.Equal(TestPaths.Native(@"E:\elsewhere"), sut.Destination);
 
         sut.Destination = "relative";
         Assert.False(sut.CanClone);
@@ -65,16 +74,16 @@ public sealed class CloneViewModelTests : IDisposable
         var sut = CreateSut();
         sut.Url = " https://github.com/atlas/api.git ";
         sut.Shallow = true;
-        _picker.Next = @"E:\src";
+        _picker.Next = TestPaths.Native(@"E:\src");
         await sut.BrowseCommand.ExecuteAsync(null);
         var dialog = new ClickingDialog();
 
         var cloned = await sut.RunAsync(dialog, Ct);
 
-        Assert.Equal(@"E:\src\api", cloned?.WorkingDirectory);
-        Assert.Equal(new CloneRequest("https://github.com/atlas/api.git", @"E:\src\api", RecurseSubmodules: true, Shallow: true), Assert.Single(_git.Clones));
-        Assert.Equal(@"E:\src", _store.Saved?.LastCloneParent);
-        Assert.Equal(@"E:\src", new CloneViewModel(_git, _picker, _prompt, _preferences).Destination);
+        Assert.Equal(TestPaths.Native(@"E:\src\api"), cloned?.WorkingDirectory);
+        Assert.Equal(new CloneRequest("https://github.com/atlas/api.git", TestPaths.Native(@"E:\src\api"), RecurseSubmodules: true, Shallow: true), Assert.Single(_git.Clones));
+        Assert.Equal(TestPaths.Native(@"E:\src"), _store.Saved?.LastCloneParent);
+        Assert.Equal(TestPaths.Native(@"E:\src"), new CloneViewModel(_git, _picker, _prompt, _preferences).Destination);
         Assert.False(sut.IsCloning);
     }
 
@@ -128,7 +137,7 @@ public sealed class CloneViewModelTests : IDisposable
         await sut.RunAsync(new ClickingDialog(), Ct);
 
         Assert.Equal(["https://example.com/team/api.git", "git@example.com:team/api.git"], _git.Clones.Select(c => c.Url));
-        Assert.Equal(@"D:\work\api", _git.Clones[1].Directory);
+        Assert.Equal(TestPaths.Native(@"D:\work\api"), _git.Clones[1].Directory);
     }
 
     [Fact]

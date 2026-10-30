@@ -15,7 +15,8 @@ namespace Vigo.Integrations.Ai;
 public sealed partial class CliAiBackend : IAiBackend
 {
     private static readonly TimeSpan Timeout = TimeSpan.FromSeconds(120);
-    private static readonly string[] Extensions = [".exe", ".cmd", ".bat", ".com"];
+    // Outside Windows (the Linux CI runs these tests) a program has no extension.
+    private static readonly string[] Extensions = OperatingSystem.IsWindows() ? [".exe", ".cmd", ".bat", ".com"] : [""];
 
     public AiProvider Provider => AiProvider.Cli;
 

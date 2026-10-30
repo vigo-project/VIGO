@@ -16,7 +16,7 @@ public sealed class SshPublicKeyTests
     [Fact]
     public void Ed25519_key_has_its_type_fingerprint_and_comment()
     {
-        var key = SshPublicKey.Parse(@"C:\keys\id_ed25519", Ed25519 + "\r\n");
+        var key = SshPublicKey.Parse(Path.Combine(Path.GetTempPath(), "keys", "id_ed25519"), Ed25519 + "\r\n");
 
         Assert.NotNull(key);
         Assert.Equal("ED25519", key.Type);

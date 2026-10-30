@@ -122,7 +122,8 @@ public sealed class GitProfilesTests
         var first = profiles.Add("A", "a", "a@x");
         var second = profiles.Add("B", "b", "b@x");
         profiles.SetActive(second.Id);
-        await Task.Delay(100, Ct);
+        // Not a fixed delay: the saves run on a busy thread pool while the other tests run.
+        await profiles.WhenSavedAsync();
 
         Assert.Equal(second.Id, store.Saved.ActiveId);
         Assert.Equal([first.Id, second.Id], store.Saved.Profiles.Select(p => p.Id));

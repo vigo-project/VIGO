@@ -302,7 +302,7 @@ public sealed class SubmoduleActionsViewModelTests : IDisposable
         Assert.True(dialog.CanConfirm); // the folder is optional
         dialog.SecondText = "../outside";
         Assert.Equal("Le dossier doit rester dans le dépôt.", dialog.SecondError);
-        dialog.SecondText = @"C:\elsewhere";
+        dialog.SecondText = TestPaths.Native(@"C:\elsewhere");
         Assert.Equal("Saisissez un chemin relatif au dépôt.", dialog.SecondError);
         dialog.SecondText = "libs/x";
         Assert.True(dialog.CanConfirm);

@@ -68,6 +68,14 @@ public sealed class TestRepoBuilder : IDisposable
         Environment.SetEnvironmentVariable("GIT_CONFIG_VALUE_0", "always");
     }
 
+    /// <summary>Writes a hook script (LF line endings, no BOM), executable outside Windows: git skips a hook that is not.</summary>
+    public static void WriteHook(string path, string script)
+    {
+        File.WriteAllText(path, script.ReplaceLineEndings("\n"), new UTF8Encoding(false));
+        if (!OperatingSystem.IsWindows())
+            File.SetUnixFileMode(path, File.GetUnixFileMode(path) | UnixFileMode.UserExecute | UnixFileMode.GroupExecute | UnixFileMode.OtherExecute);
+    }
+
     /// <summary>Wraps a repository created elsewhere (e.g. cloned by VIGO); disposing it deletes the folder.</summary>
     public static TestRepoBuilder Attach(string path)
     {
