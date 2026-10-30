@@ -8,5 +8,3 @@
 *.mjs text eol=lf
 *.ttf binary
 *.png binary
-# Code editor page bundled by tools/editor/build.mjs (ADR-038): kept byte for byte, not diffed.
-src/Vigo.App/Editor/** -text -diff linguist-generated=true

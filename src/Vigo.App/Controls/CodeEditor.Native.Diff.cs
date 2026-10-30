@@ -293,7 +293,7 @@ public sealed partial class CodeEditor
         };
         if (key is null) return;
         e.Handled = true;
-        KeyPressed?.Invoke(this, new EditorKey(key, 0, false, false, false));
+        KeyPressed?.Invoke(this, key);
     }
 
     private static bool IsDown(VirtualKey key) => InputKeyboardSource.GetKeyStateForCurrentThread(key).HasFlag(CoreVirtualKeyStates.Down);

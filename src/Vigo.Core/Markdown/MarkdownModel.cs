@@ -1,4 +1,12 @@
+using Vigo.Core.Models;
+
 namespace Vigo.Core.Markdown;
+
+/// <summary>
+/// What references in hosting Markdown point to: <c>#n</c>, <c>!n</c>, <c>@login</c> (<paramref name="Links"/>) and the names
+/// of the people an Azure DevOps comment mentions by identifier (<paramref name="Names"/>: identifier → name; may be filled later).
+/// </summary>
+public sealed record MarkdownReferences(ReferenceLinks Links, IReadOnlyDictionary<string, string>? Names = null);
 
 /// <summary>Inline content of a Markdown block (J6.9a): text, code, emphasis, links.</summary>
 public abstract record MarkdownInline;

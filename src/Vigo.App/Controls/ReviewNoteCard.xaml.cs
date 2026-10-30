@@ -17,7 +17,7 @@ public sealed partial class ReviewNoteCard : UserControl
     public event EventHandler? RemoveClicked;
 
     /// <summary>A comment kept for the review: its place, "En attente", its text and "Retirer".</summary>
-    public static ReviewNoteCard Draft(string where, string body)
+    public static ReviewNoteCard Draft(string where, string body, MarkdownReferences? references)
     {
         var labels = EditorReviewLabels.Current;
         var card = new ReviewNoteCard(where);
@@ -27,7 +27,7 @@ public sealed partial class ReviewNoteCard : UserControl
         card.PendingBadge.Visibility = Visibility.Visible;
         card.RemoveButton.Content = labels.RemoveDraft;
         card.RemoveButton.Visibility = Visibility.Visible;
-        card.BodyView.Blocks = MarkdownParser.Parse(body);
+        card.BodyView.Blocks = MarkdownParser.Parse(body, references);
         card.BodyView.Visibility = Visibility.Visible;
         return card;
     }

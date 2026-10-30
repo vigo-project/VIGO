@@ -25,7 +25,7 @@ using LoomSelection = LoomEditor.Core.Text.Selection;
 namespace Vigo.App.Controls;
 
 /// <summary>
-/// Native part of the code editor (LoomEditor, Win2D, no WebView2): the modes moved off the Monaco page so far (ADR-090).
+/// Native part of the code editor (LoomEditor, Win2D; ADR-090).
 /// The blame (J5.6): the file read-only, the commit column drawn on its left with, for each block of lines from the same
 /// commit, an age bar, the author's avatar, the subject and the date on its first line. The side-by-side diff: a
 /// read-only <see cref="LoomDiff"/>.
@@ -128,7 +128,7 @@ public sealed partial class CodeEditor
         if (!ReferenceEquals(Content, element)) Content = element;
     }
 
-    /// <summary>The native editor on screen, for the focus; null when the page (or nothing) is shown.</summary>
+    /// <summary>The native editor on screen, for the focus; null when nothing is shown.</summary>
     private Control? NativeFocusTarget =>
         ReferenceEquals(Content, _blameHost) ? _native
         : ReferenceEquals(Content, _diff) ? (_diff!.IsLoaded ? _diff.Modified : _diff)

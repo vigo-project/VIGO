@@ -3,10 +3,8 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
-using Vigo.App.Services;
 using Vigo.App.Themes;
 using Vigo.Core.Models;
-using Vigo.Core.Services;
 using Vigo.Core.ViewModels;
 using Windows.System;
 
@@ -38,14 +36,11 @@ public sealed partial class PullRequestView : UserControl
         };
         KeyboardAccelerators.Add(escape);
         KeyboardAcceleratorPlacementMode = KeyboardAcceleratorPlacementMode.Hidden;
-        Editor.KeyPressed += OnEditorKey;
-        Editor.EditorFailed += (_, _) => QueueRefresh();
         Editor.ReviewSubmitted += OnReviewSubmitted;
         Editor.ReviewReplied += OnReviewReplied;
         Editor.ReviewResolveRequested += OnReviewResolveRequested;
         Editor.ReviewDraftRemoved += (_, index) => _viewModel?.RemoveDraftAt(index);
         Editor.ReviewReactionToggled += (_, reaction) => _ = _viewModel?.ToggleThreadReactionAsync(reaction.CommentId, reaction.Kind);
-        Editor.LinkClicked += OnEditorLinkClicked;
         Editor.ReferenceRequested += OnReferenceRequested;
         ActualThemeChanged += (_, _) => UpdateStateBadge();
 
@@ -212,9 +207,7 @@ public sealed partial class PullRequestView : UserControl
             ? [.. vm!.Drafts.Select((row, index) => (index, row)).Where(d => d.row.Comment.Path == file)]
             : [];
         Editor.ShowReview(
-            file, enabled, enabled && vm!.CanSubmitReview, enabled && vm!.CanDraftReviewComments, EditorReviewLabels.Current,
-            vm?.ReferenceLinks ?? new ReferenceLinks(null, null, null), vm?.MentionNames ?? new Dictionary<string, string>(),
-            enabled && vm!.CanCompleteReferences, threads, drafts, vm?.RevealThreadId, vm?.RevealToken ?? 0);
+            file, enabled, enabled && vm!.CanSubmitReview, enabled && vm!.CanDraftReviewComments, enabled && vm!.CanCompleteReferences, threads, drafts, vm?.References, vm?.RevealThreadId, vm?.RevealToken ?? 0);
     }
 
     // The write itself reports its failures in a toast (WriteAsync); the box always gets an answer, so that it never stays locked.
@@ -235,12 +228,6 @@ public sealed partial class PullRequestView : UserControl
         {
             // The tab was closed meanwhile: nothing to show.
         }
-    }
-
-    // Only web addresses leave the app (the page asks, it cannot navigate away by itself).
-    private static async void OnEditorLinkClicked(object? sender, string url)
-    {
-        if (Uri.TryCreate(url, UriKind.Absolute, out var uri) && uri.Scheme is "http" or "https") await Launcher.LaunchUriAsync(uri);
     }
 
     private async void OnReviewSubmitted(object? sender, EditorReviewSubmit e)
@@ -294,12 +281,10 @@ public sealed partial class PullRequestView : UserControl
         var vm = _viewModel;
         SendReview();
         var diff = vm is { IsOpen: true, IsFiles: true } ? vm.Diff : null;
-        var message = Editor.Failed && diff is not null
-            ? Loc.Get("Editor.Unavailable")
-            : vm is { IsFiles: true } ? vm.DiffMessage : null;
+        var message = vm is { IsFiles: true } ? vm.DiffMessage : null;
         DiffMessage.Text = message ?? string.Empty;
         DiffMessage.Visibility = message is null ? Visibility.Collapsed : Visibility.Visible;
-        Editor.Visibility = diff is null || Editor.Failed ? Visibility.Collapsed : Visibility.Visible;
+        Editor.Visibility = diff is null ? Visibility.Collapsed : Visibility.Visible;
         object? content = diff is null ? null : vm!.IsSideBySide ? (object?)vm.Sides ?? diff : diff;
         if (ReferenceEquals(content, _shown)) return;
         _shown = content;
@@ -315,13 +300,6 @@ public sealed partial class PullRequestView : UserControl
                 Editor.Clear();
                 break;
         }
-    }
-
-    /// <summary>Keys pressed in the editor page: Échap, then the app's shortcuts.</summary>
-    private void OnEditorKey(object? sender, EditorKey key)
-    {
-        if (key.Key == "Escape") Close();
-        else if (key.VirtualKey > 0) KeyboardShortcuts.TryInvoke(this, (VirtualKey)key.VirtualKey, key.Modifiers);
     }
 
     private void OnFileSelectionChanged(object sender, SelectionChangedEventArgs e)

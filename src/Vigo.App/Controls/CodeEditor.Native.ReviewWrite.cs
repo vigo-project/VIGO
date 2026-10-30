@@ -17,8 +17,7 @@ namespace Vigo.App.Controls;
 /// Writing in the native review (ADR-090, review step R2), as the page's review.js did: "Résoudre" / "Rouvrir" and the reply box
 /// of a thread, the box of a new comment on a line or a selection, "Retirer" on a kept comment, the proposals after #, ! and @.
 /// The boxes are created again with their cards on each layout: what they hold lives here (<see cref="ReviewBoxState"/>).
-/// A write or a search for proposals gets a negative key (never one of the page's): its answer never goes to the page, and is
-/// dropped when the box that asked was laid out again meanwhile.
+/// A write or a search for proposals gets a key: its answer is dropped when the box that asked was laid out again meanwhile.
 /// </summary>
 public sealed partial class CodeEditor
 {
@@ -72,21 +71,17 @@ public sealed partial class CodeEditor
         return startLine is { } start && start != line ? $"{labels.Lines} {start}–{line}" : $"{labels.Line} {line}";
     }
 
-    private bool NativeReviewDone(int key, bool ok)
+    private void NativeReviewDone(int key, bool ok)
     {
-        if (key >= 0) return false;
         if (_reviewWrites.Remove(key, out var done)) done(ok);
-        return true;
     }
 
     /// <summary>The proposals go to the box on screen that still waits for them (none after a new layout: dropped).</summary>
-    private bool ShowNativeReferences(int key, IReadOnlyList<ReferenceSuggestion> items)
+    private void ShowNativeReferences(int key, IReadOnlyList<ReferenceSuggestion> items)
     {
-        if (key >= 0) return false;
         foreach (var surface in (ReadOnlySpan<ReviewSurface>)[_unifiedReview, _originalReview, _modifiedReview])
             foreach (var box in surface.Boxes.Values)
                 if (box.ReferenceKey == key) box.ShowReferences(key, items);
-        return true;
     }
 
     /// <summary>Closes the box of a new comment; its text is kept for the same range.</summary>
@@ -114,7 +109,7 @@ public sealed partial class CodeEditor
     private ReviewMarkdownBox NewBox(
         ReviewSurface surface, string key, ReviewBoxState state, string placeholder, string primary, string? secondary, string? suggestion)
     {
-        var box = new ReviewMarkdownBox(state, placeholder, primary, secondary, suggestion, _canComplete);
+        var box = new ReviewMarkdownBox(state, placeholder, primary, secondary, suggestion, _canComplete, _reviewReferences);
         box.ReferencesRequested += (_, request) =>
         {
             var referenceKey = NextReviewKey();

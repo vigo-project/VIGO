@@ -1,4 +1,6 @@
 using Vigo.Core.Markdown;
+using Vigo.Core.Models;
+using Vigo.Core.Services;
 
 namespace Vigo.Core.Tests;
 
@@ -109,4 +111,53 @@ public sealed class MarkdownParserTests
 
         Assert.Equal(MarkdownEmphasisKind.Strikethrough, Assert.IsType<MarkdownEmphasis>(Assert.Single(paragraph.Content)).Kind);
     }
+    private const string Ada = "9d6f3b2a-1c4e-4f7a-8b21-5e0c7a1d2f34";
+    private const string Bob = "ad6f3b2a-1c4e-4f7a-8b21-5e0c7a1d2f34";
+
+    private static readonly MarkdownReferences References = new(
+        new ReferenceLinks("https://h/o/r/issues/{0}", "https://h/o/r/pull/{0}", "https://h/{0}"),
+        new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) { [Ada] = "Ada Lovelace", [Bob] = "" });
+
+    private static IReadOnlyList<MarkdownInline> Inlines(string markdown, MarkdownReferences? references = null) =>
+        Assert.IsType<MarkdownParagraph>(Assert.Single(MarkdownParser.Parse(markdown, references ?? References))).Content;
+
+    [Theory]
+    [InlineData("See #12.", "https://h/o/r/issues/12", "#12")]
+    [InlineData("See !34.", "https://h/o/r/pull/34", "!34")]
+    [InlineData("See @octo-cat.", "https://h/octo-cat", "@octo-cat")]
+    public void A_reference_links_to_the_service(string markdown, string url, string label) =>
+        Assert.Collection(Inlines(markdown),
+            i => Assert.Equal("See ", Assert.IsType<MarkdownText>(i).Text),
+            i =>
+            {
+                var link = Assert.IsType<MarkdownLink>(i);
+                Assert.Equal(url, link.Url);
+                Assert.Equal(label, Assert.IsType<MarkdownText>(Assert.Single(link.Content)).Text);
+            },
+            i => Assert.Equal(".", Assert.IsType<MarkdownText>(i).Text));
+
+    [Fact]
+    public void A_person_mentioned_by_identifier_shows_the_name_or_a_placeholder()
+    {
+        // Bob's id starts with a letter (read as an HTML tag by Markdig); Ada's with a digit.
+        var mentions = Inlines($"@<{Ada}> and @<{Bob}>").OfType<MarkdownEmphasis>()
+            .Select(e => Assert.IsType<MarkdownText>(Assert.Single(e.Content)).Text);
+
+        Assert.Equal(["@Ada Lovelace", "@" + Loc.Get("ReviewEditor.UnknownPerson")], mentions);
+    }
+
+    [Fact]
+    public void Code_links_and_words_keep_their_references_as_text()
+    {
+        Assert.Equal("#12", Assert.IsType<MarkdownCode>(Assert.Single(Inlines("`#12`"))).Text);
+        Assert.Equal("https://x/", Assert.IsType<MarkdownLink>(Assert.Single(Inlines("[#12](https://x/)"))).Url);
+        Assert.Equal("a#12 #abc", Assert.IsType<MarkdownText>(Assert.Single(Inlines("a#12 #abc"))).Text);
+        var code = Assert.IsType<MarkdownCodeBlock>(Assert.Single(MarkdownParser.Parse("```\n#12 @<" + Ada + ">\n```", References)));
+        Assert.Equal("#12 @<" + Ada + ">", code.Text);
+    }
+
+    [Fact]
+    public void Without_addresses_a_reference_stays_text() =>
+        Assert.Equal("See #12 and @bob", string.Concat(
+            Inlines("See #12 and @bob", new MarkdownReferences(new ReferenceLinks(null, null, null))).Select(i => Assert.IsType<MarkdownText>(i).Text)));
 }

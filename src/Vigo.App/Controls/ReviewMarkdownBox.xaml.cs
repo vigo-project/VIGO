@@ -39,6 +39,7 @@ public sealed partial class ReviewMarkdownBox : UserControl
     private readonly ReviewBoxState _state;
     private readonly string? _suggestion;
     private readonly bool _canComplete;
+    private readonly MarkdownReferences? _references;
     private readonly ObservableCollection<ReferenceSuggestion> _proposals = [];
     private readonly DispatcherQueueTimer _referenceTimer;
     private (int Start, int End, ReferenceKind Kind, string Query)? _target;
@@ -47,12 +48,15 @@ public sealed partial class ReviewMarkdownBox : UserControl
     /// <param name="state">Kept by the editor: the box reads and updates it.</param>
     /// <param name="secondary">Second action (add to the review), or null.</param>
     /// <param name="suggestion">The commented code of the new version: the suggestion button inserts it; null hides the button.</param>
-    public ReviewMarkdownBox(ReviewBoxState state, string placeholder, string primary, string? secondary, string? suggestion, bool canComplete)
+    /// <param name="references">What the references of the preview link to (see <see cref="MarkdownParser.Parse"/>).</param>
+    public ReviewMarkdownBox(
+        ReviewBoxState state, string placeholder, string primary, string? secondary, string? suggestion, bool canComplete, MarkdownReferences? references)
     {
         InitializeComponent();
         _state = state;
         _suggestion = suggestion;
         _canComplete = canComplete;
+        _references = references;
         var labels = EditorReviewLabels.Current;
         Tip(HeadingButton, labels.Heading);
         Tip(BoldButton, labels.Bold);
@@ -296,7 +300,7 @@ public sealed partial class ReviewMarkdownBox : UserControl
         PreviewPanel.Visibility = on ? Visibility.Visible : Visibility.Collapsed;
         if (!on) return;
         var body = Body;
-        PreviewView.Blocks = body.Length > 0 ? MarkdownParser.Parse(body) : null;
+        PreviewView.Blocks = body.Length > 0 ? MarkdownParser.Parse(body, _references) : null;
         PreviewView.Visibility = body.Length > 0 ? Visibility.Visible : Visibility.Collapsed;
         EmptyPreview.Visibility = body.Length > 0 ? Visibility.Collapsed : Visibility.Visible;
     }

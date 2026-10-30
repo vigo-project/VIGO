@@ -394,7 +394,7 @@
                                         <TextBlock Text="{x:Bind Location}" Visibility="{x:Bind HasLocation}" FontFamily="{StaticResource VigoMonoFont}" FontSize="{ThemeResource VigoFontSize11}"
                                                    Foreground="{ThemeResource VigoText3Brush}" TextTrimming="CharacterEllipsis" IsTextSelectionEnabled="True" />
                                         <StackPanel Visibility="{x:Bind IsReading, Mode=OneWay}">
-                                            <controls:MarkdownView Blocks="{x:Bind Body}" Visibility="{x:Bind HasBody}" />
+                                            <controls:MarkdownView Blocks="{x:Bind Body, Mode=OneWay}" Visibility="{x:Bind HasBody, Mode=OneWay}" />
                                         </StackPanel>
                                         <StackPanel Orientation="Horizontal" Spacing="4" Visibility="{x:Bind CanReact}">
                                             <ItemsControl ItemsSource="{x:Bind Reactions}" Visibility="{x:Bind HasReactions}">

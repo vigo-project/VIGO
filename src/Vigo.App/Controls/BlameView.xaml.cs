@@ -3,8 +3,6 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
-using Vigo.App.Services;
-using Vigo.Core.Services;
 using Vigo.Core.ViewModels;
 using Windows.System;
 
@@ -32,8 +30,6 @@ public sealed partial class BlameView : UserControl
         };
         KeyboardAccelerators.Add(escape);
         KeyboardAcceleratorPlacementMode = KeyboardAcceleratorPlacementMode.Hidden;
-        Editor.KeyPressed += OnEditorKey;
-        Editor.EditorFailed += (_, _) => QueueRefresh();
         Editor.BlameLineSelected += (_, line) => _viewModel?.SelectLine(line);
     }
 
@@ -93,12 +89,10 @@ public sealed partial class BlameView : UserControl
     {
         var vm = _viewModel;
         var text = vm is { IsOpen: true } ? vm.Text : null;
-        var message = Editor.Failed && text is not null
-            ? Loc.Get("Editor.Unavailable")
-            : vm?.ErrorMessage;
+        var message = vm?.ErrorMessage;
         Message.Text = message ?? string.Empty;
         Message.Visibility = message is null ? Visibility.Collapsed : Visibility.Visible;
-        Editor.Visibility = text is null || Editor.Failed ? Visibility.Collapsed : Visibility.Visible;
+        Editor.Visibility = text is null ? Visibility.Collapsed : Visibility.Visible;
 
         if (vm is null || text is null)
         {
@@ -124,7 +118,7 @@ public sealed partial class BlameView : UserControl
         ShowSelection();
     }
 
-    /// <summary>Card of the selected commit, and its lines highlighted in the page.</summary>
+    /// <summary>Card of the selected commit, and its lines highlighted in the editor.</summary>
     private void ShowSelection()
     {
         var item = _viewModel?.SelectedCommit;
@@ -141,13 +135,6 @@ public sealed partial class BlameView : UserControl
             AutomationProperties.SetName(SelectionCard, $"{item.Summary}, {item.AuthorName}");
         }
         if (_shownBlame != -1) Editor.SetBlameSelection(_viewModel?.SelectedIndex ?? -1);
-    }
-
-    /// <summary>Keys pressed in the editor page: Échap, then the app's shortcuts.</summary>
-    private void OnEditorKey(object? sender, EditorKey key)
-    {
-        if (key.Key == "Escape") Close();
-        else if (key.VirtualKey > 0) KeyboardShortcuts.TryInvoke(this, (VirtualKey)key.VirtualKey, key.Modifiers);
     }
 
     private void Close() => _viewModel?.CloseCommand.Execute(null);

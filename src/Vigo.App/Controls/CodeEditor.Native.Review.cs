@@ -253,7 +253,7 @@ public sealed partial class CodeEditor
             var draft = row.Comment;
             if (side is { } only && draft.Side != only) continue;
             var line = Anchor(draft.Side, draft.Line, draft.StartLine, draft.StartColumn, draft.EndColumn);
-            var card = ReviewNoteCard.Draft(RangeText(draft.StartLine, draft.Line), draft.Body);
+            var card = ReviewNoteCard.Draft(RangeText(draft.StartLine, draft.Line), draft.Body, _reviewReferences);
             card.RemoveClicked += (_, _) => ReviewDraftRemoved?.Invoke(this, index);
             Place(card, line);
         }

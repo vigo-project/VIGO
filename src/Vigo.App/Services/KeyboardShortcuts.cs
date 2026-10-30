@@ -9,9 +9,9 @@ using Windows.System;
 namespace Vigo.App.Services;
 
 /// <summary>
-/// Shortcuts of the app, declared once: as XAML keyboard accelerators, and in a table read by the code editor relay
-/// (ADR-038). Keys pressed in a WebView2 never reach the XAML accelerators, so the editor page sends the ones it does
-/// not use back to the app, which runs the shortcut registered nearest to the editor.
+/// Shortcuts of the app, declared once: as XAML keyboard accelerators, and in a table read by <see cref="TryInvoke"/> for the
+/// controls that keep the keys from XAML (the terminal relays the ones its shell does not use), which runs the shortcut
+/// registered nearest to the control.
 /// </summary>
 public static class KeyboardShortcuts
 {

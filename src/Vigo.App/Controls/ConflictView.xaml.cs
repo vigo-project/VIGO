@@ -47,10 +47,8 @@ public sealed partial class ConflictView : UserControl
         Editor.ConflictTaken += (_, e) => _viewModel?.TakeBlock(e.Block, e.Take);
         Editor.ConflictAllTaken += (_, side) => _viewModel?.TakeAll(side);
         Editor.TextChanged += (_, _) => _viewModel?.MarkEdited();
-        Editor.KeyPressed += OnEditorKey;
-        Editor.EditorFailed += (_, _) => QueueRefresh();
 
-        // Wherever the focus is in XAML while the editor is shown; in the page, see OnEditorKey.
+        // Wherever the focus is in XAML while the editor is shown.
         AddAccelerator(VirtualKey.Escape, VirtualKeyModifiers.None, Close);
         AddAccelerator(VirtualKey.Up, VirtualKeyModifiers.Menu, () => _viewModel?.PreviousBlockCommand.Execute(null));
         AddAccelerator(VirtualKey.Down, VirtualKeyModifiers.Menu, () => _viewModel?.NextBlockCommand.Execute(null));
@@ -95,7 +93,7 @@ public sealed partial class ConflictView : UserControl
         }
     }
 
-    /// <summary>Closes the editor page when the tab is closed for good.</summary>
+    /// <summary>Releases the editor when the tab is closed for good.</summary>
     public void Release()
     {
         ViewModel = null;
@@ -194,9 +192,7 @@ public sealed partial class ConflictView : UserControl
             : string.Empty;
 
         LoadingRing.IsActive = vm is { IsLoading: true };
-        var message = Editor.Failed && text
-            ? Loc.Get("Editor.Unavailable")
-            : vm?.ErrorMessage;
+        var message = vm?.ErrorMessage;
         Message.Text = message ?? string.Empty;
         Message.Visibility = Visible(message is not null);
         Editor.Visibility = Visible(text && !vm!.IsToolRunning);
@@ -252,27 +248,6 @@ public sealed partial class ConflictView : UserControl
     }
 
     private static Visibility Visible(bool value) => value ? Visibility.Visible : Visibility.Collapsed;
-
-    /// <summary>Keys of the conflict editor pressed in the page, then the app's shortcuts.</summary>
-    private void OnEditorKey(object? sender, EditorKey key)
-    {
-        switch (key)
-        {
-            case { Key: "AltUp" }:
-                _viewModel?.PreviousBlockCommand.Execute(null);
-                break;
-            case { Key: "AltDown" }:
-                _viewModel?.NextBlockCommand.Execute(null);
-                break;
-            case { Key: "Escape" }:
-                Close();
-                break;
-            case { VirtualKey: > 0 }:
-                // The app's shortcuts (Ctrl+S, Ctrl+P, F5…): XAML never sees keys pressed in the editor page.
-                KeyboardShortcuts.TryInvoke(this, (VirtualKey)key.VirtualKey, key.Modifiers);
-                break;
-        }
-    }
 
     private void Close() => _viewModel?.CloseCommand.Execute(null);
 

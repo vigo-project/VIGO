@@ -4,7 +4,6 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Vigo.App.Services;
 using Vigo.Core.Models;
-using Vigo.Core.Services;
 using Vigo.Core.ViewModels;
 using Windows.System;
 
@@ -36,8 +35,6 @@ public sealed partial class FileHistoryView : UserControl
         KeyboardShortcuts.Add(this, VirtualKey.M, VirtualKeyModifiers.Control | VirtualKeyModifiers.Shift,
             () => _viewModel?.ToggleLayoutCommand.Execute(null));
         KeyboardAcceleratorPlacementMode = KeyboardAcceleratorPlacementMode.Hidden;
-        Editor.KeyPressed += OnEditorKey;
-        Editor.EditorFailed += (_, _) => QueueRefresh();
     }
 
     /// <summary>File history shown by the control; set once by the repository view.</summary>
@@ -105,14 +102,12 @@ public sealed partial class FileHistoryView : UserControl
     {
         var vm = _viewModel;
         var diff = vm is { IsOpen: true } ? vm.Diff : null;
-        var message = Editor.Failed && diff is not null
-            ? Loc.Get("Editor.Unavailable")
-            : vm?.DiffMessage;
+        var message = vm?.DiffMessage;
         DiffMessage.Text = message ?? string.Empty;
         DiffMessage.Visibility = message is null ? Visibility.Collapsed : Visibility.Visible;
         // Side by side: both whole versions (read with the diff; the unified diff until they are there).
         object? content = message is not null || diff is null ? null : vm!.IsSideBySide ? (object?)vm.Sides ?? diff : diff;
-        Editor.Visibility = content is null || Editor.Failed ? Visibility.Collapsed : Visibility.Visible;
+        Editor.Visibility = content is null ? Visibility.Collapsed : Visibility.Visible;
         if (ReferenceEquals(content, _shown)) return;
         _shown = content;
         switch (content)
@@ -127,13 +122,6 @@ public sealed partial class FileHistoryView : UserControl
                 Editor.Clear();
                 break;
         }
-    }
-
-    /// <summary>Keys pressed in the editor page: Échap, then the app's shortcuts.</summary>
-    private void OnEditorKey(object? sender, EditorKey key)
-    {
-        if (key.Key == "Escape") Close();
-        else if (key.VirtualKey > 0) KeyboardShortcuts.TryInvoke(this, (VirtualKey)key.VirtualKey, key.Modifiers);
     }
 
     private void OnSelectionChanged(object sender, SelectionChangedEventArgs e)

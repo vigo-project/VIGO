@@ -241,7 +241,6 @@
   <data name="DiffPrevHunkButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Hunk précédent</value></data>
   <data name="DiffPrevHunkButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Hunk précédent (Alt+↑)</value></data>
   <data name="DiffRoot.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Différences du fichier</value></data>
-  <data name="Editor.Unavailable" xml:space="preserve"><value>Éditeur de code indisponible : le runtime WebView2 n'a pas pu démarrer (voir le journal).</value></data>
   <data name="FhBackButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Retour au graphe</value></data>
   <data name="FhBackButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Retour au graphe (Échap)</value></data>
   <data name="FhBlameButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Blame à ce commit</value></data>
@@ -1580,10 +1579,8 @@ Stocké par Git LFS (déclaré dans {1}).</value></data>
   <data name="ReviewEditor.Heading" xml:space="preserve"><value>Titre</value></data>
   <data name="ReviewEditor.Bold" xml:space="preserve"><value>Gras (Ctrl+B)</value></data>
   <data name="ReviewEditor.Italic" xml:space="preserve"><value>Italique (Ctrl+I)</value></data>
-  <data name="ReviewEditor.Underline" xml:space="preserve"><value>Souligné (Ctrl+U)</value></data>
   <data name="ReviewEditor.Strike" xml:space="preserve"><value>Barré</value></data>
   <data name="ReviewEditor.Code" xml:space="preserve"><value>Code</value></data>
-  <data name="ReviewEditor.CodeBlock" xml:space="preserve"><value>Bloc de code</value></data>
   <data name="ReviewEditor.Link" xml:space="preserve"><value>Lien</value></data>
   <data name="ReviewEditor.BulletList" xml:space="preserve"><value>Liste à puces</value></data>
   <data name="ReviewEditor.NumberList" xml:space="preserve"><value>Liste numérotée</value></data>
@@ -1595,7 +1592,6 @@ Stocké par Git LFS (déclaré dans {1}).</value></data>
   <data name="ReviewEditor.StrikeSample" xml:space="preserve"><value>barré</value></data>
   <data name="ReviewEditor.CodeSample" xml:space="preserve"><value>code</value></data>
   <data name="ReviewEditor.LinkSample" xml:space="preserve"><value>texte du lien</value></data>
-  <data name="ReviewEditor.Write" xml:space="preserve"><value>Écrire</value></data>
   <data name="ReviewEditor.Preview" xml:space="preserve"><value>Aperçu</value></data>
   <data name="ReviewEditor.NothingToPreview" xml:space="preserve"><value>Rien à prévisualiser.</value></data>
   <data name="ReviewEditor.Cancel" xml:space="preserve"><value>Annuler</value></data>
@@ -1614,11 +1610,10 @@ Stocké par Git LFS (déclaré dans {1}).</value></data>
   <data name="ReviewEditor.CommentOn" xml:space="preserve"><value>Commentaire sur</value></data>
   <data name="ReviewEditor.CommentOnSelection" xml:space="preserve"><value>Commenter</value></data>
   <data name="ReviewEditor.CommentOnLine" xml:space="preserve"><value>Commenter cette ligne</value></data>
-  <data name="ReviewEditor.SuggestionTitle" xml:space="preserve"><value>Modification suggérée</value></data>
   <data name="ReviewEditor.Pending" xml:space="preserve"><value>En attente</value></data>
+  <data name="ReviewEditor.UnknownPerson" xml:space="preserve"><value>Utilisateur</value></data>
   <data name="ReviewEditor.RemoveDraft" xml:space="preserve"><value>Retirer</value></data>
   <data name="ReviewEditor.OutsideDiff" xml:space="preserve"><value>Hors du diff</value></data>
-  <data name="ReviewEditor.UnknownPerson" xml:space="preserve"><value>Utilisateur</value></data>
   <data name="NewPrDialog.CloseButtonText" xml:space="preserve"><value>Annuler</value></data>
   <data name="NewPrTitle.Header" xml:space="preserve"><value>Titre</value></data>
   <data name="NewPrBody.Header" xml:space="preserve"><value>Description (facultative)</value></data>

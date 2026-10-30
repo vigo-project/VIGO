@@ -41,7 +41,6 @@ public partial class App : Application
         UiText.Apply(this, preferences.UiFontFamily, preferences.UiTextScale);
         Appearance.Current.InitializeText(preferences);
         FontCatalog.Current = new Services.SystemFontCatalog();
-        Controls.CodeEditor.Logger = _host.Services.GetRequiredService<ILoggerFactory>().CreateLogger("Vigo.App.Controls.CodeEditor");
         Controls.TerminalView.Logger = _host.Services.GetRequiredService<ILoggerFactory>().CreateLogger("Vigo.App.Controls.TerminalView");
         // Pictures of issues, work items and pull requests: private ones need the account's token (GitHub, or Azure DevOps for its own hosts).
         var accounts = _host.Services.GetRequiredService<HostAccounts>();

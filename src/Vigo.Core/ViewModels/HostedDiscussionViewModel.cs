@@ -76,6 +76,12 @@ public abstract partial class HostedDiscussionViewModel : ObservableObject
 
     protected HostRepository? Repository => Hosting.Repository;
 
+    /// <summary>What <c>#n</c>, <c>!n</c> and <c>@name</c> in the Markdown link to, and the names of the people mentioned by identifier.</summary>
+    public Markdown.MarkdownReferences References => new(Repository?.ReferenceLinks ?? new ReferenceLinks(null, null, null), MentionNames);
+
+    /// <summary>Names of the people mentioned by identifier (Azure DevOps), filled as they are read; null when there are none.</summary>
+    protected virtual IReadOnlyDictionary<string, string>? MentionNames => null;
+
     /// <summary>Sends the new comment; <see cref="Canceled"/> when nothing is open.</summary>
     protected abstract Task<GitResult<TimelineEntry>> PostCommentAsync(HostRepository repository, string body, CancellationToken cancellationToken);
 
@@ -140,7 +146,7 @@ public abstract partial class HostedDiscussionViewModel : ObservableObject
     }
 
     protected TimelineRow NewRow(TimelineEntry entry) =>
-        new(entry, RelativeTime.Format(entry.CreatedAt, Time.GetUtcNow(), Time.LocalTimeZone), CanModifyComments && IsOwn(entry), CanModifyComments);
+        new(entry, RelativeTime.Format(entry.CreatedAt, Time.GetUtcNow(), Time.LocalTimeZone), CanModifyComments && IsOwn(entry), CanModifyComments, References);
 
     // The service refuses to change someone else's comment: the buttons are only offered on the signed-in account's own.
     protected bool IsOwn(TimelineEntry entry) =>

@@ -290,7 +290,8 @@ public sealed partial class WorkItemViewModel : ObservableObject, IDisposable
         Detail = detail;
         foreach (var tag in detail.Tags) Tags.Add(new IssueTagRow(tag));
         foreach (var section in detail.Sections) Sections.Add(new WorkItemSectionRow(section.Title, [.. section.Fields]));
-        foreach (var text in detail.Texts) Texts.Add(new WorkItemTextRow(text.Title, MarkdownParser.Parse(text.Markdown)));
+        var references = _hosting.Repository is { } repository ? new MarkdownReferences(repository.ReferenceLinks) : null;
+        foreach (var text in detail.Texts) Texts.Add(new WorkItemTextRow(text.Title, MarkdownParser.Parse(text.Markdown, references)));
 
         foreach (var group in detail.Links.GroupBy(l => l.Kind))
         {
@@ -299,7 +300,7 @@ public sealed partial class WorkItemViewModel : ObservableObject, IDisposable
         }
         foreach (var file in detail.Attachments) Attachments.Add(new WorkItemAttachmentRow(file, SizeText(file.Size)));
         foreach (var entry in detail.Timeline)
-            Timeline.Add(new TimelineRow(entry, RelativeTime.Format(entry.CreatedAt, _time.GetUtcNow(), _time.LocalTimeZone)));
+            Timeline.Add(new TimelineRow(entry, RelativeTime.Format(entry.CreatedAt, _time.GetUtcNow(), _time.LocalTimeZone), references: references));
         NotifyCollections();
     }
 

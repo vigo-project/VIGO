@@ -65,7 +65,7 @@ Logs are written to `%LOCALAPPDATA%\VIGO\logs`.
 - Sizes that depend on density are bound to `services:Appearance.Current.*`; theme brushes use `{ThemeResource}`.
 - Font sizes in XAML are `{ThemeResource VigoFontSizeN}` / `{ThemeResource VigoLineHeightN}`, never literals.
 - Shortcuts are declared with `KeyboardShortcuts.Add(...)`, never as XAML `KeyboardAccelerator`.
-- Every source file view goes through the `CodeEditor` control (Monaco in WebView2).
+- Every source file view goes through the `CodeEditor` control (native LoomEditor, ADR-090).
 - Anything specific to one window is created by `WindowManager`, never a DI singleton.
 
 ### Localization
@@ -84,7 +84,6 @@ Do not edit by hand. The design sources of the first two generators are kept by 
 |---|---|
 | `Themes/Tokens.xaml`, `Themes/DesignTokens.g.cs` | `node tools/gen-tokens.mjs docs/design/VIGO.dc.html.txt` |
 | `Controls/FluentIcons.g.cs` | `node tools/gen-icons.mjs tools/FluentSystemIcons-Regular.json docs/design/*.txt` |
-| `src/Vigo.App/Editor/` (Monaco and terminal pages) | `cd tools/editor; npm ci; node build.mjs` |
 
 ## Tests
 

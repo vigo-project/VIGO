@@ -59,7 +59,8 @@ public sealed class ReactionChip(long commentId, ReactionKind kind, int count)
 }
 
 /// <summary>Entry of the conversation, ready to draw: author, what they did, when, and the Markdown of their text.</summary>
-public sealed partial class TimelineRow(TimelineEntry entry, string date, bool canModify = false, bool canReact = false) : ObservableObject
+public sealed partial class TimelineRow(
+    TimelineEntry entry, string date, bool canModify = false, bool canReact = false, MarkdownReferences? references = null) : ObservableObject
 {
     public TimelineEntry Entry { get; } = entry;
 
@@ -120,7 +121,16 @@ public sealed partial class TimelineRow(TimelineEntry entry, string date, bool c
     public bool HasLocation => Entry.Path is not null;
 
     // An event of an issue is a sentence (shown as the action), not Markdown.
-    public IReadOnlyList<MarkdownBlock> Body { get; } = entry.Kind == TimelineKind.Event ? [] : MarkdownParser.Parse(entry.Body);
+    public IReadOnlyList<MarkdownBlock> Body { get; private set; } = entry.Kind == TimelineKind.Event ? [] : MarkdownParser.Parse(entry.Body, references);
+
+    /// <summary>Reads the text again (the names of the people it mentions by identifier have arrived).</summary>
+    public void ParseAgain()
+    {
+        if (Entry.Kind == TimelineKind.Event) return;
+        Body = MarkdownParser.Parse(Entry.Body, references);
+        OnPropertyChanged(nameof(Body));
+        OnPropertyChanged(nameof(HasBody));
+    }
 
     public bool HasBody => Body.Count > 0;
 
@@ -129,7 +139,7 @@ public sealed partial class TimelineRow(TimelineEntry entry, string date, bool c
 }
 
 /// <summary>Comment of a discussion thread on the diff, ready to draw.</summary>
-public sealed class ThreadCommentRow(ReviewThreadComment comment, string date, bool canReact = false)
+public sealed class ThreadCommentRow(ReviewThreadComment comment, string date, bool canReact = false, MarkdownReferences? references = null)
 {
     public ReviewThreadComment Comment { get; } = comment;
 
@@ -141,7 +151,8 @@ public sealed class ThreadCommentRow(ReviewThreadComment comment, string date, b
 
     public string DateText { get; } = date;
 
-    public IReadOnlyList<MarkdownBlock> Body { get; } = MarkdownParser.Parse(comment.Body);
+    // Read again on each access: the names of the people mentioned by identifier arrive after the row (the cards are then drawn again).
+    public IReadOnlyList<MarkdownBlock> Body => MarkdownParser.Parse(Comment.Body, references);
 
     public bool HasBody => Body.Count > 0;
 
