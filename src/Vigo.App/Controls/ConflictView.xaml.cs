@@ -18,18 +18,18 @@ namespace Vigo.App.Controls;
 public sealed partial class ConflictView : UserControl
 {
     private static readonly EditorConflictLabels Labels = new(
-        OursTitle: "Ours",
+        OursTitle: Loc.Get("Conflict.Editor.Ours"),
         OursDetail: string.Empty,
-        TheirsTitle: "Theirs",
+        TheirsTitle: Loc.Get("Conflict.Editor.Theirs"),
         TheirsDetail: string.Empty,
         TakeAll: Loc.Get("Conflict.Editor.TakeAll"),
         ResultTitle: Loc.Get("Conflict.Editor.Result"),
         ResultDetail: string.Empty,
-        LegendOurs: "ours",
-        LegendTheirs: "theirs",
+        LegendOurs: Loc.Get("Conflict.Editor.LegendOurs"),
+        LegendTheirs: Loc.Get("Conflict.Editor.LegendTheirs"),
         Take: Loc.Get("Conflict.Editor.TakeBlock"),
-        Ours: "Ours",
-        Theirs: "Theirs",
+        Ours: Loc.Get("Conflict.Editor.TakeOurs"),
+        Theirs: Loc.Get("Conflict.Editor.TakeTheirs"),
         Both: Loc.Get("Conflict.Editor.Both"),
         ToggleTip: Loc.Get("Conflict.Editor.ToggleLine"));
 

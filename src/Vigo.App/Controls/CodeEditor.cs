@@ -189,7 +189,12 @@ public sealed partial class CodeEditor : UserControl
     }, content: true);
 
     /// <summary>Shows the conflict editor: panes ours / theirs built from the segments, result with the chosen lines.</summary>
-    public void ShowConflict(string path, EditorConflictLabels labels, ConflictFile file, IReadOnlyList<EditorConflictBlock> blocks, int current) =>
+    public void ShowConflict(string path, EditorConflictLabels labels, ConflictFile file, IReadOnlyList<EditorConflictBlock> blocks, int current)
+    {
+        if (!_closed) ShowNativeConflict(path, labels, file, blocks, current);
+    }
+
+    private void ShowPageConflict(string path, EditorConflictLabels labels, ConflictFile file, IReadOnlyList<EditorConflictBlock> blocks, int current) =>
         Send(w =>
         {
             w.WriteString("type", "conflict");
@@ -244,7 +249,10 @@ public sealed partial class CodeEditor : UserControl
     /// New state of the conflicts (labels, kept lines, current one); <paramref name="changed"/>: conflicts whose lines
     /// are replaced in the result.
     /// </summary>
-    public void SetConflictState(IReadOnlyList<EditorConflictBlock> blocks, int current, bool reveal, IReadOnlyList<int> changed) => Send(w =>
+    public void SetConflictState(IReadOnlyList<EditorConflictBlock> blocks, int current, bool reveal, IReadOnlyList<int> changed) =>
+        SetNativeConflictState(blocks, current, reveal, changed);
+
+    private void SendConflictState(IReadOnlyList<EditorConflictBlock> blocks, int current, bool reveal, IReadOnlyList<int> changed) => Send(w =>
     {
         w.WriteString("type", "conflictState");
         WriteConflictState(w, blocks, current);
@@ -317,7 +325,9 @@ public sealed partial class CodeEditor : UserControl
     /// <summary>Text of the result pane of the conflict editor; null when the page is not ready or closed.</summary>
     public Task<string?> GetConflictResultAsync()
     {
-        if (!_ready || _closed) return Task.FromResult<string?>(null);
+        if (_closed) return Task.FromResult<string?>(null);
+        if (IsNativeConflictShown) return Task.FromResult(GetNativeConflictResult());
+        if (!_ready) return Task.FromResult<string?>(null);
         var id = ++_nextRequest;
         var request = _textRequests[id] = new TaskCompletionSource<string?>(TaskCreationOptions.RunContinuationsAsynchronously);
         Post(w =>

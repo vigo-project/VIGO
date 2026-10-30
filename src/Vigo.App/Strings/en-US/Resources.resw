@@ -135,6 +135,12 @@
   <data name="Conflict.DeleteFile.Message" xml:space="preserve"><value>“{0}” will be deleted from the repository and the disk to resolve the conflict.</value></data>
   <data name="Conflict.DeleteFile.Title" xml:space="preserve"><value>Delete the file?</value></data>
   <data name="Conflict.Editor.Both" xml:space="preserve"><value>Both</value></data>
+  <data name="Conflict.Editor.Ours" xml:space="preserve"><value>Ours</value></data>
+  <data name="Conflict.Editor.Theirs" xml:space="preserve"><value>Theirs</value></data>
+  <data name="Conflict.Editor.LegendOurs" xml:space="preserve"><value>ours</value></data>
+  <data name="Conflict.Editor.LegendTheirs" xml:space="preserve"><value>theirs</value></data>
+  <data name="Conflict.Editor.TakeOurs" xml:space="preserve"><value>Ours</value></data>
+  <data name="Conflict.Editor.TakeTheirs" xml:space="preserve"><value>Theirs</value></data>
   <data name="Conflict.Editor.Result" xml:space="preserve"><value>Result</value></data>
   <data name="Conflict.Editor.ResultDetail" xml:space="preserve"><value>{0} · editable · check lines in ours / theirs, or choose a block</value></data>
   <data name="Conflict.Editor.TakeAll" xml:space="preserve"><value>Take all</value></data>

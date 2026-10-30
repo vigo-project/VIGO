@@ -135,8 +135,14 @@
   <data name="Conflict.DeleteFile.Message" xml:space="preserve"><value>« {0} » sera supprimé du dépôt et du disque pour résoudre le conflit.</value></data>
   <data name="Conflict.DeleteFile.Title" xml:space="preserve"><value>Supprimer le fichier ?</value></data>
   <data name="Conflict.Editor.Both" xml:space="preserve"><value>Les deux</value></data>
+  <data name="Conflict.Editor.Ours" xml:space="preserve"><value>Notre version</value></data>
+  <data name="Conflict.Editor.Theirs" xml:space="preserve"><value>Leur version</value></data>
+  <data name="Conflict.Editor.LegendOurs" xml:space="preserve"><value>notre version</value></data>
+  <data name="Conflict.Editor.LegendTheirs" xml:space="preserve"><value>leur version</value></data>
+  <data name="Conflict.Editor.TakeOurs" xml:space="preserve"><value>La nôtre</value></data>
+  <data name="Conflict.Editor.TakeTheirs" xml:space="preserve"><value>La leur</value></data>
   <data name="Conflict.Editor.Result" xml:space="preserve"><value>Résultat</value></data>
-  <data name="Conflict.Editor.ResultDetail" xml:space="preserve"><value>{0} · modifiable · cochez des lignes dans ours / theirs, ou choisissez un bloc</value></data>
+  <data name="Conflict.Editor.ResultDetail" xml:space="preserve"><value>{0} · modifiable · cochez des lignes de notre version ou de la leur, ou choisissez un bloc</value></data>
   <data name="Conflict.Editor.TakeAll" xml:space="preserve"><value>Tout prendre</value></data>
   <data name="Conflict.Editor.TakeBlock" xml:space="preserve"><value>Prendre ce bloc</value></data>
   <data name="Conflict.Editor.ToggleLine" xml:space="preserve"><value>Inclure / exclure cette ligne du résultat</value></data>

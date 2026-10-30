@@ -59,6 +59,7 @@ public sealed partial class CodeEditor
             DarkBackground = ThemeColorOf(Dark.Selected),
         });
         RegisterDiffStyles();
+        RegisterConflictStyles();
     }
 
     private Loom EnsureNative()
@@ -131,6 +132,7 @@ public sealed partial class CodeEditor
         ReferenceEquals(Content, _blameHost) ? _native
         : ReferenceEquals(Content, _diff) ? (_diff!.IsLoaded ? _diff.Modified : _diff)
         : IsNativeDiffShown ? _unified
+        : IsNativeConflictShown ? _cfResult
         : null;
 
     // ---------------------------------------------------------------- side by side
@@ -206,6 +208,7 @@ public sealed partial class CodeEditor
     private void ClearNative()
     {
         ClearNativeDiff();
+        ClearNativeConflict();
         if (_diff is not null)
         {
             _diffPath = null;
@@ -225,6 +228,7 @@ public sealed partial class CodeEditor
     private void ReleaseNative()
     {
         ReleaseNativeDiff();
+        ReleaseNativeConflict();
         // Win2D: the device resources are freed when the tab is closed, not on Unloaded.
         _blameColumn?.RemoveFromVisualTree();
         _blameColumn = null;
@@ -242,6 +246,7 @@ public sealed partial class CodeEditor
         var dark = ActualTheme != ElementTheme.Light;
         var theme = dark ? DarkTheme.Value : LightTheme.Value;
         ApplyNativeDiffTheme(theme, dark);
+        ApplyNativeConflictTheme(theme, dark);
         if (_native is { } editor)
         {
             ApplyEditorSettings(editor, theme, wrap: false);
@@ -275,6 +280,8 @@ public sealed partial class CodeEditor
         editor.FontLigatures = settings.Ligatures;
         editor.WordWrap = wrap ? LoomWordWrap.On : LoomWordWrap.Off;
         editor.LineHeight = LineHeightOf(settings);
+        // As the page: no lines stuck at the top (they would cover the diff and conflict headers).
+        editor.StickyScrollEnabled = false;
     }
 
     /// <summary>The density's line height is for the default size; it grows with the chosen one (as the page did).</summary>

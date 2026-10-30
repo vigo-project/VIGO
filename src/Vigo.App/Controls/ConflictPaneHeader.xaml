@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Header of a pane of the native conflict editor (ADR-090, mockup "Conflits"): color swatch of the side, title, detail
+    (branch or commit), then "Tout prendre" for ours / theirs, or the color legend for the result.
+-->
+<UserControl
+    x:Class="Vigo.App.Controls.ConflictPaneHeader"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Height="32">
+
+    <Grid Padding="12,0,8,0" ColumnSpacing="8" Background="{ThemeResource VigoLayerBrush}"
+          BorderBrush="{ThemeResource VigoStrokeBrush}" BorderThickness="0,0,0,1">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+        <Border x:Name="Swatch" Width="10" Height="10" CornerRadius="2" VerticalAlignment="Center" />
+        <TextBlock x:Name="TitleText" Grid.Column="1" VerticalAlignment="Center" FontWeight="SemiBold"
+                   FontSize="{ThemeResource VigoFontSize13}" />
+        <TextBlock x:Name="DetailText" Grid.Column="2" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" TextWrapping="NoWrap"
+                   FontSize="{ThemeResource VigoFontSize13}" Foreground="{ThemeResource VigoText3Brush}" />
+        <Button x:Name="TakeAllButton" Grid.Column="3" Style="{StaticResource VigoSubtleButton}" Height="24" MinHeight="0" Padding="8,0"
+                VerticalAlignment="Center" FontSize="{ThemeResource VigoFontSize12}" Foreground="{ThemeResource VigoAccentTextBrush}"
+                Visibility="Collapsed" Click="OnTakeAllClick" />
+        <StackPanel x:Name="Legend" Grid.Column="3" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center" Visibility="Collapsed">
+            <Border x:Name="LegendOursSwatch" Width="8" Height="8" CornerRadius="2" VerticalAlignment="Center" />
+            <TextBlock x:Name="LegendOursText" VerticalAlignment="Center" FontSize="{ThemeResource VigoFontSize12}"
+                       Foreground="{ThemeResource VigoText3Brush}" />
+            <Border x:Name="LegendTheirsSwatch" Width="8" Height="8" Margin="6,0,0,0" CornerRadius="2" VerticalAlignment="Center" />
+            <TextBlock x:Name="LegendTheirsText" VerticalAlignment="Center" FontSize="{ThemeResource VigoFontSize12}"
+                       Foreground="{ThemeResource VigoText3Brush}" />
+        </StackPanel>
+    </Grid>
+</UserControl>

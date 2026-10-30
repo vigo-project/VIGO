@@ -295,11 +295,14 @@ public sealed partial class CodeEditor
     }
 
     /// <summary>Height of a line on screen (wrapped rows included, zones excluded).</summary>
-    private double RowHeight(Loom editor, int line, double top)
+    private double RowHeight(Loom editor, int line, double top) => RowHeight(editor, line, top, _hunkStarts, HunkHeight);
+
+    /// <summary>Height of a line on screen, without the zone of <paramref name="zoneHeight"/> above each line of <paramref name="zoneStarts"/>.</summary>
+    private static double RowHeight(Loom editor, int line, double top, HashSet<int> zoneStarts, double zoneHeight)
     {
         if (line >= editor.Model.LineCount) return editor.LineHeight;
         var next = editor.GetTopForLineNumber(line + 1, false);
-        return next - top - (_hunkStarts.Contains(line + 1) ? HunkHeight : 0);
+        return next - top - (zoneStarts.Contains(line + 1) ? zoneHeight : 0);
     }
 
     /// <summary>The last line whose top is at or above <paramref name="y"/> (scroll coordinates).</summary>

@@ -1,5 +1,6 @@
 ## Unreleased
-- Blame, diff côte à côte et diff unifié (indexation par ligne et par hunk comprise) : affichés dans un éditeur natif (LoomEditor), sans WebView2 : ouverture plus rapide, coloration TextMate.
+- Blame, diff côte à côte, diff unifié (indexation par ligne et par hunk comprise) et éditeur de conflits : affichés dans un éditeur natif (LoomEditor), sans WebView2 : ouverture plus rapide, coloration TextMate.
+- Éditeur de conflits : « ours » et « theirs » sont traduits (« Notre version », « Leur version », « La nôtre », « La leur »).
 
 ## 0.32.0 — 2026-10-29
 - Listes de fichiers en arborescence : un bouton « Tout réduire » / « Tout développer » au-dessus de la première ligne réduit ou développe tous les dossiers d'un coup.
