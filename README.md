@@ -10,7 +10,7 @@ Native AOT.
 
 - Commit graph drawn with Win2D, with lanes, stashes, tags and remote branches
 - Staging by file, hunk or line; diff (unified or side by side), image diff, file history and blame
-- Code editor and diff view based on Monaco
+- Native code editor and diff view (LoomEditor, ported from Monaco)
 - Merge, rebase (interactive), cherry-pick, revert, reset, conflict resolution with a three-way editor
 - Worktrees, submodules, Git LFS, Git Flow, stashes, tags, remotes
 - GitHub and Azure DevOps accounts: clone from your repositories, pull requests, issues, CI checks
@@ -30,7 +30,7 @@ Requirements: Windows 10 (build 19041) or later, and [Git for Windows](https://g
 
 Prerequisites: Windows, the .NET SDK pinned in [`global.json`](global.json), and the Windows App SDK build tooling
 (Visual Studio with the .NET desktop and C++ workloads is needed for Native AOT publishing). Node.js is only needed to
-rebuild the editor bundle.
+regenerate the design tokens and icons.
 
 ```powershell
 dotnet build VIGO.slnx -p:Platform=x64

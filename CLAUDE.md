@@ -1,207 +1,200 @@
-# VIGO — client Git natif Windows
+# VIGO — native Windows Git client
 
-Client Git WinUI 3 natif Windows, rapide et léger.
-Le nom **VIGO** signifie **Visual Git Overview** (à reprendre dans l'app : écran « À propos », infobulle du logo,
-description du paquet MSIX).
+Native Windows WinUI 3 Git client, fast and lightweight.
+The name **VIGO** stands for **Visual Git Overview** (to reuse in the app: "About" screen, logo tooltip,
+MSIX package description).
 
-## Méthode de travail
+## Working method
 
-- Avant tout choix technique structurant : présenter les options et attendre validation.
-- Préfixer les commandes shell par `rtk` (proxy d'économie de tokens), ex. `rtk dotnet build`.
+- Before any structural technical choice: present the options and wait for approval.
+- Prefix shell commands with `rtk` (token-saving proxy), e.g. `rtk dotnet build`.
 
-## Outillage Claude Code (`.claude/`, `.mcp.json`)
+## Claude Code tooling (`.claude/`, `.mcp.json`)
 
-- Skills : `/aot-check` (publication AOT + avertissements IL vs `il-baseline.txt` + sonde de démarrage). Agent `vigo-conventions-reviewer` : revue du diff selon les conventions ci-dessous.
-- Hook `guard.ps1` (PreToolUse) : encadre `git commit` (message anglais, sans co-auteur ni session, signature conservée : voir
-  « Commits »), bloque la création de branche, l'édition des fichiers générés (dont
-  `src/Vigo.App/Editor/`), `{Binding}` en XAML et `Application.Current.Resources[...]` en C#. Il analyse toute commande dont le texte
-  contient « git commit », même dans un dépôt jetable ou un heredoc (donc elle doit respecter les mêmes règles) : pour rejouer un
-  commit dans l'exe, laisser VIGO créer les commits ; documenter via les outils Write/Edit. Idem pour les branches (dépôt de démo : cloner un dépôt
-  qui en a, p. ex. `git clone <repo>`, et laisser VIGO créer les branches locales). Une seule commande git par
-  appel : `git switch … && git -C … branch -D …` est bloqué à tort (le `-C` suivant est pris pour `switch -C`).
-- Rejeu UI Automation : `SetForegroundWindow` (précédé d'un appui Alt) avant `SendKeys`, sinon les touches n'arrivent
-  pas ; les lignes d'une `ListView` sont nommées par le `ToString()` de leur donnée.
-- Certains analyseurs ne s'appliquent qu'en Release (CA1859, CA2261…) : `rtk dotnet build VIGO.slnx -c Release
-  -p:Platform=x64` avant `/aot-check`. Si `artifacts/publish/aot-x64/Vigo.exe` est ouvert (l'utilisateur l'essaie),
-  ne pas le tuer : publier dans un autre dossier (`-o artifacts/publish/aot-x64-<nom>`).
-- Rejeu UI Automation sous Windows PowerShell 5.1 : enregistrer le script en UTF-8 **avec BOM** (sinon « Résumé »
-  est lu en ANSI et aucun élément n'est trouvé). Ne pas nommer une fonction comme un alias (`Select` → `Select-Object`
-  l'emporte) ni comme une commande qu'elle appelle (`function Git` qui lance `git` : récursion, PowerShell ignore la
-  casse). Distant de démo : un dépôt nu jetable (`git clone --bare <repo> …` puis clone de travail), jamais le
-  dépôt réel ; tuer l'exe en fin de rejeu (une fermeture normale écrase `session.json` de l'utilisateur).
-- Le hook bloque aussi un heredoc Bash dont le texte contient une commande de création de branche : écrire la doc
-  avec Write/Edit.
-- Rejeu souris (survol, glisser-déposer) : `SetProcessDPIAware()` puis `mouse_event` en coordonnées absolues
-  (`0x8001`, normalisées sur `GetSystemMetrics`) ; un `SetCursorPos` ou un déplacement relatif nul ne produit aucun
-  événement pointeur. Pendant un glisser, `DragEventArgs.OriginalSource` est le conteneur (la liste), pas la ligne :
-  retrouver la ligne par position (`VisualTreeHelper.FindElementsInHostCoordinates`).
-- Dépôt de démo avec conflit : `git clone -b <branche> <repo> …`, modifier un fichier, faire le commit dans VIGO
-  (« Tout indexer », résumé, bouton Valider), puis fusionner une branche qui a modifié le même fichier.
-- Rejeu de l'éditeur (WebView2) sans toucher au clavier ni à la souris de l'utilisateur : lancer l'exe de test avec
-  `WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS=--remote-debugging-port=9333` (variable posée pour ce processus seulement),
-  puis protocole DevTools (`http://127.0.0.1:9333/json`, WebSocket natif de Node) : `Input.dispatchMouseEvent` /
-  `dispatchKeyEvent` (avec `windowsVirtualKeyCode`), `Runtime.evaluate`. Captures XAML : `PrintWindow` (flag 2), même
-  fenêtre masquée. Recherches UIA : sauter les éléments `FrameworkId == "Chrome"` (arbre du DOM énorme, `FindFirst`
-  expire). Avant tout `SendKeys` / clic réel, vérifier `GetForegroundWindow()` == VIGO (sinon les touches partent dans
-  une autre application) ; quand Windows refuse le premier plan, ne pas forcer. Si le VIGO de l’utilisateur tourne, donner à l’instance de test
-  son propre profil WebView2 (`VIGO_WEBVIEW2_USER_DATA=<dossier>`, sinon les arguments du navigateur diffèrent et le démarrage échoue) ; en Debug la page du
-  terminal intégré (natif depuis ADR-076, plus de WebView2) se rejoue au clavier / à la souris réels (`SendKeys`, `mouse_event`) : jamais `Ctrl+Shift+S` (stash !) ni de caractère AltGr (antislash…) avec `SendKeys`.
-- Instance unique (J9.5) : un second lancement passe sa ligne de commande à la première instance et sort. Pour lancer une instance de test à côté
-  de celle de l'utilisateur, poser `VIGO_ALLOW_MULTIPLE=1` pour ce processus (la sonde `--startup-probe` y échappe seule).
-- MCP projet : `mslearn` (doc Microsoft : WinUI, Windows App SDK, .NET) et `context7` (bibliothèques tierces).
+- Skills: `/aot-check` (AOT publish + IL warnings vs `il-baseline.txt` + startup probe). Agent `vigo-conventions-reviewer`: reviews the diff against the conventions below.
+- Hook `guard.ps1` (PreToolUse): polices `git commit` (English message, no co-author or session, signing kept: see
+  "Commits"), blocks branch creation, editing generated files, `{Binding}` in XAML and `Application.Current.Resources[...]` in C#. It scans any command whose text
+  contains "git commit", even in a throwaway repo or a heredoc (so it must follow the same rules): to replay a
+  commit in the exe, let VIGO create the commits; write docs with the Write/Edit tools. Same for branches (demo repo: clone a repo
+  that has some, e.g. `git clone <repo>`, and let VIGO create the local branches). Only one git command per
+  call: `git switch … && git -C … branch -D …` is wrongly blocked (the following `-C` is taken for `switch -C`).
+- UI Automation replay: `SetForegroundWindow` (preceded by an Alt press) before `SendKeys`, otherwise the keys do not
+  arrive; `ListView` rows are named by the `ToString()` of their data item.
+- Some analyzers only apply in Release (CA1859, CA2261…): `rtk dotnet build VIGO.slnx -c Release
+  -p:Platform=x64` before `/aot-check`. If `artifacts/publish/aot-x64/Vigo.exe` is open (the user is trying it),
+  do not kill it: publish to another folder (`-o artifacts/publish/aot-x64-<name>`).
+- UI Automation replay under Windows PowerShell 5.1: save the script as UTF-8 **with BOM** (otherwise « Résumé »
+  is read as ANSI and no element is found). Do not name a function like an alias (`Select` → `Select-Object`
+  wins) nor like a command it calls (`function Git` that runs `git`: recursion, PowerShell ignores
+  case). Demo remote: a throwaway bare repo (`git clone --bare <repo> …` then a working clone), never the
+  real repo; kill the exe at the end of the replay (a normal close overwrites the user's `session.json`).
+- The hook also blocks a Bash heredoc whose text contains a branch creation command: write the docs
+  with Write/Edit.
+- Mouse replay (hover, drag and drop): `SetProcessDPIAware()` then `mouse_event` in absolute coordinates
+  (`0x8001`, normalized on `GetSystemMetrics`); a `SetCursorPos` or a zero relative move produces no
+  pointer event. During a drag, `DragEventArgs.OriginalSource` is the container (the list), not the row:
+  find the row by position (`VisualTreeHelper.FindElementsInHostCoordinates`).
+- Demo repo with a conflict: `git clone -b <branch> <repo> …`, modify a file, commit it in VIGO
+  (« Tout indexer » (Stage all), summary, « Valider » (Commit) button), then merge a branch that modified the same file.
+- XAML captures: `PrintWindow` (flag 2), even for a hidden window. Before any `SendKeys` / real click, check `GetForegroundWindow()` == VIGO
+  (otherwise the keys go to another application); when Windows refuses the foreground, do not force it. The code editor (native since
+  ADR-090) and the integrated terminal (native since ADR-076) are replayed with the real keyboard / mouse (`SendKeys`, `mouse_event`): never
+  `Ctrl+Shift+S` (stash!) nor an AltGr character (backslash…) with `SendKeys`.
+- Single instance (J9.5): a second launch passes its command line to the first instance and exits. To run a test instance next
+  to the user's one, set `VIGO_ALLOW_MULTIPLE=1` for that process (the `--startup-probe` probe is exempt on its own).
+- Project MCP: `mslearn` (Microsoft docs: WinUI, Windows App SDK, .NET) and `context7` (third-party libraries).
 
 ## Stack
 
 .NET 11 (RC) / C# 15, WinUI 3 (Windows App SDK 2.x), CommunityToolkit.Mvvm, Microsoft.Extensions.Hosting/DI,
-Serilog, LibGit2Sharp + git.exe, Win2D, Monaco (WebView2), xUnit v3 avec ses assertions natives `Assert` (Microsoft.Testing.Platform ; **pas de FluentAssertions**), Native AOT.
+Serilog, LibGit2Sharp + git.exe, Win2D, LoomEditor (native code editor), xUnit v3 with its native `Assert` assertions (Microsoft.Testing.Platform; **no FluentAssertions**), Native AOT.
 
 ## Architecture
 
 ```
-src/Vigo.App           WinUI 3 : shell (MainWindow, onglets en barre de titre), vues, contrôles Win2D, thèmes
-  Themes/Tokens.xaml   GÉNÉRÉ (tools/gen-tokens.mjs) : brushes/couleurs clair+sombre du design system
-  Themes/DesignTokens.g.cs  GÉNÉRÉ : mêmes couleurs en C# pour Win2D
-  Themes/Styles.xaml   styles VIGO (typo, boutons, cartes, champs)
-  Controls/FluentIcons.g.cs GÉNÉRÉ (tools/gen-icons.mjs) : glyphes Fluent System Icons utilisés par les maquettes
-  Controls/CodeEditor  éditeur de code (Monaco dans WebView2, ADR-038) : diff unifié / côte à côte, texte, conflits ; messages JSON
-  Controls/ConflictView éditeur de conflits (J5.4, ADR-040) : en-tête XAML + CodeEditor en mode `conflict`
-  Controls/RebaseView  rebase interactif (J5.5, ADR-041) : liste réordonnable + carte Résultat, à la place du graphe
-  Services/CredentialLockerVault jetons des hébergeurs dans le Credential Locker (J6.1, ADR-044) ; comptes : `HostAccounts` (Core)
-  Controls/ImageDiffView diff d'images (J5.7, ADR-043) : côte à côte / superposition / curseur, à la place du CodeEditor
-  Controls/FileHistoryView, BlameView  historique de fichier et blame (J5.6, ADR-042) ; colonne de blame dessinée
-                       par la page (CodeEditor mode `blame`)
-  Controls/PullRequestView, MarkdownView  écran d'une pull request GitHub en lecture seule, à la place du graphe (J6.9a, ADR-056) ;
-                       `MarkdownView` dessine le modèle `Vigo.Core.Markdown` (Markdig) en XAML natif
-  Controls/TerminalView, Views/TerminalPanel  terminal intégré (J7.10, ADR-071, ADR-076) : contrôle natif LoomTerminal.WinUI (Win2D, sans WebView2),
-                       un shell par onglet du panneau bas, derrière ConPTY (paquets LoomTerminal.Pty / .Presentation / .Core)
-  Editor/              GÉNÉRÉ (tools/editor/build.mjs) : page Monaco, servie sur https://vigo.editor/
-  Services/KeyboardShortcuts  raccourcis de l'app (accélérateurs XAML + table relayée depuis l'éditeur)
-src/Vigo.Core          ViewModels, modèles, IGitService, unions GitResult — aucune dépendance UI
-                       (dont `WorktreeActionsViewModel`, J7.1, ADR-049 : worktrees liés, section du panneau gauche ;
-                       `SubmoduleActionsViewModel`, J7.2, ADR-050 : submodules, section du panneau gauche ;
-                       `PullRequestViewModel`, J6.9a, ADR-056 : écran d'une pull request ; `Markdown/` : Markdig → modèle de blocs)
-src/Vigo.Git           GitService (LibGit2Sharp lecture, git.exe réseau/écriture/repli), GitCli,
-                       Log/CommitLogReader (git log streamé via PipeReader), Refs/RefReader (libgit2 + repli for-each-ref),
-                       Conflicts/ConflictReader (étages ls-files -u, sortie de merge-file --zdiff3),
-                       History/FileHistoryReader (log --follow streamé), History/BlameReader (blame --incremental),
-                       Terminal/WindowsShellLocator (shells du terminal intégré, J7.10, ADR-071),
+src/Vigo.App           WinUI 3: shell (MainWindow, tabs in the title bar), views, Win2D controls, themes
+  Themes/Tokens.xaml   GENERATED (tools/gen-tokens.mjs): light+dark brushes/colors of the design system
+  Themes/DesignTokens.g.cs  GENERATED: same colors in C# for Win2D
+  Themes/Styles.xaml   VIGO styles (typography, buttons, cards, fields)
+  Controls/FluentIcons.g.cs GENERATED (tools/gen-icons.mjs): Fluent System Icons glyphs used by the mockups
+  Controls/CodeEditor  native LoomEditor code editor (ADR-090, replaces Monaco / ADR-038): blame, unified diff with staging, side by side,
+                       conflicts, PR review (`CodeEditor.Native*.cs`, `DiffHunkHeader`, `ConflictPaneHeader`, `ConflictZone`, `Review*`)
+  Controls/ConflictView conflict editor (J5.4, ADR-040): XAML header + CodeEditor in `conflict` mode
+  Controls/RebaseView  interactive rebase (J5.5, ADR-041): reorderable list + Result card, in place of the graph
+  Services/CredentialLockerVault host tokens in the Credential Locker (J6.1, ADR-044); accounts: `HostAccounts` (Core)
+  Controls/ImageDiffView image diff (J5.7, ADR-043): side by side / overlay / slider, in place of the CodeEditor
+  Controls/FileHistoryView, BlameView  file history and blame (J5.6, ADR-042); blame column drawn
+                       in Win2D by the CodeEditor
+  Controls/PullRequestView, MarkdownView  read-only GitHub pull request screen, in place of the graph (J6.9a, ADR-056);
+                       `MarkdownView` draws the `Vigo.Core.Markdown` model (Markdig) in native XAML
+  Controls/TerminalView, Views/TerminalPanel  integrated terminal (J7.10, ADR-071, ADR-076): native LoomTerminal.WinUI control (Win2D, no WebView2),
+                       one shell per tab of the bottom panel, behind ConPTY (packages LoomTerminal.Pty / .Presentation / .Core)
+  Services/KeyboardShortcuts  app shortcuts (XAML accelerators + table relayed from the terminal)
+src/Vigo.Core          ViewModels, models, IGitService, GitResult unions — no UI dependency
+                       (including `WorktreeActionsViewModel`, J7.1, ADR-049: linked worktrees, left panel section;
+                       `SubmoduleActionsViewModel`, J7.2, ADR-050: submodules, left panel section;
+                       `PullRequestViewModel`, J6.9a, ADR-056: pull request screen; `Markdown/`: Markdig → block model)
+src/Vigo.Git           GitService (LibGit2Sharp reads, git.exe network/writes/fallback), GitCli,
+                       Log/CommitLogReader (git log streamed via PipeReader), Refs/RefReader (libgit2 + for-each-ref fallback),
+                       Conflicts/ConflictReader (ls-files -u stages, merge-file --zdiff3 output),
+                       History/FileHistoryReader (streamed log --follow), History/BlameReader (blame --incremental),
+                       Terminal/WindowsShellLocator (integrated terminal shells, J7.10, ADR-071),
                        Status/StatusReader (status porcelain v2), Status/OperationReader
-                       (merge / rebase en cours, lus dans le répertoire git), Watching/RepositoryWatcher (FileSystemWatcher + debounce,
-                       signaux « status » et « refs » distincts)
-src/Vigo.Graph         calcul des lanes (pur, testable, sans dépendance Git) — J2.3
-src/Vigo.Integrations  hébergeurs (GitHub : `GitHubClient`, device flow OAuth + jeton, PR / issues REST avec ETag, création de PR, J6.2 ; GitLab, Azure DevOps, Bitbucket à venir) — J6
-tests/Vigo.TestUtilities  TestRepoBuilder : dépôts Git réels générés via git.exe, config isolée
-tests/Vigo.*.Tests     xUnit v3 (Assert natif), dont Vigo.Integrations.Tests (clients HTTP contre un gestionnaire simulé)
-benchmarks/            BenchmarkDotNet (à partir de J2.3)
-tools/                 générateurs (tokens, icônes) — Node.js ; tools/editor : page de l'éditeur (monaco-editor, esbuild)
+                       (merge / rebase in progress, read from the git directory), Watching/RepositoryWatcher (FileSystemWatcher + debounce,
+                       separate "status" and "refs" signals)
+src/Vigo.Graph         lane computation (pure, testable, no Git dependency) — J2.3
+src/Vigo.Integrations  hosts (GitHub: `GitHubClient`, OAuth device flow + token, REST PRs / issues with ETag, PR creation, J6.2; GitLab, Azure DevOps, Bitbucket to come) — J6
+tests/Vigo.TestUtilities  TestRepoBuilder: real Git repos generated via git.exe, isolated config
+tests/Vigo.*.Tests     xUnit v3 (native Assert), including Vigo.Integrations.Tests (HTTP clients against a fake handler)
+benchmarks/            BenchmarkDotNet (from J2.3)
+tools/                 generators (tokens, icons) — Node.js
 ```
 
-Dépendances : App → Core, Git, Graph, Integrations ; Git → Core ; Core → Graph ; Integrations → Core.
+Dependencies: App → Core, Git, Graph, Integrations; Git → Core; Core → Graph; Integrations → Core.
 
-## Commandes
+## Commands
 
 ```powershell
-rtk dotnet build VIGO.slnx -p:Platform=x64                       # build complet
-# tests (MTP : --project obligatoire). `rtk dotnet test` ajoute lui-même `--report-trx` : les projets de test référencent donc
-# Microsoft.Testing.Extensions.TrxReport (sans lui : handshake MTP en échec, code 5). Les deux formes marchent : `rtk dotnet test --project …` et `rtk test dotnet test --project …`
-# Ne PAS poser `DOTNET_TEST_RUNNER=VSTest` : rtk ajoute `--report-trx` que MSBuild refuse (MSB1001), `--logger trx` ne change rien. Les .trx vont dans `TestResults/`
+rtk dotnet build VIGO.slnx -p:Platform=x64                       # full build
+# tests (MTP: --project required). `rtk dotnet test` adds `--report-trx` itself: the test projects therefore reference
+# Microsoft.Testing.Extensions.TrxReport (without it: MTP handshake fails, code 5). Both forms work: `rtk dotnet test --project …` and `rtk test dotnet test --project …`
+# Do NOT set `DOTNET_TEST_RUNNER=VSTest`: rtk adds `--report-trx`, which MSBuild rejects (MSB1001), `--logger trx` changes nothing. The .trx files go to `TestResults/`
 rtk test dotnet test --project tests/Vigo.Core.Tests
 rtk test dotnet test --project tests/Vigo.Git.Tests
-rtk dotnet build src/Vigo.App -c Debug -p:Platform=x64            # app seule
-# Publication Native AOT (prototype validé J1.2)
+rtk dotnet build src/Vigo.App -c Debug -p:Platform=x64            # app only
+# Native AOT publish (prototype validated in J1.2)
 rtk dotnet publish src/Vigo.App -c Release -r win-x64 -p:Platform=x64 -o artifacts/publish/aot-x64
-# Mesure du démarrage (écrit le temps jusqu'à la première frame, en ms, puis quitte)
+# Startup measurement (writes the time to first frame, in ms, then exits)
 artifacts/publish/aot-x64/Vigo.exe --startup-probe $env:TEMP\probe.txt
-# Ouvrir un dépôt au lancement
-Vigo.exe --open D:\chemin\depot
-# Régénérer tokens et icônes après modification du design
+# Open a repo at launch
+Vigo.exe --open D:\path\to\repo
+# Regenerate tokens and icons after a design change
 node tools/gen-tokens.mjs docs/design/VIGO.dc.html.txt
 node tools/gen-icons.mjs tools/FluentSystemIcons-Regular.json docs/design/*.txt
-# Icône de l'app (Vigo.ico, logo du design) et assets du site : cd tools; npm i --no-save --no-package-lock sharp; node gen-app-icon.mjs <site-assets-dir>
-# Reconstruire la page de l'éditeur après modification de tools/editor/src (versions épinglées : package-lock.json)
-cd tools/editor; npm ci; node build.mjs
+# App icon (Vigo.ico, design logo) and site assets: cd tools; npm i --no-save --no-package-lock sharp; node gen-app-icon.mjs <site-assets-dir>
 ```
 
-Logs : `%LOCALAPPDATA%\VIGO\logs\vigo-AAAAMMJJ.log`.
+Logs: `%LOCALAPPDATA%\VIGO\logs\vigo-YYYYMMDD.log`.
 
 ## Conventions
 
-- **Branches** : Claude ne crée jamais de branche (ni `checkout -b`, ni `switch -c`) : il travaille sur la branche
-  courante, l'utilisateur gère les branches.
-- **Multilingue** : l'application est multilingue, **FR + EN** pour commencer. Tout texte affiché à l'utilisateur
-  doit être localisable (pas de nouvelle chaîne UI codée en dur sans la signaler pour le `.resw`) ; le mécanisme
-  retenu doit être compatible AOT. **Mécanisme (ADR-075)** : `src/Vigo.App/Strings/{fr-FR,en-US}/Resources.resw` ; XAML :
-  `x:Uid` (sans point, ex. `PrefAutoFetchTitle` → `PrefAutoFetchTitle.Text`) ; code sans UI : `Loc.Get("Zone.Cle")` /
-  `Loc.Format("Zone.Cle", args)` (Vigo.Core). Même clé dans les deux `.resw` (test `LocalizationResourcesTests`).
-  Changement de langue = redémarrage ; `VIGO_LANGUAGE=en|fr` (Debug) pour les rejeux.
-- **Changelog** (J7.23) : toute nouvelle fonctionnalité (ou correctif visible) ajoute une ligne, orientée utilisateur, dans
-  `src/Vigo.Core/Changelog/CHANGELOG-fr.md` **et** `CHANGELOG-en.md`, dans la section de la prochaine version, en tête de
-  fichier (`## x.y.z — AAAA-MM-JJ` ; tant que la version n'est pas fixée : `## Unreleased`, à renommer avant le tag). La
-  section dont le titre est exactement la version publiée s'affiche au premier lancement de cette version (dialogue
-  « Nouveautés ») ; sans section, rien ne s'affiche. Noms en tiret : `.fr.md` serait pris pour une culture (assembly satellite).
-- **Langue** : **tout le code source est en anglais** (identifiants, commentaires, docs XML, messages de log,
-  messages d'exception internes, scripts `tools/`, tests) ainsi que les **messages de commit**. Restent en français :
-  la documentation du dépôt (ce fichier) et les textes affichés à l'utilisateur (UI, `Failure.Message`
-  présenté en toast), en attendant la localisation `.resw` FR/EN (J8) — voir « Multilingue ».
-- **Shell** : toute commande passe par `rtk`, sans exception (`rtk test …`, `rtk proxy …` si le filtre gêne).
-- **Commits** : depuis le 2026-10-16, **Claude fait les commits** (git.exe, signés GPG avec la config de l'utilisateur), sur
-  demande. Message en **anglais**, titre court à l'impératif, **jamais** de ligne
-  `Co-Authored-By`, de mention de Claude / Anthropic ni de lien ou id de session. Écrire le message avec l'outil Write dans
-  `artifacts/` (ignoré par git) puis `git commit -F artifacts/<fichier>`. Le hook `guard.ps1` le vérifie et refuse aussi
-  `--no-verify`, `--no-gpg-sign`, `commit.gpgsign=false` et `--author`.
-- **Async** : toute opération Git est `async` + `CancellationToken` ; le thread UI ne fait jamais d'I/O
-  (LibGit2Sharp est appelé via `Task.Run`). Runtime Async activé (`Features=runtime-async=on`).
-- **Résultats** : les opérations Git renvoient `GitResult<T>` / `GitResult` (types `union` C# 15) :
-  `Success<T>|Done`, `Conflict`, `AuthenticationFailed`, `Canceled`, `Failure`. Toujours un `switch` exhaustif.
-  Une union est un `struct` exposant `object Value` : en test, asserter sur `result.Value` (`Assert.IsType<Success<T>>(result.Value)`).
-- **Actions destructives** (rejet, suppression…) : toujours confirmées par `IConfirmationService` (bouton par défaut
-  « Annuler ») ; les listes de chemins passées à git.exe vont sur stdin (`--pathspec-from-file=- --pathspec-file-nul`).
-- **Logs** : `[LoggerMessage]` source-générés (pas d'appels `LogInformation` directs, CA1848).
-- **AOT (règles impératives)** :
-  - XAML : `x:Bind` uniquement (pas de `{Binding}`), DataTemplates typés `x:DataType`.
-  - Ne JAMAIS caster en C# une ressource lue dans `Application.Current.Resources` (Brush, Style, FontFamily, Color) :
-    `InvalidCastException` sous AOT. Utiliser `{ThemeResource}` en XAML, ou `DesignTokens` (C#) pour Win2D.
-  - Pas de configuration réflexive (Serilog configuré en code, host `CreateEmptyApplicationBuilder`).
-  - `ItemsSource` / `ItemsRepeater` : toujours une `ObservableCollection<T>` (tableau ou `IReadOnlyList<T>` d’un type
-    maison : « not a supported vector » sous AOT).
-  - Arbre visuel : un élément créé par XAML natif (`VisualTreeHelper.GetParent`…) peut revenir sous un type de base
-    (`ListViewItemPresenter` → `FrameworkElement`) : un test `is ListViewItemPresenter` échoue en silence sous AOT.
-    Remonter jusqu'à un type sûr (`ListViewItem`) sans tester les intermédiaires. Même piège pour
-    `AppWindow.Presenter is OverlappedPresenter` (revient en `AppWindowPresenter`) : créer le presenter
-    (`OverlappedPresenter.Create()` + `SetPresenter`) et garder sa référence.
-  - LibGit2Sharp : aucune API à callback natif (`Patch`, progressions…) : fail-fast sous AOT (ADR-019). git.exe sinon.
-  - Vérifier avant chaque version : `dotnet publish -c Release` sans nouvel avertissement IL, puis lancer l'exe publié
-    **et y rejouer les parcours touchés** (un code qui marche en Debug/JIT peut planter en AOT).
-- **Thème et densité à chaud** (ADR-032) : tailles qui dépendent de la densité liées à
-  `services:Appearance.Current.*` (`x:Bind` statique, `Mode=OneWay`), jamais en `StaticResource` ; brosses de thème
-  en `{ThemeResource}`, et tout alias `<StaticResource>` de brosse dans des `ThemeDictionaries` (Default + Light) ;
-  `RequestedTheme = Appearance.Current.Theme` sur chaque `ContentDialog`.
-- **Fenêtres multiples** (ADR-033) : rien de propre à une fenêtre en singleton DI (dialogues, toasts, sélecteur,
-  shell : créés par `WindowManager`) ; un onglet n'utilise que les services reçus via son relais `TabServices`, jamais
-  ceux d'une fenêtre capturés directement (sinon ses toasts et dialogues restent dans l'ancienne fenêtre après un
-  déplacement). Pas de `TabView.CanTearOutTabs` (les onglets deviennent barre de titre : clics détournés, fenêtre qui
-  arrache l'onglet sélectionné) ; pas de `SetWindowSubclass` (comctl32 5 sans manifeste Common Controls 6).
-- **Win2D** : les vues sont mises en cache par onglet ; libérer les ressources (`Release()`) à la fermeture
-  de l'onglet, pas sur `Unloaded`.
-- **Tests** : dépôts réels via `TestRepoBuilder` (dates de commit déterministes), pas de mocks de LibGit2Sharp.
-  Distants : dépôt nu local (`TestRepoBuilder.Create(bare: true)` + `Clone`) ; authentification : `UnauthorizedGitServer`.
-  Tout test qui déclenche des identifiants **vide d'abord la liste des helpers en local** (`credential.helper` vide,
-  puis `store --file=` dans le dépôt de test) : `GitService` lit la config globale, et sinon GCM écrirait dans le
-  Gestionnaire d'identifiants Windows de l'utilisateur.
-- **Taille et police du texte** (préférences, appliquées au lancement) : en XAML, tout `FontSize` / `LineHeight` (hors `FontIcon`) est
-  `{ThemeResource VigoFontSizeN}` / `{ThemeResource VigoLineHeightN}`, jamais un littéral ; les clés (et `VigoFont`, `VigoDisplayFont`) sont déclarées
-  **au niveau racine de `App.xaml`** (pas dans `Styles.xaml` : un style y trouverait sa propre copie avant la valeur écrite par `UiText.Apply`) et
-  listées dans `Services/UiText.cs`. Texte construit en code (Win2D, `new TextBlock`) : `Appearance.Scaled(n)` et `Appearance.Current.UiFontFamily`.
-  Une `Setter` de `TextBlock` implicite ne doit pas fixer `FontSize` (casse l'héritage depuis un `Button`).
-- **Fichiers générés** (`*.g.cs`, `Tokens.xaml`, `src/Vigo.App/Editor/`) : ne pas éditer à la main, modifier le générateur.
-- **Raccourcis** (ADR-038) : déclarés par `KeyboardShortcuts.Add(owner, touche, modificateurs, action)`, jamais en
-  `<KeyboardAccelerator>` XAML : WebView2 garde les touches, l'éditeur les renvoie et `KeyboardShortcuts.TryInvoke`
-  ne connaît que la table. Côté page, toujours `keyCode` (disposition active), jamais `code` (position QWERTY).
-- **Éditeur de code** : tout affichage de fichier source passe par `CodeEditor` (pas de nouvel afficheur Win2D) ;
-  textes affichés dans la page fournis par le C# (localisation) ; le diff unifié garde les hunks de git (indexation).
-- Tests de submodules : git refuse le transport `file` pour les submodules (config locale sans effet) ; appeler
-  `TestRepoBuilder.AllowFileSubmodules()`. Un submodule seulement indexé ne se désinitialise pas sans `--force` : valider avant.
-- Bash : les heredocs contenant une apostrophe échouent dans l'outil Bash ; utiliser l'outil Write.
-- XAML : un `x:Name` qui porte le même nom qu'une propriété liée par `x:Bind` dans un `DataTemplate` de la même vue fait échouer le compilateur
-  avec « Xaml Internal Error WMC9999 » sans message utile (ADR-056) : nommer les éléments autrement. Pour trouver la cause d'un tel échec,
-  retirer des blocs de la vue jusqu'à ce qu'elle compile.
+- **Branches**: Claude never creates a branch (neither `checkout -b` nor `switch -c`): it works on the current
+  branch, the user manages branches.
+- **Multilingual**: the app is multilingual, **FR + EN** to start with. Any text shown to the user
+  must be localizable (no new hard-coded UI string without flagging it for the `.resw`); the chosen
+  mechanism must be AOT-compatible. **Mechanism (ADR-075)**: `src/Vigo.App/Strings/{fr-FR,en-US}/Resources.resw`; XAML:
+  `x:Uid` (without a dot, e.g. `PrefAutoFetchTitle` → `PrefAutoFetchTitle.Text`); non-UI code: `Loc.Get("Zone.Cle")` /
+  `Loc.Format("Zone.Cle", args)` (Vigo.Core). Same key in both `.resw` (test `LocalizationResourcesTests`).
+  Changing the language = restart; `VIGO_LANGUAGE=en|fr` (Debug) for replays.
+- **Changelog** (J7.23): every new feature (or visible fix) adds a user-oriented line in
+  `src/Vigo.Core/Changelog/CHANGELOG-fr.md` **and** `CHANGELOG-en.md`, in the next version's section, at the top of the
+  file (`## x.y.z — YYYY-MM-DD`; while the version is not set: `## Unreleased`, to rename before the tag). The
+  section whose title is exactly the released version is shown on the first launch of that version (« Nouveautés »
+  (What's new) dialog); without a section, nothing is shown. Hyphenated names: `.fr.md` would be taken for a culture (satellite assembly).
+- **Language**: **all source code is in English** (identifiers, comments, XML docs, log messages,
+  internal exception messages, `tools/` scripts, tests), as are **commit messages** and this file (CLAUDE.md). Stay in French:
+  the documentation in `docs/` (PROGRESS, DECISIONS, AUDIT…) and user-facing texts (UI, `Failure.Message`
+  shown in a toast), the latter localized through `.resw` (FR/EN) — see "Multilingual".
+- **Shell**: every command goes through `rtk`, no exception (`rtk test …`, `rtk proxy …` if the filter gets in the way).
+- **Commits**: since 2026-10-16, **Claude makes the commits** (git.exe, GPG-signed with the user's config), on
+  request. Message in **English**, short imperative title, **never** a
+  `Co-Authored-By` line, a mention of Claude / Anthropic, or a session link or id. Write the message with the Write tool in
+  `artifacts/` (ignored by git) then `git commit -F artifacts/<file>`. The `guard.ps1` hook checks this and also rejects
+  `--no-verify`, `--no-gpg-sign`, `commit.gpgsign=false` and `--author`.
+- **Async**: every Git operation is `async` + `CancellationToken`; the UI thread never does I/O
+  (LibGit2Sharp is called via `Task.Run`). Runtime Async enabled (`Features=runtime-async=on`).
+- **Results**: Git operations return `GitResult<T>` / `GitResult` (C# 15 `union` types):
+  `Success<T>|Done`, `Conflict`, `AuthenticationFailed`, `Canceled`, `Failure`. Always an exhaustive `switch`.
+  A union is a `struct` exposing `object Value`: in tests, assert on `result.Value` (`Assert.IsType<Success<T>>(result.Value)`).
+- **Destructive actions** (discard, delete…): always confirmed through `IConfirmationService` (default button
+  « Annuler » (Cancel)); path lists passed to git.exe go on stdin (`--pathspec-from-file=- --pathspec-file-nul`).
+- **Logs**: source-generated `[LoggerMessage]` (no direct `LogInformation` calls, CA1848).
+- **AOT (mandatory rules)**:
+  - XAML: `x:Bind` only (no `{Binding}`), DataTemplates typed with `x:DataType`.
+  - NEVER cast in C# a resource read from `Application.Current.Resources` (Brush, Style, FontFamily, Color):
+    `InvalidCastException` under AOT. Use `{ThemeResource}` in XAML, or `DesignTokens` (C#) for Win2D.
+  - No reflection-based configuration (Serilog configured in code, host `CreateEmptyApplicationBuilder`).
+  - `ItemsSource` / `ItemsRepeater`: always an `ObservableCollection<T>` (array or `IReadOnlyList<T>` of a custom
+    type: « not a supported vector » under AOT).
+  - Visual tree: an element created by native XAML (`VisualTreeHelper.GetParent`…) can come back as a base type
+    (`ListViewItemPresenter` → `FrameworkElement`): an `is ListViewItemPresenter` test fails silently under AOT.
+    Walk up to a safe type (`ListViewItem`) without testing the intermediates. Same trap for
+    `AppWindow.Presenter is OverlappedPresenter` (comes back as `AppWindowPresenter`): create the presenter
+    (`OverlappedPresenter.Create()` + `SetPresenter`) and keep its reference.
+  - LibGit2Sharp: no API with a native callback (`Patch`, progress…): fail-fast under AOT (ADR-019). git.exe otherwise.
+  - Check before every release: `dotnet publish -c Release` with no new IL warning, then run the published exe
+    **and replay the affected flows in it** (code that works in Debug/JIT can crash under AOT).
+- **Live theme and density** (ADR-032): density-dependent sizes bound to
+  `services:Appearance.Current.*` (static `x:Bind`, `Mode=OneWay`), never as `StaticResource`; theme brushes
+  as `{ThemeResource}`, and every brush `<StaticResource>` alias inside `ThemeDictionaries` (Default + Light);
+  `RequestedTheme = Appearance.Current.Theme` on every `ContentDialog`.
+- **Multiple windows** (ADR-033): nothing window-specific as a DI singleton (dialogs, toasts, picker,
+  shell: created by `WindowManager`); a tab only uses the services received through its `TabServices` relay, never
+  those of a window captured directly (otherwise its toasts and dialogs stay in the old window after a
+  move). No `TabView.CanTearOutTabs` (the tabs become title bar: hijacked clicks, window that
+  tears out the selected tab); no `SetWindowSubclass` (comctl32 5 without a Common Controls 6 manifest).
+- **Win2D**: views are cached per tab; release the resources (`Release()`) when the tab
+  closes, not on `Unloaded`.
+- **Tests**: real repos via `TestRepoBuilder` (deterministic commit dates), no LibGit2Sharp mocks.
+  Remotes: local bare repo (`TestRepoBuilder.Create(bare: true)` + `Clone`); authentication: `UnauthorizedGitServer`.
+  Any test that triggers credentials **first clears the helper list locally** (empty `credential.helper`,
+  then `store --file=` in the test repo): `GitService` reads the global config, and otherwise GCM would write to the
+  user's Windows Credential Manager.
+- **Text size and font** (preferences, applied at launch): in XAML, every `FontSize` / `LineHeight` (except `FontIcon`) is
+  `{ThemeResource VigoFontSizeN}` / `{ThemeResource VigoLineHeightN}`, never a literal; the keys (and `VigoFont`, `VigoDisplayFont`) are declared
+  **at the root level of `App.xaml`** (not in `Styles.xaml`: a style there would find its own copy before the value written by `UiText.Apply`) and
+  listed in `Services/UiText.cs`. Text built in code (Win2D, `new TextBlock`): `Appearance.Scaled(n)` and `Appearance.Current.UiFontFamily`.
+  An implicit `TextBlock` `Setter` must not set `FontSize` (breaks inheritance from a `Button`).
+- **Generated files** (`*.g.cs`, `Tokens.xaml`): do not edit by hand, change the generator.
+- **Shortcuts**: declared with `KeyboardShortcuts.Add(owner, key, modifiers, action)`, never as XAML
+  `<KeyboardAccelerator>`: the table holds the configurable shortcuts, and the terminal (which keeps the keys) sends back
+  those its shell does not use to `KeyboardShortcuts.TryInvoke`, which only knows the table.
+- **Code editor** (ADR-090): every source file display goes through `CodeEditor` (native LoomEditor; no new
+  viewer); its texts come from the `.resw` (`EditorReviewLabels`, labels passed by the views); the unified diff keeps git's
+  hunks (staging); a XAML element of a removed view zone is never put back into another one (fail-fast crash): one new element per zone.
+- Submodule tests: git refuses the `file` transport for submodules (local config has no effect); call
+  `TestRepoBuilder.AllowFileSubmodules()`. A submodule that is only staged cannot be deinitialized without `--force`: commit first.
+- Bash: heredocs containing an apostrophe fail in the Bash tool; use the Write tool.
+- XAML: an `x:Name` with the same name as a property bound by `x:Bind` in a `DataTemplate` of the same view makes the compiler fail
+  with « Xaml Internal Error WMC9999 » and no useful message (ADR-056): name the elements differently. To find the cause of such a failure,
+  remove blocks from the view until it compiles.

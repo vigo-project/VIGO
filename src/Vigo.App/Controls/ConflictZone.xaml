@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    View zone of the native conflict editor (ADR-090, mockup "Conflits"): in a pane, the header of a conflict ("Conflit 1 ·
+    3 lignes" + "Prendre ce bloc"); in the result, the card of a conflict not resolved yet (warning, label, and the
+    choices ours / theirs / both). One element per zone: a zone's element is never moved to another one.
+-->
+<UserControl
+    x:Class="Vigo.App.Controls.ConflictZone"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Grid>
+        <Border x:Name="BlockBorder" Height="26" VerticalAlignment="Top" Padding="10,0,8,0" CornerRadius="4,4,0,0" BorderThickness="1,1,1,0"
+                Visibility="Collapsed">
+            <Grid ColumnSpacing="8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock x:Name="BlockLabel" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" TextWrapping="NoWrap"
+                           FontSize="{ThemeResource VigoFontSize11}" FontWeight="SemiBold" Foreground="{ThemeResource VigoText2Brush}" />
+                <Button x:Name="TakeButton" Grid.Column="1" Height="20" MinHeight="0" Padding="8,0" VerticalAlignment="Center"
+                        FontSize="{ThemeResource VigoFontSize11}" FontWeight="SemiBold" Click="OnTakeClick" />
+            </Grid>
+        </Border>
+
+        <Border x:Name="CardBorder" Height="32" Margin="10,4" Padding="10,0" CornerRadius="4" BorderThickness="1"
+                Background="{ThemeResource VigoWarningSoftBrush}" BorderBrush="{ThemeResource VigoStrokeStrongBrush}" Visibility="Collapsed">
+            <Grid ColumnSpacing="8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="&#x26A0;" VerticalAlignment="Center" FontSize="{ThemeResource VigoFontSize12}"
+                           Foreground="{ThemeResource VigoWarningBrush}" />
+                <TextBlock x:Name="CardLabel" Grid.Column="1" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" TextWrapping="NoWrap"
+                           FontSize="{ThemeResource VigoFontSize12}" />
+                <Button x:Name="OursButton" Grid.Column="2" Height="24" MinHeight="0" Padding="8,0" VerticalAlignment="Center"
+                        FontSize="{ThemeResource VigoFontSize12}" Click="OnOursClick" />
+                <Button x:Name="TheirsButton" Grid.Column="3" Height="24" MinHeight="0" Padding="8,0" VerticalAlignment="Center"
+                        FontSize="{ThemeResource VigoFontSize12}" Click="OnTheirsClick" />
+                <Button x:Name="BothButton" Grid.Column="4" Height="24" MinHeight="0" Padding="8,0" VerticalAlignment="Center"
+                        FontSize="{ThemeResource VigoFontSize12}" Click="OnBothClick" />
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

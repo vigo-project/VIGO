@@ -394,30 +394,36 @@ public sealed partial class PullRequestViewModel : HostedDiscussionViewModel, ID
     // Azure DevOps stores a mention as @<identity id>: the names are read once and kept (an empty name: not found, not asked again).
     private readonly Dictionary<string, string> _mentionNames = new(StringComparer.OrdinalIgnoreCase);
 
-    /// <summary>Names of the people the comments of the file mention by identifier (identifier → name).</summary>
-    public IReadOnlyDictionary<string, string> MentionNames => _mentionNames.Where(p => p.Value.Length > 0).ToDictionary(p => p.Key, p => p.Value, StringComparer.OrdinalIgnoreCase);
+    // The rows of the threads read the names again each time the cards are drawn (ReviewRevision).
+    protected override IReadOnlyDictionary<string, string> MentionNames => _mentionNames;
 
     [System.Text.RegularExpressions.GeneratedRegex("@<([0-9a-fA-F-]{36})>")]
     private static partial System.Text.RegularExpressions.Regex MentionPattern();
+
+    // Identifiers being looked up: a second lookup started meanwhile (threads of the first file, conversation) skips them.
+    private readonly HashSet<string> _mentionsAsked = new(StringComparer.OrdinalIgnoreCase);
 
     private async Task ResolveMentionsAsync()
     {
         if (!CanCompleteReferences || Accounts is null || Repository is not { } repository) return;
         var ids = FileThreads.SelectMany(t => t.Comments).Select(c => c.Comment.Body).Concat(Drafts.Select(d => d.Comment.Body))
+            .Concat(Timeline.Select(t => t.Entry.Body)).Append(Detail?.Body ?? string.Empty)
             .SelectMany(body => MentionPattern().Matches(body).Select(m => m.Groups[1].Value))
-            .Where(id => !_mentionNames.ContainsKey(id))
+            .Where(id => !_mentionNames.ContainsKey(id) && !_mentionsAsked.Contains(id))
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
         if (ids.Length == 0) return;
 
+        _mentionsAsked.UnionWith(ids);
         var result = await Accounts.ResolveMentionsAsync(repository, ids, ProfileId?.Invoke(), Lifetime);
+        _mentionsAsked.ExceptWith(ids);
         if (result.Value is not Success<IReadOnlyDictionary<string, string>> { Value: var names }) return;
         foreach (var id in ids) _mentionNames[id] = names.TryGetValue(id, out var name) ? name : string.Empty;
         BumpReviewRevision();
+        // The conversation shows the names too: its texts that mention someone are read again.
+        if (Detail is { } detail && MentionPattern().IsMatch(detail.Body)) Description = MarkdownParser.Parse(detail.Body, References);
+        foreach (var row in Timeline.Where(r => MentionPattern().IsMatch(r.Entry.Body))) row.ParseAgain();
     }
-
-    /// <summary>What <c>#n</c>, <c>!n</c> and <c>@name</c> in the comments link to.</summary>
-    public ReferenceLinks ReferenceLinks => Repository?.ReferenceLinks ?? new ReferenceLinks(null, null, null);
 
     private void BumpReviewRevision()
     {
@@ -806,6 +812,21 @@ public sealed partial class PullRequestViewModel : HostedDiscussionViewModel, ID
         return true;
     }
 
+    /// <summary>The comments of the review threads take reactions (GitHub).</summary>
+    public bool CanReactInThreads => CanReview && Hosting.Repository is { } r && Accounts!.SupportsReviewCommentReactions(r.Provider);
+
+    /// <summary>Adds the signed-in account's reaction to a comment of a review thread, or removes it (as in the conversation).</summary>
+    public async Task ToggleThreadReactionAsync(long commentId, ReactionKind kind)
+    {
+        if (Repository is not { } repository || Accounts is null || !CanReactInThreads) return;
+        if (Detail?.ReviewThreads.FirstOrDefault(t => t.Comments.Any(c => c.Id == commentId)) is not { } thread) return;
+        var comment = await WriteAsync(Loc.Get("Issue.Failure.ReactionNotSaved"),
+            ct => Accounts.ToggleReviewCommentReactionAsync(repository, commentId, kind, ProfileId?.Invoke(), ct));
+        if (comment is null) return;
+        // The service gives the comment back: its text and author are kept, only the reactions are taken.
+        ReplaceThread(thread with { Comments = [.. thread.Comments.Select(c => c.Id == commentId ? c with { Reactions = comment.Reactions } : c)] });
+    }
+
     /// <summary>Marks the thread resolved, or opens it again.</summary>
     [RelayCommand]
     private async Task ToggleResolvedAsync(ThreadRow row) => await SetThreadResolvedAsync(row.Thread.Id, !row.Thread.IsResolved);
@@ -844,7 +865,7 @@ public sealed partial class PullRequestViewModel : HostedDiscussionViewModel, ID
             var now = Time.GetUtcNow();
             foreach (var thread in detail.ReviewThreads.Where(t => t.Path == file.Path))
                 FileThreads.Add(new ThreadRow(thread,
-                    [.. thread.Comments.Select(c => new ThreadCommentRow(c, RelativeTime.Format(c.CreatedAt, now, Time.LocalTimeZone)))], CanReview));
+                    [.. thread.Comments.Select(c => new ThreadCommentRow(c, RelativeTime.Format(c.CreatedAt, now, Time.LocalTimeZone), CanReactInThreads, References))], CanReview));
         }
         OnPropertyChanged(nameof(HasFileThreads));
         BumpReviewRevision();
@@ -944,10 +965,10 @@ public sealed partial class PullRequestViewModel : HostedDiscussionViewModel, ID
     {
         var now = Time.GetUtcNow();
         Detail = detail;
-        Description = MarkdownParser.Parse(detail.Body);
+        Description = MarkdownParser.Parse(detail.Body, References);
         foreach (var label in detail.Labels) Labels.Add(new PullRequestLabelRow(label));
         OnPropertyChanged(nameof(HasLabels));
-        foreach (var entry in detail.Timeline) Timeline.Add(new TimelineRow(entry, RelativeTime.Format(entry.CreatedAt, now, Time.LocalTimeZone), IsOwn(entry) && CanWrite, CanWrite));
+        foreach (var entry in detail.Timeline) Timeline.Add(new TimelineRow(entry, RelativeTime.Format(entry.CreatedAt, now, Time.LocalTimeZone), IsOwn(entry) && CanWrite, CanWrite, References));
         foreach (var commit in detail.Commits) Commits.Add(new PullRequestCommitRow(commit, RelativeTime.Format(commit.Date, now, Time.LocalTimeZone)));
 
         var comments = detail.Timeline.Where(t => t.Kind == TimelineKind.ReviewComment && t.Path is not null)
@@ -962,6 +983,7 @@ public sealed partial class PullRequestViewModel : HostedDiscussionViewModel, ID
         ArrangeFiles();
         SelectedFile = Files.FirstOrDefault();
         if (Accounts is not null && Hosting.Repository is { } hosted && Accounts.ComputesPullRequestDiffs(hosted.Provider)) _ = ComputeAllStatsAsync();
+        _ = ResolveMentionsAsync();
     }
 
     private void ShowDiff(PullRequestFileRow? row)

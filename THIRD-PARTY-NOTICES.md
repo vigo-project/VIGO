@@ -1,7 +1,7 @@
 # Third-party notices
 
 VIGO itself is released under the [MIT License](LICENSE). It redistributes or links the components below, each under
-its own license. Full texts that are not reproduced here ship in the NuGet / npm packages, and in [`third-party/`](third-party/).
+its own license. Full texts that are not reproduced here ship in the NuGet packages, and in [`third-party/`](third-party/).
 
 ## Linked libraries (NuGet)
 
@@ -16,6 +16,7 @@ its own license. Full texts that are not reproduced here ship in the NuGet / npm
 | Serilog, Serilog.Extensions.Hosting, Serilog.Sinks.File | Apache-2.0, Copyright (c) Serilog Contributors |
 | Velopack | MIT |
 | LoomTerminal.WinUI, .Presentation, .Core, .Pty (integrated terminal) | MIT, Copyright (c) LoomTerminal contributors; `Core` and `Presentation` contain code ported from xterm.js (MIT, Copyright (c) The xterm.js authors, SourceLair Private Company, Christopher Jeffrey) |
+| LoomEditor.WinUI, .View, .Rendering, .TextMate, .Themes, .Core (code editor) | MIT, Copyright (c) LoomEditor contributors; large parts are ported from Monaco / Visual Studio Code (MIT, Copyright (c) Microsoft Corporation): see the `NOTICE.md` of the packages |
 | LibGit2Sharp | MIT, Copyright (c) LibGit2Sharp contributors |
 | libgit2 (native, via `LibGit2Sharp.NativeBinaries`) | GPL-2.0 **with linking exception**: see [third-party/libgit2.license.txt](third-party/libgit2.license.txt) |
 
@@ -26,28 +27,9 @@ the same file.
 Build and test only (not redistributed): xunit.v3 (Apache-2.0), Microsoft.Testing.Platform extensions (MIT),
 BenchmarkDotNet (MIT), Microsoft.Windows.SDK.BuildTools (Microsoft license).
 
-## Bundled web components (`src/Vigo.App/Editor/`, built by `tools/editor`)
-
-| Component | License |
-|---|---|
-| Monaco Editor 0.56.0 | MIT, Copyright (c) Microsoft Corporation: see `src/Vigo.App/Editor/LICENSE-monaco.txt`; third-party parts: [third-party/monaco-ThirdPartyNotices.txt](third-party/monaco-ThirdPartyNotices.txt) |
-| Codicons font (`codicon.ttf`, shipped with Monaco) | CC-BY-4.0, Copyright (c) Microsoft Corporation (icons); code MIT |
-| markdown-it 15.0.2, linkify-it, mdurl, uc.micro, punycode.js | MIT |
-| entities | BSD-2-Clause |
-| DOMPurify 3.4.17 | used under Apache-2.0 (dual-licensed MPL-2.0 OR Apache-2.0), Copyright (c) Cure53 and contributors |
-| marked (inside Monaco) | MIT |
-
-Build tool only: esbuild (MIT).
-
 ## Icons and fonts
 
 | Component | License |
 |---|---|
 | Fluent System Icons (`Assets/Fonts/FluentSystemIcons-Regular.ttf`) | MIT, Copyright (c) Microsoft Corporation |
 | Segoe UI Variable, Cascadia Mono, Consolas | Windows system fonts, referenced but not redistributed |
-
-## Attribution
-
-Codicons are licensed under the Creative Commons Attribution 4.0 International License
-(<https://creativecommons.org/licenses/by/4.0/>), Copyright (c) Microsoft Corporation, from
-<https://github.com/microsoft/vscode-codicons>.

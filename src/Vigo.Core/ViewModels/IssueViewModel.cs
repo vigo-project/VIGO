@@ -306,7 +306,7 @@ public sealed partial class IssueViewModel : HostedDiscussionViewModel, IDisposa
     private void Apply(IssueDetail detail)
     {
         Detail = detail;
-        Description = MarkdownParser.Parse(detail.Body);
+        Description = MarkdownParser.Parse(detail.Body, References);
         foreach (var label in detail.Labels) Labels.Add(new IssueTagRow(label));
         OnPropertyChanged(nameof(HasLabels));
         OnPropertyChanged(nameof(AssigneesText));

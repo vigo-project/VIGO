@@ -1,3 +1,11 @@
+## 0.33.0 — 2026-10-30
+- Blame, diff côte à côte, diff unifié (indexation par ligne et par hunk comprise) et éditeur de conflits : affichés dans un éditeur natif (LoomEditor), sans WebView2 : ouverture plus rapide, coloration TextMate.
+- Pull requests : la revue dans le diff (commentaires, réponses, résolution, commentaires en attente) passe aussi dans l'éditeur natif ; un bouton « Commenter » apparaît dès qu'on sélectionne du texte.
+- Pull requests, issues et work items : #12, !34 et @login dans les descriptions et les commentaires renvoient vers le service, et les mentions Azure DevOps affichent le nom de la personne.
+- Pull requests GitHub : les réactions des commentaires du diff s'affichent, et on peut en ajouter ou en retirer.
+- Éditeur de conflits : « ours » et « theirs » sont traduits (« Notre version », « Leur version », « La nôtre », « La leur »).
+- VIGO n'utilise plus WebView2 : aucun processus de navigateur ne démarre en arrière-plan et l'installation est plus légère (environ 6 Mo de moins).
+
 ## 0.32.0 — 2026-10-29
 - Listes de fichiers en arborescence : un bouton « Tout réduire » / « Tout développer » au-dessus de la première ligne réduit ou développe tous les dossiers d'un coup.
 - Conflits : l'éditeur de conflits fonctionne maintenant avec un git antérieur à 2.43 (il échouait avec « unknown option `zdiff3' » sous git 2.34).

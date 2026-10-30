@@ -513,8 +513,6 @@ public sealed partial class MainWindow : Window, IDisposable
             return;
         }
         OpenAtStartup(options.OpenPath);
-        // The browser process of the code editor starts now, in the background: the first diff opens at once.
-        Controls.CodeEditor.Prewarm();
     }
 
     /// <summary>

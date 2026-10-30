@@ -13,7 +13,7 @@ public sealed partial class GitHubClient
     private const string ThreadsQuery =
         "query($owner: String!, $name: String!, $number: Int!) { repository(owner: $owner, name: $name) { pullRequest(number: $number) { "
         + "reviewThreads(first: 100) { nodes { id isResolved isOutdated path line originalLine startLine originalStartLine diffSide "
-        + "comments(first: 50) { nodes { databaseId body createdAt author { login } } } } } } } }";
+        + "comments(first: 50) { nodes { databaseId body createdAt author { login } reactionGroups { content reactors { totalCount } } } } } } } } }";
 
     public bool SupportsPullRequestReview => true;
 
@@ -34,10 +34,26 @@ public sealed partial class GitHubClient
         return result.Value is Success<IReadOnlyList<ReviewThread>> { Value: var threads } ? threads : [];
     }
 
+    // GraphQL gives every kind, used or not: only the used ones are kept, as for the conversation (ReactionsOf of the REST counts).
+    internal static IReadOnlyList<ReactionCount> ReactionsOf(GitHubReactionGroup[]? groups) =>
+        [.. (groups ?? []).Where(g => g.Reactors?.TotalCount > 0).Select(g => (Kind: g.Content switch
+        {
+            "THUMBS_UP" => ReactionKind.ThumbsUp,
+            "THUMBS_DOWN" => ReactionKind.ThumbsDown,
+            "LAUGH" => ReactionKind.Laugh,
+            "HOORAY" => ReactionKind.Hooray,
+            "CONFUSED" => ReactionKind.Confused,
+            "HEART" => ReactionKind.Heart,
+            "ROCKET" => ReactionKind.Rocket,
+            "EYES" => ReactionKind.Eyes,
+            _ => (ReactionKind?)null,
+        }, Count: g.Reactors!.TotalCount)).Where(r => r.Kind is not null).Select(r => new ReactionCount(r.Kind!.Value, r.Count))];
+
     internal static ReviewThread ToThread(GitHubThread t) => new(
         t.Id ?? string.Empty, t.Path ?? string.Empty, t.Line ?? t.OriginalLine,
         t.DiffSide == "LEFT" ? ReviewSide.Old : ReviewSide.New, t.IsResolved, t.IsOutdated,
-        [.. (t.Comments?.Nodes ?? []).Select(c => new ReviewThreadComment(c.DatabaseId, c.Author?.Login ?? "?", c.Body ?? string.Empty, c.CreatedAt))],
+        [.. (t.Comments?.Nodes ?? []).Select(c => new ReviewThreadComment(
+            c.DatabaseId, c.Author?.Login ?? "?", c.Body ?? string.Empty, c.CreatedAt, ReactionsOf(c.ReactionGroups)))],
         StartLine: (t.StartLine ?? t.OriginalStartLine) is { } first && first != (t.Line ?? t.OriginalLine) ? first : null);
 
     public Task<GitResult<ReviewThreadComment>> ReplyToReviewThreadAsync(
@@ -136,7 +152,15 @@ internal sealed record GitHubThreadComment(
     [property: JsonPropertyName("databaseId")] long DatabaseId,
     [property: JsonPropertyName("body")] string? Body,
     [property: JsonPropertyName("createdAt")] DateTimeOffset CreatedAt,
-    [property: JsonPropertyName("author")] GitHubThreadAuthor? Author);
+    [property: JsonPropertyName("author")] GitHubThreadAuthor? Author,
+    [property: JsonPropertyName("reactionGroups")] GitHubReactionGroup[]? ReactionGroups = null);
+
+internal sealed record GitHubReactionGroup(
+    [property: JsonPropertyName("content")] string? Content,
+    [property: JsonPropertyName("reactors")] GitHubReactors? Reactors);
+
+internal sealed record GitHubReactors(
+    [property: JsonPropertyName("totalCount")] int TotalCount);
 
 internal sealed record GitHubThreadAuthor(
     [property: JsonPropertyName("login")] string? Login);

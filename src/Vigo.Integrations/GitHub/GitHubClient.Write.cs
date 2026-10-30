@@ -232,10 +232,29 @@ public sealed partial class GitHubClient
     }
 
     // Looks for the account's own reaction of that kind on the comment: removes it when there, adds it otherwise.
-    public async Task<GitResult<TimelineEntry>> ToggleCommentReactionAsync(
-        string token, HostRepository repository, long commentId, ReactionKind reaction, string login, CancellationToken cancellationToken = default)
+    public Task<GitResult<TimelineEntry>> ToggleCommentReactionAsync(
+        string token, HostRepository repository, long commentId, ReactionKind reaction, string login, CancellationToken cancellationToken = default) =>
+        ToggleReactionAsync(token, $"{RepositoryUrl(repository)}/issues/comments/{commentId}", reaction, login, ReadCommentAsync, cancellationToken);
+
+    public bool SupportsReviewCommentReactions => true;
+
+    // The same on a comment of a review thread (its own endpoints under /pulls/comments).
+    public Task<GitResult<ReviewThreadComment>> ToggleReviewCommentReactionAsync(
+        string token, HostRepository repository, long commentId, ReactionKind reaction, string login, CancellationToken cancellationToken = default) =>
+        ToggleReactionAsync<ReviewThreadComment>(token, $"{RepositoryUrl(repository)}/pulls/comments/{commentId}", reaction, login,
+            async (response, ct) =>
+            {
+                var body = await response.Content.ReadFromJsonAsync(GitHubJsonContext.Default.GitHubComment, ct);
+                return body is null
+                    ? new Failure(Loc.Get("Hosting.GitHubUnreadable"))
+                    : new Success<ReviewThreadComment>(new ReviewThreadComment(
+                        body.Id, body.User?.Login ?? "?", body.Body ?? string.Empty, body.CreatedAt, ReactionsOf(body.Reactions)));
+            }, cancellationToken);
+
+    private async Task<GitResult<T>> ToggleReactionAsync<T>(
+        string token, string comment, ReactionKind reaction, string login,
+        Func<HttpResponseMessage, CancellationToken, Task<GitResult<T>>> read, CancellationToken cancellationToken)
     {
-        var comment = $"{RepositoryUrl(repository)}/issues/comments/{commentId}";
         var content = ReactionName(reaction);
         try
         {
@@ -248,18 +267,18 @@ public sealed partial class GitHubClient
 
             using (var list = await CallAsync(HttpMethod.Get, $"{comment}/reactions?content={Uri.EscapeDataString(content)}&per_page=100", null))
             {
-                if (!list.IsSuccessStatusCode) return await RejectAsync<TimelineEntry>(list, cancellationToken);
+                if (!list.IsSuccessStatusCode) return await RejectAsync<T>(list, cancellationToken);
                 var existing = await list.Content.ReadFromJsonAsync(GitHubJsonContext.Default.GitHubReactionArray, cancellationToken) ?? [];
                 var own = existing.FirstOrDefault(r => string.Equals(r.User?.Login, login, StringComparison.OrdinalIgnoreCase));
                 using var change = own is null
                     ? await CallAsync(HttpMethod.Post, $"{comment}/reactions",
                         JsonContent.Create(new GitHubReactionWrite(content), GitHubJsonContext.Default.GitHubReactionWrite))
                     : await CallAsync(HttpMethod.Delete, $"{comment}/reactions/{own.Id}", null);
-                if (!change.IsSuccessStatusCode) return await RejectAsync<TimelineEntry>(change, cancellationToken);
+                if (!change.IsSuccessStatusCode) return await RejectAsync<T>(change, cancellationToken);
             }
 
             using var fresh = await CallAsync(HttpMethod.Get, comment, null);
-            return fresh.IsSuccessStatusCode ? await ReadCommentAsync(fresh, cancellationToken) : await RejectAsync<TimelineEntry>(fresh, cancellationToken);
+            return fresh.IsSuccessStatusCode ? await read(fresh, cancellationToken) : await RejectAsync<T>(fresh, cancellationToken);
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {

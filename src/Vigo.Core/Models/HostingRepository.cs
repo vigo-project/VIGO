@@ -41,7 +41,11 @@ public enum ReferenceKind
 }
 
 /// <summary>A proposal of the completion menu: <paramref name="Label"/> (title or name), <paramref name="Detail"/> (number, type, state) and the text to insert.</summary>
-public sealed record ReferenceSuggestion(string Label, string Detail, string Insert);
+public sealed record ReferenceSuggestion(string Label, string Detail, string Insert)
+{
+    /// <summary>The name of its row in the proposals list (screen readers).</summary>
+    public override string ToString() => Detail.Length > 0 ? $"{Label} {Detail}" : Label;
+}
 
 /// <summary>Pull request of a hosting service, as listed in the left panel.</summary>
 /// <param name="HeadBranch">Source branch.</param>

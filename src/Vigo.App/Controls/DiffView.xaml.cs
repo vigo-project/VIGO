@@ -36,14 +36,13 @@ public sealed partial class DiffView : UserControl
             else _viewModel?.ApplyHunkCommand.Execute(e.Hunk);
         };
         Editor.KeyPressed += OnEditorKey;
-        Editor.EditorFailed += (_, _) => QueueRefresh();
         ImageDiff.ModeChanged += (_, mode) =>
         {
             if (_viewModel is { } vm) vm.ImageMode = mode;
         };
 
         // Accelerators work wherever the focus is in XAML (e.g. still on the file list of the right panel), but only
-        // while the diff is visible: a collapsed element does not handle them. In the editor, see OnEditorKey.
+        // while the diff is visible: a collapsed element does not handle them. S and Delete: see OnEditorKey.
         AddAccelerator(VirtualKey.Escape, VirtualKeyModifiers.None, () => _viewModel?.CloseCommand.Execute(null));
         AddAccelerator(VirtualKey.Up, VirtualKeyModifiers.Menu, () => _viewModel?.PreviousHunkCommand.Execute(null));
         AddAccelerator(VirtualKey.Down, VirtualKeyModifiers.Menu, () => _viewModel?.NextHunkCommand.Execute(null));
@@ -134,9 +133,7 @@ public sealed partial class DiffView : UserControl
         LayoutButton.IsSideBySide = vm?.IsSideBySide == true;
         LayoutButton.Command = vm?.ToggleLayoutCommand;
         HunkNavigation.Visibility = vm?.IsSideBySide == true ? Visibility.Collapsed : Visibility.Visible;
-        var message = Editor.Failed && vm?.Diff is not null
-            ? Loc.Get("Editor.Unavailable")
-            : vm?.ErrorMessage ?? vm?.PlaceholderMessage;
+        var message = vm?.ErrorMessage ?? vm?.PlaceholderMessage;
         Message.Text = message ?? string.Empty;
         Message.Visibility = message is null ? Visibility.Collapsed : Visibility.Visible;
         var imageDiff = vm is { IsImageDiff: true, ErrorMessage: null };
@@ -237,32 +234,11 @@ public sealed partial class DiffView : UserControl
         AutomationProperties.SetName(ApplyHunkButton, applyHunk);
     }
 
-    /// <summary>Keys of the diff pressed in the editor, then the app's shortcuts.</summary>
-    private void OnEditorKey(object? sender, EditorKey key)
+    /// <summary>Staging keys pressed in the unified diff: S stages / unstages, Delete discards.</summary>
+    private void OnEditorKey(object? sender, string key)
     {
-        var vm = _viewModel;
-        switch (key)
-        {
-            case { Key: "S", Control: false, Alt: false }:
-                ApplyCurrent(useSelection: true);
-                break;
-            case { Key: "Delete", Control: false, Alt: false }:
-                DiscardCurrent(useSelection: true);
-                break;
-            case { Key: "AltUp" }:
-                vm?.PreviousHunkCommand.Execute(null);
-                break;
-            case { Key: "AltDown" }:
-                vm?.NextHunkCommand.Execute(null);
-                break;
-            case { Key: "Escape" }:
-                vm?.CloseCommand.Execute(null);
-                break;
-            case { VirtualKey: > 0 }:
-                // The app's shortcuts (Ctrl+P, F5, Ctrl+Z…): XAML never sees keys pressed in the editor page.
-                KeyboardShortcuts.TryInvoke(this, (VirtualKey)key.VirtualKey, key.Modifiers);
-                break;
-        }
+        if (key == "S") ApplyCurrent(useSelection: true);
+        else if (key == "Delete") DiscardCurrent(useSelection: true);
     }
 
     private void ToggleLayout() => _viewModel?.ToggleLayoutCommand.Execute(null);

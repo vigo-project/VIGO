@@ -38,10 +38,11 @@ public sealed class PullRequestViewModelTests : IDisposable
 
     private static PullRequestDetail DetailOf(
         PullRequest pull, PullRequestState state = PullRequestState.Open, bool draft = false, bool behind = false,
-        MergeMethod? autoMerge = null, int thumbsUp = 0, IReadOnlyList<ReviewThread>? threads = null) => new(
-        pull with { IsDraft = draft }, "Fixes **the cache**.", state, ["bug"],
+        MergeMethod? autoMerge = null, int thumbsUp = 0, IReadOnlyList<ReviewThread>? threads = null,
+        string body = "Fixes **the cache**.", string comment = "Looks good") => new(
+        pull with { IsDraft = draft }, body, state, ["bug"],
         [
-            new TimelineEntry(TimelineKind.Comment, "ada", "Looks good", Now.AddMinutes(-30)),
+            new TimelineEntry(TimelineKind.Comment, "ada", comment, Now.AddMinutes(-30)),
             new TimelineEntry(TimelineKind.Review, "grace", "Ship it", Now.AddMinutes(-20), ReviewVerdict.Approved),
             new TimelineEntry(TimelineKind.ReviewComment, "linus", "Why?", Now.AddMinutes(-10), Path: "src/cache.cs", Line: 3),
             new TimelineEntry(TimelineKind.Comment, "octocat", "Mine", Now.AddMinutes(-5), Id: 42,
@@ -1334,14 +1335,39 @@ public sealed class PullRequestViewModelTests : IDisposable
         var revision = screen.ReviewRevision;
 
         screen.SelectedFile = screen.Files.Single(f => f.Path == "src/cache.cs");
-        await WaitUntilAsync(() => screen.MentionNames.ContainsKey(Ada));
+        await WaitUntilAsync(() => screen.References.Names?.ContainsKey(Ada) == true);
 
-        Assert.Equal("Ada Lovelace", screen.MentionNames[Ada]);
-        Assert.Single(screen.MentionNames);
+        // The cards drawn again read the names: the unknown person keeps the placeholder.
         Assert.NotEqual(revision, screen.ReviewRevision);
+        var body = Assert.IsType<MarkdownParagraph>(Assert.Single(Assert.Single(Assert.Single(screen.FileThreads).Comments).Body));
+        Assert.Equal(["@Ada Lovelace", "@" + Loc.Get("ReviewEditor.UnknownPerson")],
+            body.Content.OfType<MarkdownEmphasis>().Select(e => Assert.IsType<MarkdownText>(Assert.Single(e.Content)).Text));
 
         screen.SelectedFile = screen.Files.First(f => f.Path != "src/cache.cs");
         screen.SelectedFile = screen.Files.Single(f => f.Path == "src/cache.cs");
+        await Task.Delay(100, TestContext.Current.CancellationToken);
+        Assert.Equal(1, _client.MentionLookups);
+    }
+
+    [Fact]
+    public async Task People_mentioned_by_identifier_in_the_conversation_are_named_once_read()
+    {
+        const string Ada = "9d6f3b2a-1c4e-4f7a-8b21-5e0c7a1d2f34";
+        const string Grace = "ad6f3b2a-1c4e-4f7a-8b21-5e0c7a1d2f34";
+        using var tab = await OpenAsync();
+        _client.SupportsReferences = true;
+        _client.MentionIds[Ada] = "Ada Lovelace";
+        _client.MentionIds[Grace] = "Grace Hopper";
+        _client.Body = $"For @<{Ada}>";
+        _client.Comment = $"Thanks @<{Grace}>";
+        await tab.Refs.ShowPullRequestCommand.ExecuteAsync(RowOf(tab, 7));
+        var screen = tab.PullRequest;
+
+        static string? Mention(IReadOnlyList<MarkdownBlock> blocks) =>
+            Assert.IsType<MarkdownParagraph>(Assert.Single(blocks)).Content.OfType<MarkdownEmphasis>()
+                .Select(e => Assert.IsType<MarkdownText>(Assert.Single(e.Content)).Text).SingleOrDefault();
+
+        await WaitUntilAsync(() => Mention(screen.Description) == "@Ada Lovelace" && Mention(screen.Timeline[0].Body) == "@Grace Hopper");
         await Task.Delay(100, TestContext.Current.CancellationToken);
         Assert.Equal(1, _client.MentionLookups);
     }
@@ -1436,6 +1462,10 @@ public sealed class PullRequestViewModelTests : IDisposable
         public List<(ReferenceKind Kind, string Query)> ReferenceQueries { get; } = [];
 
         public Dictionary<string, string> MentionIds { get; } = [];
+
+        public string Body { get; set; } = "Fixes **the cache**.";
+
+        public string Comment { get; set; } = "Looks good";
 
         public int MentionLookups { get; private set; }
 
@@ -1657,7 +1687,7 @@ public sealed class PullRequestViewModelTests : IDisposable
         public Task<GitResult<PullRequestDetail>> GetPullRequestDetailAsync(
             string token, HostRepository repository, PullRequest pullRequest, CancellationToken cancellationToken = default) =>
             Task.FromResult<GitResult<PullRequestDetail>>(DetailFailure is null
-                ? new Success<PullRequestDetail>(DetailOf(pullRequest with { HeadRepository = HeadRepository ?? pullRequest.HeadRepository }, State, Draft, Behind, AutoMerge, ThumbsUp, [.. Threads]))
+                ? new Success<PullRequestDetail>(DetailOf(pullRequest with { HeadRepository = HeadRepository ?? pullRequest.HeadRepository }, State, Draft, Behind, AutoMerge, ThumbsUp, [.. Threads], Body, Comment))
                 : new Failure(DetailFailure));
 
         public Task<GitResult<HostUser>> GetUserAsync(string token, CancellationToken cancellationToken = default) => throw new NotSupportedException();

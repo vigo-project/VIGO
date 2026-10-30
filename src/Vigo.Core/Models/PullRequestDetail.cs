@@ -75,7 +75,8 @@ public enum ReviewSide
 
 /// <summary>Comment of a discussion thread on the diff.</summary>
 /// <param name="Id">Identifier on the service (to reply to it).</param>
-public sealed record ReviewThreadComment(long Id, string Author, string Body, DateTimeOffset CreatedAt);
+/// <param name="Reactions">Reactions to the comment, only the kinds somebody used; null when the service gives none.</param>
+public sealed record ReviewThreadComment(long Id, string Author, string Body, DateTimeOffset CreatedAt, IReadOnlyList<ReactionCount>? Reactions = null);
 
 /// <summary>Discussion on a line of the diff (J6.9e): the comments in order, and whether it was resolved.</summary>
 /// <param name="Id">Identifier of the thread in the service's graph API (to resolve it).</param>

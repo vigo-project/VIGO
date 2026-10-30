@@ -59,9 +59,6 @@ $norm = $path -replace '\\', '/'
 if ($norm -match '\.g\.cs$' -or $norm -match '/Themes/Tokens\.xaml$') {
     Block "$path is generated. Change the generator instead (node tools/gen-tokens.mjs docs/design/VIGO.dc.html.txt, node tools/gen-icons.mjs tools/FluentSystemIcons-Regular.json docs/design/*.txt)."
 }
-if ($norm -match '/src/Vigo\.App/Editor/') {
-    Block "$path is the generated code editor bundle. Change tools/editor/src instead, then: cd tools/editor; npm ci; node build.mjs."
-}
 
 $texts = @()
 if ($in.content) { $texts += [string]$in.content }

@@ -1,3 +1,10 @@
+## 0.33.0 — 2026-10-30
+- Blame, side-by-side diff, unified diff (line and hunk staging included) and conflict editor: shown in a native editor (LoomEditor), without WebView2: faster to open, TextMate syntax coloring.
+- Pull requests: the review in the diff (comments, replies, resolving, pending comments) moves to the native editor too; a "Comment" button appears as soon as text is selected.
+- Pull requests, issues and work items: #12, !34 and @login in descriptions and comments link to the service, and Azure DevOps mentions show the person's name.
+- GitHub pull requests: reactions on the diff comments are shown, and can be added or removed.
+- VIGO no longer uses WebView2: no browser process starts in the background, and the install is lighter (about 6 MB less).
+
 ## 0.32.0 — 2026-10-29
 - File lists as a tree: a "Collapse all" / "Expand all" button above the first row collapses or expands every folder at once.
 - Conflicts: the conflict editor now works with git older than 2.43 (it failed with "unknown option `zdiff3'" on git 2.34).

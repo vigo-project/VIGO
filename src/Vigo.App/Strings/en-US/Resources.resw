@@ -135,6 +135,12 @@
   <data name="Conflict.DeleteFile.Message" xml:space="preserve"><value>“{0}” will be deleted from the repository and the disk to resolve the conflict.</value></data>
   <data name="Conflict.DeleteFile.Title" xml:space="preserve"><value>Delete the file?</value></data>
   <data name="Conflict.Editor.Both" xml:space="preserve"><value>Both</value></data>
+  <data name="Conflict.Editor.Ours" xml:space="preserve"><value>Ours</value></data>
+  <data name="Conflict.Editor.Theirs" xml:space="preserve"><value>Theirs</value></data>
+  <data name="Conflict.Editor.LegendOurs" xml:space="preserve"><value>ours</value></data>
+  <data name="Conflict.Editor.LegendTheirs" xml:space="preserve"><value>theirs</value></data>
+  <data name="Conflict.Editor.TakeOurs" xml:space="preserve"><value>Ours</value></data>
+  <data name="Conflict.Editor.TakeTheirs" xml:space="preserve"><value>Theirs</value></data>
   <data name="Conflict.Editor.Result" xml:space="preserve"><value>Result</value></data>
   <data name="Conflict.Editor.ResultDetail" xml:space="preserve"><value>{0} · editable · check lines in ours / theirs, or choose a block</value></data>
   <data name="Conflict.Editor.TakeAll" xml:space="preserve"><value>Take all</value></data>
@@ -235,7 +241,6 @@
   <data name="DiffPrevHunkButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Previous hunk</value></data>
   <data name="DiffPrevHunkButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Previous hunk (Alt+↑)</value></data>
   <data name="DiffRoot.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>File differences</value></data>
-  <data name="Editor.Unavailable" xml:space="preserve"><value>Code editor unavailable: the WebView2 runtime could not start (see the log).</value></data>
   <data name="FhBackButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Back to the graph</value></data>
   <data name="FhBackButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Back to the graph (Esc)</value></data>
   <data name="FhBlameButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Blame at this commit</value></data>
@@ -1574,10 +1579,8 @@ Stored by Git LFS (declared in {1}).</value></data>
   <data name="ReviewEditor.Heading" xml:space="preserve"><value>Heading</value></data>
   <data name="ReviewEditor.Bold" xml:space="preserve"><value>Bold (Ctrl+B)</value></data>
   <data name="ReviewEditor.Italic" xml:space="preserve"><value>Italic (Ctrl+I)</value></data>
-  <data name="ReviewEditor.Underline" xml:space="preserve"><value>Underline (Ctrl+U)</value></data>
   <data name="ReviewEditor.Strike" xml:space="preserve"><value>Strikethrough</value></data>
   <data name="ReviewEditor.Code" xml:space="preserve"><value>Code</value></data>
-  <data name="ReviewEditor.CodeBlock" xml:space="preserve"><value>Code block</value></data>
   <data name="ReviewEditor.Link" xml:space="preserve"><value>Link</value></data>
   <data name="ReviewEditor.BulletList" xml:space="preserve"><value>Bulleted list</value></data>
   <data name="ReviewEditor.NumberList" xml:space="preserve"><value>Numbered list</value></data>
@@ -1589,7 +1592,6 @@ Stored by Git LFS (declared in {1}).</value></data>
   <data name="ReviewEditor.StrikeSample" xml:space="preserve"><value>struck</value></data>
   <data name="ReviewEditor.CodeSample" xml:space="preserve"><value>code</value></data>
   <data name="ReviewEditor.LinkSample" xml:space="preserve"><value>link text</value></data>
-  <data name="ReviewEditor.Write" xml:space="preserve"><value>Write</value></data>
   <data name="ReviewEditor.Preview" xml:space="preserve"><value>Preview</value></data>
   <data name="ReviewEditor.NothingToPreview" xml:space="preserve"><value>Nothing to preview.</value></data>
   <data name="ReviewEditor.Cancel" xml:space="preserve"><value>Cancel</value></data>
@@ -1608,11 +1610,10 @@ Stored by Git LFS (declared in {1}).</value></data>
   <data name="ReviewEditor.CommentOn" xml:space="preserve"><value>Comment on</value></data>
   <data name="ReviewEditor.CommentOnSelection" xml:space="preserve"><value>Comment</value></data>
   <data name="ReviewEditor.CommentOnLine" xml:space="preserve"><value>Comment on this line</value></data>
-  <data name="ReviewEditor.SuggestionTitle" xml:space="preserve"><value>Suggested change</value></data>
   <data name="ReviewEditor.Pending" xml:space="preserve"><value>Pending</value></data>
+  <data name="ReviewEditor.UnknownPerson" xml:space="preserve"><value>User</value></data>
   <data name="ReviewEditor.RemoveDraft" xml:space="preserve"><value>Remove</value></data>
   <data name="ReviewEditor.OutsideDiff" xml:space="preserve"><value>Outside the diff</value></data>
-  <data name="ReviewEditor.UnknownPerson" xml:space="preserve"><value>User</value></data>
   <data name="NewPrDialog.CloseButtonText" xml:space="preserve"><value>Cancel</value></data>
   <data name="NewPrTitle.Header" xml:space="preserve"><value>Title</value></data>
   <data name="NewPrBody.Header" xml:space="preserve"><value>Description (optional)</value></data>
