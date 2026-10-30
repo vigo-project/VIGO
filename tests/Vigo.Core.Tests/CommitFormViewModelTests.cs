@@ -1,4 +1,3 @@
-using System.Text;
 using Microsoft.Extensions.Logging.Abstractions;
 using Vigo.Core.Models;
 using Vigo.Core.Results;
@@ -140,7 +139,7 @@ public sealed class CommitFormViewModelTests
         var head = repo.Commit("init", ("a.txt", "a\n"));
         var hooks = Path.Combine(repo.Path, ".git", "hooks");
         Directory.CreateDirectory(hooks);
-        File.WriteAllText(Path.Combine(hooks, "pre-commit"), "#!/bin/sh\necho 'first' >&2\necho 'second' >&2\nexit 1\n", new UTF8Encoding(false));
+        TestRepoBuilder.WriteHook(Path.Combine(hooks, "pre-commit"), "#!/bin/sh\necho 'first' >&2\necho 'second' >&2\nexit 1\n");
         repo.Git("config", "core.hooksPath", hooks.Replace('\\', '/'));
         repo.WriteFile("a.txt", "a2\n").Stage("a.txt");
         using var tab = CreateTab(repo);

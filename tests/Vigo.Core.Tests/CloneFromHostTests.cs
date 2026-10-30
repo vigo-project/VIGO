@@ -20,7 +20,7 @@ public sealed class CloneFromHostTests : IDisposable
     private readonly List<CloneViewModel> _created = [];
 
     public CloneFromHostTests() =>
-        _preferences = new Preferences(_store, new UserPreferences { LastCloneParent = @"D:\work" });
+        _preferences = new Preferences(_store, new UserPreferences { LastCloneParent = TestPaths.Native(@"D:\work") });
 
     public void Dispose()
     {
@@ -192,12 +192,12 @@ public sealed class CloneFromHostTests : IDisposable
         sut.SelectedRepository = sut.Repositories[0];
 
         Assert.Equal("https://github.com/atlas/api.git", sut.Url);
-        Assert.Equal(@"D:\work\api", sut.Destination);
+        Assert.Equal(TestPaths.Native(@"D:\work\api"), sut.Destination);
         Assert.True(sut.CanClone);
 
         sut.UseSsh = true;
         Assert.Equal("git@github.com:atlas/api.git", sut.Url);
-        Assert.Equal(@"D:\work\api", sut.Destination);
+        Assert.Equal(TestPaths.Native(@"D:\work\api"), sut.Destination);
     }
 
     [Fact]

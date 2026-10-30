@@ -10,6 +10,7 @@ permissions:
   contents: read
 
 jobs:
+  # The app (WinUI, Native AOT) only builds on Windows; the tests that need Windows run here too.
   build:
     runs-on: windows-latest
     steps:
@@ -26,9 +27,29 @@ jobs:
       - name: Build (Release)
         run: dotnet build VIGO.slnx -c Release -p:Platform=x64
 
+      # Tests marked [Trait("Platform", "Windows")] (they skip themselves elsewhere); the rest runs in test-linux.
+      # bash: stops at the first failing project (pwsh only reports the exit code of the last command).
+      - name: Windows-only tests
+        shell: bash
+        run: |
+          dotnet test --project tests/Vigo.Core.Tests -c Release -p:Platform=x64 --filter-trait "Platform=Windows"
+          dotnet test --project tests/Vigo.Git.Tests -c Release -p:Platform=x64 --filter-trait "Platform=Windows"
+          dotnet test --project tests/Vigo.Integrations.Tests -c Release -p:Platform=x64 --filter-trait "Platform=Windows"
+
+  # Libraries and their tests target plain net11.0: they run on Linux, in parallel with the Windows build.
+  test-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+
+      # git, git-lfs and ssh-keygen come with the runner image (Vigo.Git.Tests run real git).
       - name: Tests
         run: |
-          dotnet test --project tests/Vigo.Core.Tests -c Release -p:Platform=x64
-          dotnet test --project tests/Vigo.Git.Tests -c Release -p:Platform=x64
-          dotnet test --project tests/Vigo.Graph.Tests -c Release -p:Platform=x64
-          dotnet test --project tests/Vigo.Integrations.Tests -c Release -p:Platform=x64
+          dotnet test --project tests/Vigo.Core.Tests -c Release
+          dotnet test --project tests/Vigo.Git.Tests -c Release
+          dotnet test --project tests/Vigo.Graph.Tests -c Release
+          dotnet test --project tests/Vigo.Integrations.Tests -c Release

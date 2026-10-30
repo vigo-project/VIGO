@@ -13,7 +13,8 @@ public static class GitExecutable
         var pathVar = Environment.GetEnvironmentVariable("PATH") ?? string.Empty;
         foreach (var dir in pathVar.Split(System.IO.Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries))
         {
-            var candidate = System.IO.Path.Combine(dir.Trim('"'), "git.exe");
+            // No extension outside Windows (the Linux CI runs the git tests).
+            var candidate = System.IO.Path.Combine(dir.Trim('"'), OperatingSystem.IsWindows() ? "git.exe" : "git");
             if (File.Exists(candidate)) return candidate;
         }
 

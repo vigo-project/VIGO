@@ -1,4 +1,3 @@
-using System.Text;
 using Vigo.Core.Models;
 using Vigo.Core.Results;
 using Vigo.Git.Cli;
@@ -26,7 +25,7 @@ public sealed class CommitTests
     {
         var hooks = Path.Combine(repo.Path, ".git", "hooks");
         Directory.CreateDirectory(hooks);
-        File.WriteAllText(Path.Combine(hooks, name), script.ReplaceLineEndings("\n"), new UTF8Encoding(false));
+        TestRepoBuilder.WriteHook(Path.Combine(hooks, name), script);
         repo.Git("config", "core.hooksPath", hooks.Replace('\\', '/'));
     }
 

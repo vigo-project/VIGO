@@ -79,9 +79,11 @@ public sealed class SshTests : IDisposable
         Assert.Equal("Clé publique introuvable : lonely.pub doit être à côté de la clé privée.", Assert.IsType<Failure>(result.Value).Message);
     }
 
-    [Fact]
+    [Fact, Trait("Platform", "Windows")]
     public async Task Generated_key_does_not_overwrite_an_existing_one()
     {
+        // ssh-keygen.exe is looked for in Windows OpenSSH or Git for Windows only.
+        Assert.SkipUnless(OperatingSystem.IsWindows(), "ssh-keygen.exe is located on Windows only.");
         File.WriteAllText(Path.Combine(_keys, "id_ed25519"), "existing");
         var sut = new SshKeyService(new GitCli(), _keys);
 

@@ -1,4 +1,3 @@
-using System.Text;
 using Vigo.Core.Models;
 using Vigo.Core.Results;
 using Vigo.Git.Cli;
@@ -26,7 +25,7 @@ public sealed class HooksTests : IDisposable
     {
         folder ??= HooksDir;
         Directory.CreateDirectory(folder);
-        File.WriteAllText(Path.Combine(folder, name), content.ReplaceLineEndings("\n"), new UTF8Encoding(false));
+        TestRepoBuilder.WriteHook(Path.Combine(folder, name), content);
     }
 
     private async Task<RepositoryHooks> ReadAsync() =>

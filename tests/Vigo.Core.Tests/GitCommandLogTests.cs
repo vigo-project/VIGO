@@ -7,6 +7,22 @@ public sealed class GitCommandLogTests
 {
     private static readonly string Repo = Path.Combine(Path.GetTempPath(), "vigo-log-tests");
 
+    // The view model posts to the context it is created on (the UI thread in the app); xUnit's context would run the posts
+    // later, after the assertions: created without one, it updates its list at once.
+    private static GitCommandLogViewModel NewViewModel(GitCommandLog log)
+    {
+        var previous = SynchronizationContext.Current;
+        SynchronizationContext.SetSynchronizationContext(null);
+        try
+        {
+            return new GitCommandLogViewModel(log, Repo);
+        }
+        finally
+        {
+            SynchronizationContext.SetSynchronizationContext(previous);
+        }
+    }
+
     [Fact]
     public void Command_line_quotes_arguments_with_spaces()
     {
@@ -76,7 +92,7 @@ public sealed class GitCommandLogTests
     public void View_model_lists_the_commands_of_its_repository_only_and_follows_their_end()
     {
         var log = new GitCommandLog();
-        using var sut = new GitCommandLogViewModel(log, Repo);
+        using var sut = NewViewModel(log);
 
         var other = log.Begin(Path.Combine(Path.GetTempPath(), "vigo-other"), ["push"])!;
         var push = log.Begin(Repo + Path.DirectorySeparatorChar, ["push", "origin", "main"])!;
@@ -99,7 +115,7 @@ public sealed class GitCommandLogTests
     public void Reads_are_listed_only_when_everything_is_shown_and_clear_empties_the_list()
     {
         var log = new GitCommandLog();
-        using var sut = new GitCommandLogViewModel(log, Repo);
+        using var sut = NewViewModel(log);
 
         log.Begin(Repo, ["status"])!.Complete(0);
         Assert.Empty(sut.Entries);
@@ -118,7 +134,7 @@ public sealed class GitCommandLogTests
     public void Disposed_view_model_stops_listening()
     {
         var log = new GitCommandLog();
-        var sut = new GitCommandLogViewModel(log, Repo);
+        var sut = NewViewModel(log);
         sut.Dispose();
 
         log.Begin(Repo, ["push"]);

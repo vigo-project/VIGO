@@ -3,6 +3,7 @@ using Vigo.Core.Models;
 using Vigo.Core.Results;
 using Vigo.Core.Services;
 using Vigo.Core.ViewModels;
+using Vigo.TestUtilities;
 
 namespace Vigo.Core.Tests;
 
@@ -24,7 +25,7 @@ public sealed class SshKeysPreferencesTests : IDisposable
     [Fact]
     public async Task Section_lists_the_keys_and_the_agent_state()
     {
-        _keys.Listed.Add(Key(@"C:\Users\me\.ssh\id_ed25519"));
+        _keys.Listed.Add(Key(TestPaths.Native(@"C:\Users\me\.ssh\id_ed25519")));
         _keys.Agent = SshAgentState.Disabled;
         using var sut = Create();
 
@@ -43,15 +44,15 @@ public sealed class SshKeysPreferencesTests : IDisposable
     [Fact]
     public async Task Choosing_a_key_saves_it_and_marks_it()
     {
-        _keys.Listed.Add(Key(@"C:\Users\me\.ssh\id_ed25519"));
-        _keys.Listed.Add(Key(@"C:\Users\me\.ssh\id_rsa"));
+        _keys.Listed.Add(Key(TestPaths.Native(@"C:\Users\me\.ssh\id_ed25519")));
+        _keys.Listed.Add(Key(TestPaths.Native(@"C:\Users\me\.ssh\id_rsa")));
         using var sut = Create();
         await sut.LoadSshKeysAsync(Ct);
 
         sut.ToggleDefaultSshKeyCommand.Execute(sut.SshKeys[1]);
 
-        Assert.Equal(@"C:\Users\me\.ssh\id_rsa", _preferences.Current.SshKeyPath);
-        Assert.Equal(new SshSettings(@"C:\Users\me\.ssh\id_rsa", false), _preferences.Current.Ssh);
+        Assert.Equal(TestPaths.Native(@"C:\Users\me\.ssh\id_rsa"), _preferences.Current.SshKeyPath);
+        Assert.Equal(new SshSettings(TestPaths.Native(@"C:\Users\me\.ssh\id_rsa"), false), _preferences.Current.Ssh);
         Assert.True(sut.SshKeys[1].IsDefault);
         Assert.False(sut.SshKeys[0].IsDefault);
         Assert.False(sut.HasNoDefaultSshKey);
@@ -65,7 +66,7 @@ public sealed class SshKeysPreferencesTests : IDisposable
     [Fact]
     public async Task Importing_a_key_of_another_tool_lists_it_and_uses_it()
     {
-        const string otherToolKey = @"C:\Users\me\AppData\Roaming\othertool\ssh\github_rsa";
+        var otherToolKey = TestPaths.Native(@"C:\Users\me\AppData\Roaming\othertool\ssh\github_rsa");
         _keys.Readable[otherToolKey] = Key(otherToolKey);
         using var sut = Create();
 
@@ -90,7 +91,7 @@ public sealed class SshKeysPreferencesTests : IDisposable
     {
         using var sut = Create();
 
-        await sut.ImportSshKeyAsync(@"C:\keys\lonely", Ct);
+        await sut.ImportSshKeyAsync(TestPaths.Native(@"C:\keys\lonely"), Ct);
 
         Assert.Empty(_preferences.Current.ImportedSshKeys);
         var (severity, title) = Assert.Single(_notifier.Items);
@@ -105,7 +106,7 @@ public sealed class SshKeysPreferencesTests : IDisposable
 
         await sut.GenerateSshKeyCommand.ExecuteAsync(null);
 
-        Assert.Equal(@"C:\Users\me\.ssh\id_ed25519", _preferences.Current.SshKeyPath);
+        Assert.Equal(TestPaths.Native(@"C:\Users\me\.ssh\id_ed25519"), _preferences.Current.SshKeyPath);
         Assert.True(Assert.Single(sut.SshKeys).IsDefault);
         Assert.Equal("Clé id_ed25519 créée", Assert.Single(_notifier.Items).Title);
     }
@@ -113,7 +114,7 @@ public sealed class SshKeysPreferencesTests : IDisposable
     [Fact]
     public async Task Deleting_a_key_removes_its_files_and_stops_using_it()
     {
-        const string path = @"C:\Users\me\.ssh\id_ed25519";
+        var path = TestPaths.Native(@"C:\Users\me\.ssh\id_ed25519");
         _keys.Listed.Add(Key(path));
         using var sut = Create();
         await sut.LoadSshKeysAsync(Ct);
@@ -149,12 +150,12 @@ public sealed class SshKeysPreferencesTests : IDisposable
         try
         {
             var store = new JsonPreferencesStore(Path.Combine(directory, "preferences.json"), NullLogger<JsonPreferencesStore>.Instance);
-            var saved = new UserPreferences { SshKeyPath = @"C:\k\id", ImportedSshKeys = [@"C:\k\id", @"C:\k\other"], UseWindowsSshAgent = true };
+            var saved = new UserPreferences { SshKeyPath = TestPaths.Native(@"C:\k\id"), ImportedSshKeys = [TestPaths.Native(@"C:\k\id"), TestPaths.Native(@"C:\k\other")], UseWindowsSshAgent = true };
             await store.SaveAsync(saved, Ct);
 
             var loaded = store.Load();
-            Assert.Equal(@"C:\k\id", loaded.SshKeyPath);
-            Assert.Equal([@"C:\k\id", @"C:\k\other"], loaded.ImportedSshKeys);
+            Assert.Equal(TestPaths.Native(@"C:\k\id"), loaded.SshKeyPath);
+            Assert.Equal([TestPaths.Native(@"C:\k\id"), TestPaths.Native(@"C:\k\other")], loaded.ImportedSshKeys);
             Assert.True(loaded.UseWindowsSshAgent);
             // An older file without these settings: defaults.
             Assert.Empty(new UserPreferences().Normalize().ImportedSshKeys);
@@ -171,7 +172,7 @@ public sealed class SshKeysPreferencesTests : IDisposable
         public Dictionary<string, SshKey> Readable { get; } = new(StringComparer.OrdinalIgnoreCase);
         public SshAgentState Agent { get; set; } = SshAgentState.Running;
 
-        public string KeyDirectory => @"C:\Users\me\.ssh";
+        public string KeyDirectory => TestPaths.Native(@"C:\Users\me\.ssh");
 
         public Task<IReadOnlyList<SshKey>> ListAsync(IEnumerable<string> imported, CancellationToken cancellationToken = default) =>
             Task.FromResult<IReadOnlyList<SshKey>>([.. Listed, .. imported.Where(Readable.ContainsKey).Select(p => Readable[p])]);
@@ -186,7 +187,7 @@ public sealed class SshKeysPreferencesTests : IDisposable
 
         public Task<GitResult<SshKey>> GenerateAsync(CancellationToken cancellationToken = default)
         {
-            var key = Key(@"C:\Users\me\.ssh\id_ed25519");
+            var key = Key(TestPaths.Native(@"C:\Users\me\.ssh\id_ed25519"));
             Listed.Add(key);
             return Task.FromResult<GitResult<SshKey>>(new Success<SshKey>(key));
         }
