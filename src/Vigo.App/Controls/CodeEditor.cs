@@ -33,7 +33,7 @@ public sealed record EditorKey(string Key, int VirtualKey, bool Control, bool Sh
 
 /// <summary>
 /// Code editor (Monaco in a WebView2, ADR-038): unified diff with line staging, side-by-side diff, plain text
-/// (read-only or editable). The page is served from the app folder (<c>Editor/</c>, built by
+/// (read-only or editable); the blame is native (LoomEditor, <c>CodeEditor.Native.cs</c>), the other modes follow. The page is served from the app folder (<c>Editor/</c>, built by
 /// <c>tools/editor/build.mjs</c>); messages go both ways as JSON. One WebView2 environment (browser process) is
 /// shared by every editor of the app and started early (<see cref="Prewarm"/>).
 /// </summary>
@@ -60,8 +60,13 @@ public sealed partial class CodeEditor : UserControl
             // ActualThemeChanged is not raised while the control is out of the tree (tab not shown, view cached): a
             // theme changed meanwhile is sent when it comes back.
             SendTheme();
+            ApplyNativeTheme();
         };
-        ActualThemeChanged += (_, _) => SendTheme();
+        ActualThemeChanged += (_, _) =>
+        {
+            SendTheme();
+            ApplyNativeTheme();
+        };
         Appearance.Current.PropertyChanged += OnAppearanceChanged;
     }
 
@@ -140,7 +145,18 @@ public sealed partial class CodeEditor : UserControl
         w.WriteNumber("hunk", hunk);
     });
 
-    public void ShowSideBySide(DiffSides sides) => Send(w =>
+    /// <summary>
+    /// Shows a side-by-side diff; <paramref name="native"/> false keeps it in the page, for the inline review of a pull
+    /// request until the review moves to the native editor (ADR-090).
+    /// </summary>
+    public void ShowSideBySide(DiffSides sides, bool native = true)
+    {
+        if (_closed) return;
+        if (native) ShowNativeSideBySide(sides);
+        else ShowPageSideBySide(sides);
+    }
+
+    private void ShowPageSideBySide(DiffSides sides) => Send(w =>
     {
         w.WriteString("type", "sideBySide");
         w.WriteString("path", sides.Path);
@@ -291,49 +307,36 @@ public sealed partial class CodeEditor : UserControl
     }
 
     /// <summary>Shows a file read-only with the blame column on its left (empty until <see cref="SetBlameState"/>).</summary>
-    public void ShowBlame(string path, string text) => Send(w =>
+    public void ShowBlame(string path, string text)
     {
-        w.WriteString("type", "blame");
-        w.WriteString("path", path);
-        w.WriteString("text", text);
-    }, content: true);
+        if (!_closed) ShowNativeBlame(path, text);
+    }
 
     /// <summary>Commits of the blame column and the commit of each line (index in <paramref name="commits"/>, -1: unknown yet).</summary>
-    public void SetBlameState(IReadOnlyList<EditorBlameCommit> commits, IReadOnlyList<int> lines, int selected) => Send(w =>
-    {
-        w.WriteString("type", "blameState");
-        w.WriteStartArray("commits");
-        foreach (var commit in commits)
-        {
-            w.WriteStartObject();
-            w.WriteString("summary", commit.Summary);
-            w.WriteString("date", commit.Date);
-            w.WriteString("initials", commit.Initials);
-            w.WriteString("color", Hex(Appearance.Current.Lanes[(int)((uint)commit.ColorIndex % Appearance.Current.Lanes.Length)]));
-            w.WriteNumber("age", commit.Age);
-            w.WriteString("tip", commit.ToolTip);
-            w.WriteEndObject();
-        }
-        w.WriteEndArray();
-        WriteNumbers(w, "lines", lines);
-        w.WriteNumber("selected", selected);
-    });
+    public void SetBlameState(IReadOnlyList<EditorBlameCommit> commits, IReadOnlyList<int> lines, int selected) =>
+        SetNativeBlameState(commits, lines, selected);
 
     /// <summary>Commit whose lines are highlighted (index of <see cref="SetBlameState"/>; -1: none).</summary>
-    public void SetBlameSelection(int selected) => Send(w =>
-    {
-        w.WriteString("type", "blameSelection");
-        w.WriteNumber("selected", selected);
-    });
+    public void SetBlameSelection(int selected) => SetNativeBlameSelection(selected);
 
     /// <summary>The caret of the blame moved to another line (1-based): click, arrow keys, click in the column.</summary>
     public event EventHandler<int>? BlameLineSelected;
 
-    public void Clear() => Send(w => w.WriteString("type", "clear"), content: true);
+    public void Clear()
+    {
+        ClearNative();
+        // The page is not started just to be cleared.
+        if (_view is not null) Send(w => w.WriteString("type", "clear"), content: true);
+    }
 
     /// <summary>Gives the keyboard focus to the editor.</summary>
     public void FocusEditor()
     {
+        if (NativeFocusTarget is { } target)
+        {
+            target.Focus(FocusState.Programmatic);
+            return;
+        }
         _view?.Focus(FocusState.Programmatic);
         Send(w => w.WriteString("type", "focus"));
     }
@@ -348,6 +351,7 @@ public sealed partial class CodeEditor : UserControl
         foreach (var request in _textRequests.Values) request.TrySetResult(null);
         _textRequests.Clear();
         _view?.Close();
+        ReleaseNative();
     }
 
     /// <summary>Creates the WebView2 and loads the page (once, when there is something to show and the control is loaded).</summary>
@@ -487,7 +491,9 @@ public sealed partial class CodeEditor : UserControl
 
     private void OnAppearanceChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName is nameof(Appearance.Metrics) or nameof(Appearance.Editor)) SendTheme();
+        if (e.PropertyName is not (nameof(Appearance.Metrics) or nameof(Appearance.Editor))) return;
+        SendTheme();
+        ApplyNativeTheme();
     }
 
     /// <summary>Design tokens of the current theme, density line height (ADR-032: changed live).</summary>
@@ -623,6 +629,7 @@ public sealed partial class CodeEditor : UserControl
     private void Send(Action<Utf8JsonWriter> write, bool content = false)
     {
         if (_closed) return;
+        if (content && _view is not null && !ReferenceEquals(Content, _view)) Content = _view;
         var json = Serialize(write);
         if (_ready)
         {

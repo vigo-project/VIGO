@@ -1,3 +1,6 @@
+## Unreleased
+- Blame and side-by-side diff: shown in a native editor (LoomEditor), without WebView2: faster to open, TextMate syntax coloring.
+
 ## 0.32.0 — 2026-10-29
 - File lists as a tree: a "Collapse all" / "Expand all" button above the first row collapses or expands every folder at once.
 - Conflicts: the conflict editor now works with git older than 2.43 (it failed with "unknown option `zdiff3'" on git 2.34).

@@ -64,6 +64,7 @@ src/Vigo.App           WinUI 3 : shell (MainWindow, onglets en barre de titre), 
   Themes/Styles.xaml   styles VIGO (typo, boutons, cartes, champs)
   Controls/FluentIcons.g.cs GÉNÉRÉ (tools/gen-icons.mjs) : glyphes Fluent System Icons utilisés par les maquettes
   Controls/CodeEditor  éditeur de code (Monaco dans WebView2, ADR-038) : diff unifié / côte à côte, texte, conflits ; messages JSON
+                       ; migration vers LoomEditor natif par étapes (ADR-090) : le blame et le côte à côte sont natifs (`CodeEditor.Native.cs`)
   Controls/ConflictView éditeur de conflits (J5.4, ADR-040) : en-tête XAML + CodeEditor en mode `conflict`
   Controls/RebaseView  rebase interactif (J5.5, ADR-041) : liste réordonnable + carte Résultat, à la place du graphe
   Services/CredentialLockerVault jetons des hébergeurs dans le Credential Locker (J6.1, ADR-044) ; comptes : `HostAccounts` (Core)
