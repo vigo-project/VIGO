@@ -60,6 +60,7 @@ public sealed partial class CodeEditor
         });
         RegisterDiffStyles();
         RegisterConflictStyles();
+        RegisterReviewStyles();
     }
 
     private Loom EnsureNative()
@@ -161,7 +162,11 @@ public sealed partial class CodeEditor
             e.Handled = true;
         };
         // The two inner editors exist once the template is applied.
-        diff.Loaded += (_, _) => ApplyNativeTheme();
+        diff.Loaded += (_, _) =>
+        {
+            ApplyNativeTheme();
+            LayoutSideReview();
+        };
         ApplyNativeTheme();
         return diff;
     }
@@ -174,6 +179,8 @@ public sealed partial class CodeEditor
         diff.OriginalText = sides.Original;
         diff.ModifiedText = sides.Modified;
         ShowNative(diff);
+        // The zones of the threads are laid out on the new texts.
+        QueueReviewLayout();
         // Not loaded yet (first diff, or after another kind of diff): the control waits for its next load.
         RevealFirstChange(diff);
     }

@@ -24,6 +24,7 @@ public sealed partial class PullRequestView : UserControl
 
     // What the editor shows, to send it again only when it changes.
     private object? _shown;
+    private bool _shownNative;
 
     public PullRequestView()
     {
@@ -300,17 +301,22 @@ public sealed partial class PullRequestView : UserControl
         DiffMessage.Visibility = message is null ? Visibility.Collapsed : Visibility.Visible;
         Editor.Visibility = diff is null || Editor.Failed ? Visibility.Collapsed : Visibility.Visible;
         object? content = diff is null ? null : vm!.IsSideBySide ? (object?)vm.Sides ?? diff : diff;
-        if (ReferenceEquals(content, _shown)) return;
+        // Writing in the review (comment, reply, resolve) still lives in the editor page (ADR-090, step R2): the native editor
+        // shows the threads read only, when the service lets the screen write nothing.
+        var native = vm is { CanReview: false };
+        // Replays of the native review before R2, also in the AOT build: VIGO_NATIVE_REVIEW=1 forces the native editor (writing is
+        // then unavailable). No effect unless set; removed with R2.
+        native |= Environment.GetEnvironmentVariable("VIGO_NATIVE_REVIEW") == "1";
+        if (ReferenceEquals(content, _shown) && native == _shownNative) return;
         _shown = content;
+        _shownNative = native;
         switch (content)
         {
             case DiffSides sides:
-                // The inline review still lives in the editor page (ADR-090).
-                Editor.ShowSideBySide(sides, native: false);
+                Editor.ShowSideBySide(sides, native);
                 break;
             case FileDiff shown:
-                // The inline review still lives in the editor page (ADR-090).
-                Editor.ShowDiff(shown.Path, DiffDocument.Build(shown), [], staging: null, keepScroll: false, native: false);
+                Editor.ShowDiff(shown.Path, DiffDocument.Build(shown), [], staging: null, keepScroll: false, native);
                 break;
             default:
                 Editor.Clear();

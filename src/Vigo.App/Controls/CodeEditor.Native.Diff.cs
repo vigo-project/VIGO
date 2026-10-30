@@ -48,7 +48,8 @@ public sealed partial class CodeEditor
     private string? _unifiedPath;
     private EditorStaging? _staging;
     private HashSet<int> _selectedLines = [];
-    private HashSet<int> _hunkStarts = [];
+    // Height of the zones above a line (hunk headers, review threads), keyed by that line.
+    private readonly Dictionary<int, double> _zoneAbove = [];
     private bool _unifiedRevealPending;
 
     private static EditorDecorationOptions WholeLine(string className) =>
@@ -122,32 +123,12 @@ public sealed partial class CodeEditor
         _unifiedPath = path;
         _staging = staging;
         _selectedLines = [.. selected];
-        _hunkStarts = [.. document.Hunks.Select(h => h.FirstLine)];
 
         // Zones first: they follow the edits of the text being replaced.
         RemoveDiffZones(editor);
         editor.LanguageId = LanguageOf(path);
         editor.ResetText(document.Text);
-        for (var i = 0; i < document.Hunks.Count; i++)
-        {
-            var header = new DiffHunkHeader();
-            header.Show(i, document.Hunks[i].Header, staging);
-            header.Invoked += OnHunkHeaderInvoked;
-            _unifiedZones.Add(editor.AddViewZone(document.Hunks[i].FirstLine - 1, HunkHeight, header));
-        }
-        if (staging is { Hint.Length: > 0 } && document.Hunks.Count > 0)
-        {
-            // A new element per zone: one moved out of a removed zone may still have its old parent (crash 0x800f1000).
-            _hint = new TextBlock
-            {
-                Text = staging.Hint,
-                Padding = new Thickness(16, 0, 16, 0),
-                VerticalAlignment = VerticalAlignment.Center,
-                TextWrapping = TextWrapping.Wrap,
-                Foreground = new SolidColorBrush((ActualTheme == ElementTheme.Light ? Light : Dark).Text3),
-            };
-            _unifiedZones.Add(editor.AddViewZone(editor.Model.LineCount, HintHeight, _hint));
-        }
+        AddUnifiedZones(editor);
         RenderDiffDecorations();
         ToolTipService.SetToolTip(_unifiedGutter, staging?.ToggleTip);
         ShowNative(_unifiedHost!);
@@ -168,10 +149,45 @@ public sealed partial class CodeEditor
         OnUnifiedScrolled(force: true);
     }
 
+    /// <summary>
+    /// (Re)builds every zone of the diff. The review threads come first: a card after the last line of a hunk then shows above
+    /// the header of the next one (zones after the same line keep their order of addition).
+    /// </summary>
+    private void AddUnifiedZones(Loom editor)
+    {
+        var document = _doc!;
+        RemoveDiffZones(editor);
+        AddReviewZones(_unifiedReview, editor, (side, line) => DocLine(document, side, line), null, IsNativeDiffShown, _unifiedZones, _zoneAbove);
+        for (var i = 0; i < document.Hunks.Count; i++)
+        {
+            var header = new DiffHunkHeader();
+            header.Show(i, document.Hunks[i].Header, _staging);
+            header.Invoked += OnHunkHeaderInvoked;
+            var line = document.Hunks[i].FirstLine;
+            _unifiedZones.Add(editor.AddViewZone(line - 1, HunkHeight, header));
+            _zoneAbove[line] = _zoneAbove.GetValueOrDefault(line) + HunkHeight;
+        }
+        if (_staging is { Hint.Length: > 0 } staging && document.Hunks.Count > 0)
+        {
+            // A new element per zone: one moved out of a removed zone may still have its old parent (crash 0x800f1000).
+            _hint = new TextBlock
+            {
+                Text = staging.Hint,
+                Padding = new Thickness(16, 0, 16, 0),
+                VerticalAlignment = VerticalAlignment.Center,
+                TextWrapping = TextWrapping.Wrap,
+                Foreground = new SolidColorBrush((ActualTheme == ElementTheme.Light ? Light : Dark).Text3),
+            };
+            _unifiedZones.Add(editor.AddViewZone(editor.Model.LineCount, HintHeight, _hint));
+        }
+        _unifiedGutter?.Invalidate();
+    }
+
     private void RemoveDiffZones(Loom editor)
     {
         foreach (var id in _unifiedZones) editor.RemoveViewZone(id);
         _unifiedZones.Clear();
+        _zoneAbove.Clear();
     }
 
     /// <summary>A freshly opened diff starts on the hunk of its first change, not on the leading context.</summary>
@@ -206,9 +222,9 @@ public sealed partial class CodeEditor
         _unifiedPath = null;
         _staging = null;
         _selectedLines = [];
-        _hunkStarts = [];
         RemoveDiffZones(editor);
         _unifiedDecorations!.Clear();
+        _unifiedReview.Decorations?.Clear();
         editor.ResetText(string.Empty);
         _sticky!.Visibility = Visibility.Collapsed;
         _unifiedGutter?.Invalidate();
@@ -295,7 +311,9 @@ public sealed partial class CodeEditor
     }
 
     /// <summary>Height of a line on screen (wrapped rows included, zones excluded).</summary>
-    private double RowHeight(Loom editor, int line, double top) => RowHeight(editor, line, top, _hunkStarts, HunkHeight);
+    private double RowHeight(Loom editor, int line, double top) =>
+        line >= editor.Model.LineCount ? editor.LineHeight
+        : editor.GetTopForLineNumber(line + 1, false) - top - _zoneAbove.GetValueOrDefault(line + 1);
 
     /// <summary>Height of a line on screen, without the zone of <paramref name="zoneHeight"/> above each line of <paramref name="zoneStarts"/>.</summary>
     private static double RowHeight(Loom editor, int line, double top, HashSet<int> zoneStarts, double zoneHeight)

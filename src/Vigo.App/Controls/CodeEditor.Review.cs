@@ -74,6 +74,7 @@ public sealed partial class CodeEditor
         string? revealThread = null, int revealToken = 0)
     {
         if (_closed) return;
+        SetNativeReview(enabled ? threads : [], revealThread, revealToken);
         var json = Serialize(w =>
         {
             w.WriteString("type", "review");
