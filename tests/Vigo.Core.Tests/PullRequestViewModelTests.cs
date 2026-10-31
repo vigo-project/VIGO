@@ -72,12 +72,16 @@ public sealed class PullRequestViewModelTests : IDisposable
     }
 
     // A clock whose timers fire when the test advances it: the checks refresh waits on it (Task.Delay with a TimeProvider).
+    // Other view models of the tab (commit details, conflict prevention) wait on it too, from other threads: the list is locked.
     private sealed class SteppedClock(DateTimeOffset now) : TimeProvider
     {
         private readonly List<SteppedTimer> _timers = [];
         private DateTimeOffset _now = now;
 
-        public override DateTimeOffset GetUtcNow() => _now;
+        public override DateTimeOffset GetUtcNow()
+        {
+            lock (_timers) return _now;
+        }
 
         public override TimeZoneInfo LocalTimeZone => TimeZoneInfo.Utc;
 
@@ -90,32 +94,54 @@ public sealed class PullRequestViewModelTests : IDisposable
 
         public void Advance(TimeSpan delta)
         {
-            _now += delta;
-            foreach (var timer in _timers.Where(t => t.Due <= _now).ToList()) timer.Fire();
+            List<SteppedTimer> due;
+            lock (_timers)
+            {
+                _now += delta;
+                due = [.. _timers.Where(t => t.Due <= _now)];
+            }
+            foreach (var timer in due) timer.Fire();
         }
 
-        public int Waiting => _timers.Count;
+        /// <summary>The checks refreshes waiting (their delay is ChecksRefreshInterval); the waits of the other view models are not counted.</summary>
+        // A checks wait only starts once a read is fully shown, so waiting for it never stops on a half-shown read.
+        public int Waiting
+        {
+            get
+            {
+                lock (_timers) return _timers.Count(t => t.Delay == PullRequestViewModel.ChecksRefreshInterval);
+            }
+        }
 
         private sealed class SteppedTimer(SteppedClock clock, TimerCallback callback, object? state) : ITimer
         {
             public DateTimeOffset Due { get; private set; } = DateTimeOffset.MaxValue;
 
+            public TimeSpan Delay { get; private set; }
+
             public bool Change(TimeSpan dueTime, TimeSpan period)
             {
-                clock._timers.Remove(this);
-                if (dueTime == Timeout.InfiniteTimeSpan) return true;
-                Due = clock._now + dueTime;
-                clock._timers.Add(this);
-                return true;
+                lock (clock._timers)
+                {
+                    clock._timers.Remove(this);
+                    if (dueTime == Timeout.InfiniteTimeSpan) return true;
+                    Due = clock._now + dueTime;
+                    Delay = dueTime;
+                    clock._timers.Add(this);
+                    return true;
+                }
             }
 
             public void Fire()
             {
-                clock._timers.Remove(this);
+                lock (clock._timers) clock._timers.Remove(this);
                 callback(state);
             }
 
-            public void Dispose() => clock._timers.Remove(this);
+            public void Dispose()
+            {
+                lock (clock._timers) clock._timers.Remove(this);
+            }
 
             public ValueTask DisposeAsync()
             {
@@ -131,8 +157,9 @@ public sealed class PullRequestViewModelTests : IDisposable
     private static GitResult<PullRequestStatus> StatusOf(params CheckRun[] runs) =>
         new Success<PullRequestStatus>(new PullRequestStatus(PullRequestStatus.Summarize(runs), ReviewState.None, runs));
 
+    // A snapshot: the graph finishing its load rebuilds the rows on a pool thread, which would break a plain enumeration of Rows.
     private static RefRow RowOf(RepositoryTabViewModel tab, int number) =>
-        tab.Refs.Rows.Select(i => i.Row).Single(r => r.Key == $"pr:{number}");
+        tab.Refs.SnapshotRows().Single(r => r.Key == $"pr:{number}");
 
     [Fact]
     public async Task Opening_a_pull_request_takes_the_main_area_and_reads_its_detail()
@@ -214,8 +241,7 @@ public sealed class PullRequestViewModelTests : IDisposable
         using var tab = await OpenAsync(time: clock);
         await tab.Refs.ShowPullRequestCommand.ExecuteAsync(RowOf(tab, 7));
         var screen = tab.PullRequest;
-        // Other view models of the tab (conflict prevention) wait on this clock too: wait for the checks themselves.
-        await WaitUntilAsync(() => screen.Checks.Count == 1 && clock.Waiting >= 1);
+        await WaitUntilAsync(() => screen.Checks.Count == 1 && clock.Waiting == 1);
         Assert.Equal((1, 1), (_client.ScreenReads, screen.Checks.Count));
 
         clock.Advance(TimeSpan.FromSeconds(19));
@@ -242,7 +268,7 @@ public sealed class PullRequestViewModelTests : IDisposable
         _client.StatusOf = _ => StatusOf(Check("build", CheckState.Pending));
         using var tab = await OpenAsync(time: clock);
         await tab.Refs.ShowPullRequestCommand.ExecuteAsync(RowOf(tab, 7));
-        await WaitUntilAsync(() => tab.PullRequest.Checks.Count == 1 && clock.Waiting >= 1);
+        await WaitUntilAsync(() => tab.PullRequest.Checks.Count == 1 && clock.Waiting == 1);
 
         tab.PullRequest.Close();
         await tab.PullRequest.ChecksWatching;
@@ -267,7 +293,7 @@ public sealed class PullRequestViewModelTests : IDisposable
         using var tab = await OpenAsync(time: clock);
         await tab.Refs.ShowPullRequestCommand.ExecuteAsync(RowOf(tab, 7));
         var screen = tab.PullRequest;
-        await WaitUntilAsync(() => screen.Checks.Count == 1 && clock.Waiting >= 1);
+        await WaitUntilAsync(() => screen.Checks.Count == 1 && clock.Waiting == 1);
 
         clock.Advance(TimeSpan.FromSeconds(20));
         await WaitUntilAsync(() => _client.ScreenReads == 2 && clock.Waiting == 1);

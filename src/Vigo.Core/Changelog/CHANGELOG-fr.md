@@ -1,3 +1,7 @@
+## 0.34.0 — 2026-10-31
+- Statistiques : un sélecteur (affiché quand le dépôt a des sous-modules initialisés) compte le dépôt seul, un sous-module, ou tout ensemble.
+- Markdown (pull requests, issues) : les images s'affichent à leur taille naturelle, plafonnée à 640 px, au lieu d'être étirées (les petites icônes ne prennent plus des centaines de pixels).
+
 ## 0.33.0 — 2026-10-30
 - Blame, diff côte à côte, diff unifié (indexation par ligne et par hunk comprise) et éditeur de conflits : affichés dans un éditeur natif (LoomEditor), sans WebView2 : ouverture plus rapide, coloration TextMate.
 - Pull requests : la revue dans le diff (commentaires, réponses, résolution, commentaires en attente) passe aussi dans l'éditeur natif ; un bouton « Commenter » apparaît dès qu'on sélectionne du texte.

@@ -176,6 +176,44 @@ public sealed class RepositoryStatsTests
     }
 
     [Fact]
+    public async Task Without_submodules_there_is_no_scope_to_choose()
+    {
+        var page = Create();
+
+        await page.OpenAsync();
+
+        Assert.False(page.HasScopes);
+        Assert.Single(page.Scopes);
+    }
+
+    [Fact]
+    public async Task A_submodule_scope_reads_that_submodule_and_each_scope_is_cached()
+    {
+        _git.Submodules.Add(new Submodule("libs/dep", "libs/dep", null, null, SubmoduleState.UpToDate, GitSha.Parse(new string('a', 40))));
+        _git.Submodules.Add(new Submodule("libs/off", "libs/off", null, null, SubmoduleState.NotInitialized, null));
+        _git.Stats = StatsOf(("Ada", "ada@x.dev", 3));
+        var page = Create();
+        await page.OpenAsync();
+        Assert.True(page.HasScopes);
+        // The repository, the initialized submodule only (not the other one), and everything.
+        Assert.Equal(3, page.Scopes.Count);
+
+        page.SelectedScope = page.Scopes[1];
+        while (_git.StatsCalls < 2) await Task.Delay(10, TestContext.Current.CancellationToken);
+        Assert.Equal(["C:/repo", Path.Combine("C:/repo", "libs/dep")], _git.StatsPaths);
+        Assert.False(_git.StatsIncludedSubmodules);
+
+        page.SelectedScope = page.Scopes[2];
+        while (_git.StatsCalls < 3) await Task.Delay(10, TestContext.Current.CancellationToken);
+        Assert.True(_git.StatsIncludedSubmodules);
+
+        // Back to a scope already read: answered by the cache.
+        page.SelectedScope = page.Scopes[1];
+        await Task.Delay(50, TestContext.Current.CancellationToken);
+        Assert.Equal(3, _git.StatsCalls);
+    }
+
+    [Fact]
     public async Task A_repository_without_commit_has_nothing_to_draw()
     {
         var page = Create();

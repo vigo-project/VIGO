@@ -2346,6 +2346,7 @@ Stocké par Git LFS (déclaré dans {1}).</value></data>
   <data name="StatsBack.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Retour au graphe (Échap)</value></data>
   <data name="StatsRefresh.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Recalculer les statistiques</value></data>
   <data name="StatsRefresh.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Actualiser</value></data>
+  <data name="StatsScope.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Périmètre des statistiques</value></data>
   <data name="StatsTitle.Text" xml:space="preserve"><value>Statistiques</value></data>
   <data name="StatsNoData.Text" xml:space="preserve"><value>Aucun commit à compter.</value></data>
   <data name="StatsMonthTitle.Text" xml:space="preserve"><value>Commits par mois</value></data>
@@ -2370,6 +2371,8 @@ Stocké par Git LFS (déclaré dans {1}).</value></data>
   <data name="Stats.Commits.Other" xml:space="preserve"><value>{0} commits</value></data>
   <data name="Stats.Tooltip" xml:space="preserve"><value>{0} : {1}</value></data>
   <data name="Stats.Hour" xml:space="preserve"><value>{0} h</value></data>
+  <data name="Stats.Scope.Repository" xml:space="preserve"><value>Ce dépôt</value></data>
+  <data name="Stats.Scope.All" xml:space="preserve"><value>Tout (avec les sous-modules)</value></data>
   <data name="Stats.Others" xml:space="preserve"><value>Autres</value></data>
   <data name="Stats.Summary.Month" xml:space="preserve"><value>Commits par mois, de {0} à {1}, maximum {2} en {3}</value></data>
   <data name="Stats.Summary.Weekday" xml:space="preserve"><value>Commits par jour de la semaine, maximum {0} le {1}</value></data>
