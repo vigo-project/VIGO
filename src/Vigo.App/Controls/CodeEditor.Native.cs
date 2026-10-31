@@ -189,9 +189,18 @@ public sealed partial class CodeEditor
     }
 
     /// <summary>The diff is computed asynchronously: opens the file on its first change once it is known.</summary>
-    private static async void RevealFirstChange(LoomDiff diff) =>
-        // shortcut: not canceled when another diff is shown before this one is computed, add a token if that reveals the wrong file.
-        await diff.RevealFirstChangeAsync(CancellationToken.None);
+    private static async void RevealFirstChange(LoomDiff diff)
+    {
+        try
+        {
+            // shortcut: not canceled when another diff is shown before this one is computed, add a token if that reveals the wrong file.
+            await diff.RevealFirstChangeAsync(CancellationToken.None);
+        }
+        catch (Exception ex) when (ex is OperationCanceledException or ObjectDisposedException or InvalidOperationException or System.Runtime.InteropServices.COMException)
+        {
+            // The diff was replaced or the control released meanwhile: nothing to reveal.
+        }
+    }
 
     private void SetNativeBlameState(IReadOnlyList<EditorBlameCommit> commits, IReadOnlyList<int> lines, int selected)
     {
