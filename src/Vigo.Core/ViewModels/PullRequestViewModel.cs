@@ -416,9 +416,11 @@ public sealed partial class PullRequestViewModel : HostedDiscussionViewModel, ID
 
         _mentionsAsked.UnionWith(ids);
         var result = await Accounts.ResolveMentionsAsync(repository, ids, ProfileId?.Invoke(), Lifetime);
+        var names = result.Value is Success<IReadOnlyDictionary<string, string>> success ? success.Value : null;
+        // Names recorded before the ids leave the asked set: a call in between would otherwise ask them again.
+        if (names is not null) foreach (var id in ids) _mentionNames[id] = names.TryGetValue(id, out var name) ? name : string.Empty;
         _mentionsAsked.ExceptWith(ids);
-        if (result.Value is not Success<IReadOnlyDictionary<string, string>> { Value: var names }) return;
-        foreach (var id in ids) _mentionNames[id] = names.TryGetValue(id, out var name) ? name : string.Empty;
+        if (names is null) return;
         BumpReviewRevision();
         // The conversation shows the names too: its texts that mention someone are read again.
         if (Detail is { } detail && MentionPattern().IsMatch(detail.Body)) Description = MarkdownParser.Parse(detail.Body, References);
