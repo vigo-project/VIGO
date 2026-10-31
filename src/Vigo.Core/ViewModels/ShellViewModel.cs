@@ -759,7 +759,7 @@ public sealed partial class ShellViewModel : ObservableObject
         private static PaletteEntry Command(string icon, string label, System.Windows.Input.ICommand command, string? shortcut = null) =>
             new(PaletteGroup.Commands, icon, label, () =>
             {
-                if (command is IAsyncRelayCommand async) return async.ExecuteAsync(null);
+                if (command is IAsyncRelayCommand asyncCommand) return asyncCommand.ExecuteAsync(null);
                 command.Execute(null);
                 return Task.CompletedTask;
             }, Shortcut: shortcut);

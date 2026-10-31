@@ -171,7 +171,7 @@ public sealed partial class RepositoryTabViewModel
             }));
 
     private static PaletteEntry Command(string icon, string label, ICommand command, string? shortcut = null) =>
-        new(PaletteGroup.Commands, icon, label, () => command is IAsyncRelayCommand async ? async.ExecuteAsync(null) : Execute(command), Shortcut: shortcut);
+        new(PaletteGroup.Commands, icon, label, () => command is IAsyncRelayCommand asyncCommand ? asyncCommand.ExecuteAsync(null) : Execute(command), Shortcut: shortcut);
 
     private static Task Execute(ICommand command)
     {
