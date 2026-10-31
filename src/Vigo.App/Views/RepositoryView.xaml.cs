@@ -151,7 +151,7 @@ public sealed partial class RepositoryView : UserControl
     private void OnShowRepositoryInExplorerClick(object sender, RoutedEventArgs e)
     {
         RepositoryFlyout.Hide();
-        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("explorer.exe", $"\"{RepositoryPath}\"") { UseShellExecute = false });
+        Explorer.Open($"\"{RepositoryPath}\"");
     }
 
     // ---- "Branche" selector: same pattern, a click checks out.
