@@ -12,13 +12,15 @@ on:
         required: true
 
 permissions:
-  contents: write
-  checks: read
+  contents: read
 
 jobs:
   # The tests run in the ci workflow: wait for it to finish on this commit (the tag may be pushed before) and require success.
   ci-gate:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: read
     steps:
       - name: Wait for a green ci
         shell: bash
@@ -41,6 +43,9 @@ jobs:
   release:
     needs: ci-gate
     runs-on: windows-latest
+    # The only job that writes: vpk upload publishes the GitHub release.
+    permissions:
+      contents: write
     env:
       VERSION: ${{ github.event.inputs.version || github.ref_name }}
       INSTALLER_REPO: ${{ github.server_url }}/${{ github.repository }}
