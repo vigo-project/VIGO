@@ -162,6 +162,11 @@ public sealed partial class MarkdownView : UserControl
         {
             MaxWidth = MaxImageWidth, MaxHeight = MaxImageHeight, Stretch = Stretch.Uniform, HorizontalAlignment = HorizontalAlignment.Left,
         };
+        // Natural size, as GitHub shows it: Uniform alone would blow a 16 px icon up to the maximum size.
+        picture.ImageOpened += (_, _) =>
+        {
+            if (picture.Source is BitmapSource { PixelWidth: > 0 } source) picture.Width = Math.Min(source.PixelWidth, MaxImageWidth);
+        };
         if (image.Alt.Length > 0)
         {
             ToolTipService.SetToolTip(picture, image.Alt);
