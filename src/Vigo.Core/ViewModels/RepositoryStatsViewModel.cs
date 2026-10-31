@@ -19,6 +19,19 @@ public enum ContributorColumn
     Last,
 }
 
+/// <summary>
+/// What the statistics count: the repository alone, one initialized submodule (<paramref name="SubmodulePath"/>), or the
+/// repository with all its submodules (<paramref name="IncludeSubmodules"/>).
+/// </summary>
+/// <param name="Head">Commit of the submodule, to know when what was computed is out of date; null for the others.</param>
+public sealed record StatsScope(string Name, string? SubmodulePath, bool IncludeSubmodules, GitSha? Head)
+{
+    /// <summary>Identifies the scope across reloads of the list (and keys the cache).</summary>
+    public string Key => SubmodulePath ?? (IncludeSubmodules ? "*" : string.Empty);
+
+    public override string ToString() => Name;
+}
+
 /// <summary>A line of the contributors table.</summary>
 public sealed record ContributorRow(Contributor Contributor, string PercentText, string FirstText, string LastText)
 {
@@ -45,8 +58,10 @@ public sealed partial class RepositoryStatsViewModel : ObservableObject, IDispos
     private readonly WorkingTreeViewModel _tree;
     private readonly CancellationToken _lifetime;
     private CancellationTokenSource? _computing;
+    private readonly Dictionary<string, (RepositoryStats Stats, GitSha? Head)> _cache = [];
     private RepositoryStats? _stats;
     private GitSha? _statsHead;
+    private bool _loadingScopes;
 
     public RepositoryStatsViewModel(IGitService git, string repositoryPath, WorkingTreeViewModel tree, CancellationToken lifetime)
     {
@@ -109,16 +124,20 @@ public sealed partial class RepositoryStatsViewModel : ObservableObject, IDispos
     [ObservableProperty]
     public partial bool SortDescending { get; private set; } = true;
 
-    /// <summary>Counts the commits of the initialized submodules too (they are merged with those of the repository).</summary>
-    [ObservableProperty]
-    public partial bool IncludeSubmodules { get; set; }
+    /// <summary>What the page counts: the repository, one of its initialized submodules, or everything together.</summary>
+    public ObservableCollection<StatsScope> Scopes { get; } = [];
 
-    partial void OnIncludeSubmodulesChanged(bool value)
+    /// <summary>The selector is only worth showing when there is a submodule to choose.</summary>
+    [ObservableProperty]
+    public partial bool HasScopes { get; private set; }
+
+    [ObservableProperty]
+    public partial StatsScope? SelectedScope { get; set; }
+
+    partial void OnSelectedScopeChanged(StatsScope? value)
     {
-        // What is cached was computed for the other setting.
-        _stats = null;
-        _statsHead = null;
-        if (IsOpen) _ = ComputeAsync();
+        // Null comes from the selector while the list is rebuilt.
+        if (value is not null && !_loadingScopes && IsOpen) _ = ComputeAsync();
     }
 
     /// <summary>How many times git was asked (the cache answers the others); tests count them.</summary>
@@ -128,8 +147,39 @@ public sealed partial class RepositoryStatsViewModel : ObservableObject, IDispos
     public async Task OpenAsync()
     {
         IsOpen = true;
+        await LoadScopesAsync();
         await ComputeAsync();
     }
+
+    // Submodules can appear or go away between two visits: the list is read each time the page opens.
+    private async Task LoadScopesAsync()
+    {
+        var submodules = await _git.GetSubmodulesAsync(_repositoryPath, _lifetime);
+        var initialized = submodules.Value is Success<IReadOnlyList<Submodule>> { Value: var all } ? all.Where(s => s.IsInitialized).ToList() : [];
+
+        List<StatsScope> scopes = [new(Loc.Get("Stats.Scope.Repository"), null, false, null)];
+        if (initialized.Count > 0)
+        {
+            scopes.AddRange(initialized.Select(s => new StatsScope(s.Label, s.Path, false, s.Head)));
+            scopes.Add(new StatsScope(Loc.Get("Stats.Scope.All"), null, true, null));
+        }
+
+        var previous = SelectedScope?.Key;
+        _loadingScopes = true;
+        try
+        {
+            Scopes.Clear();
+            foreach (var scope in scopes) Scopes.Add(scope);
+            SelectedScope = scopes.FirstOrDefault(s => s.Key == previous) ?? scopes[0];
+            HasScopes = initialized.Count > 0;
+        }
+        finally
+        {
+            _loadingScopes = false;
+        }
+    }
+
+    private GitSha? HeadOf(StatsScope scope) => scope.SubmodulePath is null ? _tree.Status?.Head : scope.Head;
 
     [RelayCommand]
     public void Close()
@@ -141,11 +191,11 @@ public sealed partial class RepositoryStatsViewModel : ObservableObject, IDispos
 
     /// <summary>Reads the history again, even when HEAD has not moved.</summary>
     [RelayCommand]
-    private Task RefreshAsync()
+    private async Task RefreshAsync()
     {
-        _stats = null;
-        _statsHead = null;
-        return ComputeAsync();
+        _cache.Clear();
+        await LoadScopesAsync();
+        await ComputeAsync();
     }
 
     /// <summary>Sorts the table by a column; the same column again reverses the order.</summary>
@@ -168,7 +218,7 @@ public sealed partial class RepositoryStatsViewModel : ObservableObject, IDispos
     // HEAD moved (commit, checkout, fetch of the checked-out branch…): what is shown is out of date.
     private void OnRefsChanged(object? sender, EventArgs e)
     {
-        if (IsOpen && _tree.Status?.Head != _statsHead) _ = ComputeAsync();
+        if (IsOpen && SelectedScope is { } scope && HeadOf(scope) != _statsHead) _ = ComputeAsync();
     }
 
     private void Cancel()
@@ -181,17 +231,20 @@ public sealed partial class RepositoryStatsViewModel : ObservableObject, IDispos
     private async Task ComputeAsync()
     {
         Cancel();
-        var head = _tree.Status?.Head;
-        if (_stats is { } known && head is not null && head == _statsHead)
+        var scope = SelectedScope ?? new StatsScope(Loc.Get("Stats.Scope.Repository"), null, false, null);
+        var head = HeadOf(scope);
+        if (_cache.TryGetValue(scope.Key, out var known) && head is not null && head == known.Head)
         {
             Message = null;
-            Apply(known);
+            _stats = known.Stats;
+            _statsHead = head;
+            Apply(known.Stats);
             return;
         }
 
         var source = _computing = CancellationTokenSource.CreateLinkedTokenSource(_lifetime);
         var token = source.Token;
-        var includeSubmodules = IncludeSubmodules;
+        var path = scope.SubmodulePath is null ? _repositoryPath : Path.Combine(_repositoryPath, scope.SubmodulePath);
         IsComputing = true;
         ProgressText = string.Empty;
         Message = null;
@@ -203,7 +256,7 @@ public sealed partial class RepositoryStatsViewModel : ObservableObject, IDispos
             {
                 if (!token.IsCancellationRequested) ProgressText = Loc.Format("Stats.Progress", count.ToString("N0", CultureInfo.CurrentCulture));
             });
-            var result = await Task.Run(() => _git.ReadCommitStatsAsync(_repositoryPath, progress, includeSubmodules, token), CancellationToken.None);
+            var result = await Task.Run(() => _git.ReadCommitStatsAsync(path, progress, scope.IncludeSubmodules, token), CancellationToken.None);
             if (token.IsCancellationRequested) return;
 
             switch (result.Value)
@@ -211,6 +264,7 @@ public sealed partial class RepositoryStatsViewModel : ObservableObject, IDispos
                 case Success<RepositoryStats> { Value: var stats }:
                     _stats = stats;
                     _statsHead = head;
+                    if (head is not null) _cache[scope.Key] = (stats, head);
                     Apply(stats);
                     break;
                 case Failure failure:
@@ -240,6 +294,7 @@ public sealed partial class RepositoryStatsViewModel : ObservableObject, IDispos
 
     private void Apply(RepositoryStats stats)
     {
+        _stats = stats;
         HasData = stats.TotalCommits > 0;
         var culture = CultureInfo.CurrentCulture;
 

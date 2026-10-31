@@ -218,10 +218,14 @@ internal sealed class FakeGit : IGitService
     /// <summary>The <c>includeSubmodules</c> argument of the last read.</summary>
     public bool? StatsIncludedSubmodules { get; private set; }
 
+    /// <summary>The repository path of every read, in order.</summary>
+    public List<string> StatsPaths { get; } = [];
+
     public async Task<GitResult<RepositoryStats>> ReadCommitStatsAsync(string repositoryPath, IProgress<int>? progress, bool includeSubmodules = false, CancellationToken cancellationToken = default)
     {
         StatsCalls++;
         StatsIncludedSubmodules = includeSubmodules;
+        StatsPaths.Add(repositoryPath);
         progress?.Report(1_200);
         if (StatsGate is { } gate)
         {

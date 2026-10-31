@@ -1,5 +1,5 @@
 ## Unreleased
-- Statistiques : une option « Inclure les sous-modules » compte les commits des sous-modules initialisés avec ceux du dépôt.
+- Statistiques : un sélecteur (affiché quand le dépôt a des sous-modules initialisés) compte le dépôt seul, un sous-module, ou tout ensemble.
 
 ## 0.33.0 — 2026-10-30
 - Blame, diff côte à côte, diff unifié (indexation par ligne et par hunk comprise) et éditeur de conflits : affichés dans un éditeur natif (LoomEditor), sans WebView2 : ouverture plus rapide, coloration TextMate.

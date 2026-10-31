@@ -1,5 +1,5 @@
 ## Unreleased
-- Statistics: an "Include submodules" option counts the commits of the initialized submodules together with those of the repository.
+- Statistics: a selector (shown when the repository has initialized submodules) counts the repository alone, one submodule, or everything together.
 
 ## 0.33.0 — 2026-10-30
 - Blame, side-by-side diff, unified diff (line and hunk staging included) and conflict editor: shown in a native editor (LoomEditor), without WebView2: faster to open, TextMate syntax coloring.

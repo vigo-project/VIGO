@@ -65,8 +65,15 @@
                                        VerticalAlignment="Center" />
                         </StackPanel>
                         <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="12">
-                            <CheckBox x:Uid="StatsIncludeSubmodules" MinWidth="0" VerticalAlignment="Center"
-                                      IsChecked="{x:Bind ViewModel.IncludeSubmodules, Mode=TwoWay}" />
+                            <ComboBox x:Uid="StatsScope" VerticalAlignment="Center" MinWidth="180" FontSize="{ThemeResource VigoFontSize12}"
+                                      Visibility="{x:Bind ViewModel.HasScopes, Mode=OneWay}"
+                                      ItemsSource="{x:Bind ViewModel.Scopes}" SelectedItem="{x:Bind ViewModel.SelectedScope, Mode=TwoWay}">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:StatsScope">
+                                        <TextBlock Text="{x:Bind Name}" />
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
                             <Button x:Uid="StatsRefresh" Style="{StaticResource VigoSubtleButton}" Height="28" Padding="8,0"
                                     Command="{x:Bind ViewModel.RefreshCommand}">
                                 <FontIcon Style="{StaticResource VigoIcon}" FontSize="16" Glyph="{x:Bind controls:FluentIcons.ArrowSync}" />
