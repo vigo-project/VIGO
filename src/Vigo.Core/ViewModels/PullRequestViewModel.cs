@@ -551,6 +551,8 @@ public sealed partial class PullRequestViewModel : HostedDiscussionViewModel, ID
     private async Task LoadFullSidesAsync(PullRequestFileRow row)
     {
         if (Accounts is null || Repository is not { } repository || Pull is not { } pull) return;
+        _sidesLoading?.Cancel();
+        _sidesLoading?.Dispose();
         var source = _sidesLoading = CancellationTokenSource.CreateLinkedTokenSource(Lifetime);
         var result = await Accounts.GetPullRequestFileSidesAsync(repository, pull, row.File, ProfileId?.Invoke(), source.Token);
         if (source.IsCancellationRequested || result.Value is not Success<DiffSides> { Value: var full }) return;
@@ -573,6 +575,12 @@ public sealed partial class PullRequestViewModel : HostedDiscussionViewModel, ID
     {
         _loading?.Cancel();
         _loading?.Dispose();
+        _sidesLoading?.Cancel();
+        _sidesLoading?.Dispose();
+        _diffComputing?.Cancel();
+        _diffComputing?.Dispose();
+        _statsComputing?.Cancel();
+        _statsComputing?.Dispose();
         _checksPoller.Dispose();
     }
 
@@ -1026,6 +1034,7 @@ public sealed partial class PullRequestViewModel : HostedDiscussionViewModel, ID
     private async Task ComputeDiffAsync(PullRequestFileRow row)
     {
         _diffComputing?.Cancel();
+        _diffComputing?.Dispose();
         var source = _diffComputing = CancellationTokenSource.CreateLinkedTokenSource(Lifetime);
         if (Accounts is null || Repository is not { } repository || Pull is not { } pull) return;
 
@@ -1087,6 +1096,7 @@ public sealed partial class PullRequestViewModel : HostedDiscussionViewModel, ID
     private async Task ComputeAllStatsAsync()
     {
         _statsComputing?.Cancel();
+        _statsComputing?.Dispose();
         var source = _statsComputing = CancellationTokenSource.CreateLinkedTokenSource(Lifetime);
         if (Accounts is null || Repository is not { } repository || Pull is not { } pull) return;
 
