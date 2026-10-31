@@ -1332,16 +1332,15 @@ public sealed class PullRequestViewModelTests : IDisposable
             [new ReviewThreadComment(1, "linus", $"Ping @<{Ada}> and @<00000000-0000-0000-0000-000000000000>", Now)]));
         await tab.Refs.ShowPullRequestCommand.ExecuteAsync(RowOf(tab, 7));
         var screen = tab.PullRequest;
-        var revision = screen.ReviewRevision;
 
+        // The lookup may end before or after the file is selected (it starts when the pull request is read): wait for the
+        // card to show the name, the unknown person keeping the placeholder.
         screen.SelectedFile = screen.Files.Single(f => f.Path == "src/cache.cs");
-        await WaitUntilAsync(() => screen.References.Names?.ContainsKey(Ada) == true);
-
-        // The cards drawn again read the names: the unknown person keeps the placeholder.
-        Assert.NotEqual(revision, screen.ReviewRevision);
-        var body = Assert.IsType<MarkdownParagraph>(Assert.Single(Assert.Single(Assert.Single(screen.FileThreads).Comments).Body));
-        Assert.Equal(["@Ada Lovelace", "@" + Loc.Get("ReviewEditor.UnknownPerson")],
-            body.Content.OfType<MarkdownEmphasis>().Select(e => Assert.IsType<MarkdownText>(Assert.Single(e.Content)).Text));
+        string[] Mentions() =>
+            screen.FileThreads.SingleOrDefault()?.Comments.Single().Body.OfType<MarkdownParagraph>().SingleOrDefault()?.Content
+                .OfType<MarkdownEmphasis>().Select(e => Assert.IsType<MarkdownText>(Assert.Single(e.Content)).Text).ToArray() ?? [];
+        await WaitUntilAsync(() => Mentions().Contains("@Ada Lovelace"));
+        Assert.Equal(["@Ada Lovelace", "@" + Loc.Get("ReviewEditor.UnknownPerson")], Mentions());
 
         screen.SelectedFile = screen.Files.First(f => f.Path != "src/cache.cs");
         screen.SelectedFile = screen.Files.Single(f => f.Path == "src/cache.cs");
