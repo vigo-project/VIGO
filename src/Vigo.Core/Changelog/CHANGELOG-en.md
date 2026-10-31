@@ -1,5 +1,6 @@
-## Unreleased
+## 0.34.0 — 2026-10-31
 - Statistics: a selector (shown when the repository has initialized submodules) counts the repository alone, one submodule, or everything together.
+- Markdown (pull requests, issues): images are shown at their natural size, capped at 640 px, instead of being stretched (small icons no longer take hundreds of pixels).
 
 ## 0.33.0 — 2026-10-30
 - Blame, side-by-side diff, unified diff (line and hunk staging included) and conflict editor: shown in a native editor (LoomEditor), without WebView2: faster to open, TextMate syntax coloring.
