@@ -30,7 +30,24 @@ public sealed class StatsTests : IDisposable
     }
 
     private async Task<RepositoryStats> StatsAsync(IProgress<int>? progress = null) =>
-        Assert.IsType<Success<RepositoryStats>>((await _git.ReadCommitStatsAsync(_repo.Path, progress, Ct)).Value).Value;
+        Assert.IsType<Success<RepositoryStats>>((await _git.ReadCommitStatsAsync(_repo.Path, progress, cancellationToken: Ct)).Value).Value;
+
+    [Fact]
+    public async Task Submodule_commits_are_counted_only_when_asked()
+    {
+        using var dependency = TestRepoBuilder.Create();
+        dependency.Commit("dep", ("lib.txt", "lib\n"));
+        _repo.Commit("init", ("a.txt", "a\n"));
+        TestRepoBuilder.AllowFileSubmodules();
+        Assert.IsType<Done>((await _git.AddSubmoduleAsync(_repo.Path, dependency.Path, "libs/dep", Ct)).Value);
+        _repo.Commit("add submodule");
+
+        var alone = await StatsAsync();
+        var merged = Assert.IsType<Success<RepositoryStats>>((await _git.ReadCommitStatsAsync(_repo.Path, null, includeSubmodules: true, cancellationToken: Ct)).Value).Value;
+
+        Assert.Equal(2, alone.TotalCommits);
+        Assert.Equal(3, merged.TotalCommits);
+    }
 
     [Fact]
     public async Task An_empty_repository_has_no_statistics()

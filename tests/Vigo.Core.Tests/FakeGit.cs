@@ -215,9 +215,13 @@ internal sealed class FakeGit : IGitService
     /// <summary>When set, the read reports this many commits then waits for the token (cancellation test).</summary>
     public TaskCompletionSource? StatsGate { get; set; }
 
-    public async Task<GitResult<RepositoryStats>> ReadCommitStatsAsync(string repositoryPath, IProgress<int>? progress, CancellationToken cancellationToken = default)
+    /// <summary>The <c>includeSubmodules</c> argument of the last read.</summary>
+    public bool? StatsIncludedSubmodules { get; private set; }
+
+    public async Task<GitResult<RepositoryStats>> ReadCommitStatsAsync(string repositoryPath, IProgress<int>? progress, bool includeSubmodules = false, CancellationToken cancellationToken = default)
     {
         StatsCalls++;
+        StatsIncludedSubmodules = includeSubmodules;
         progress?.Report(1_200);
         if (StatsGate is { } gate)
         {

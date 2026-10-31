@@ -109,6 +109,18 @@ public sealed partial class RepositoryStatsViewModel : ObservableObject, IDispos
     [ObservableProperty]
     public partial bool SortDescending { get; private set; } = true;
 
+    /// <summary>Counts the commits of the initialized submodules too (they are merged with those of the repository).</summary>
+    [ObservableProperty]
+    public partial bool IncludeSubmodules { get; set; }
+
+    partial void OnIncludeSubmodulesChanged(bool value)
+    {
+        // What is cached was computed for the other setting.
+        _stats = null;
+        _statsHead = null;
+        if (IsOpen) _ = ComputeAsync();
+    }
+
     /// <summary>How many times git was asked (the cache answers the others); tests count them.</summary>
     internal int Reads { get; private set; }
 
@@ -179,6 +191,7 @@ public sealed partial class RepositoryStatsViewModel : ObservableObject, IDispos
 
         var source = _computing = CancellationTokenSource.CreateLinkedTokenSource(_lifetime);
         var token = source.Token;
+        var includeSubmodules = IncludeSubmodules;
         IsComputing = true;
         ProgressText = string.Empty;
         Message = null;
@@ -190,7 +203,7 @@ public sealed partial class RepositoryStatsViewModel : ObservableObject, IDispos
             {
                 if (!token.IsCancellationRequested) ProgressText = Loc.Format("Stats.Progress", count.ToString("N0", CultureInfo.CurrentCulture));
             });
-            var result = await Task.Run(() => _git.ReadCommitStatsAsync(_repositoryPath, progress, token), CancellationToken.None);
+            var result = await Task.Run(() => _git.ReadCommitStatsAsync(_repositoryPath, progress, includeSubmodules, token), CancellationToken.None);
             if (token.IsCancellationRequested) return;
 
             switch (result.Value)

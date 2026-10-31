@@ -2346,6 +2346,7 @@ Stocké par Git LFS (déclaré dans {1}).</value></data>
   <data name="StatsBack.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Retour au graphe (Échap)</value></data>
   <data name="StatsRefresh.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Recalculer les statistiques</value></data>
   <data name="StatsRefresh.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Actualiser</value></data>
+  <data name="StatsIncludeSubmodules.Content" xml:space="preserve"><value>Inclure les sous-modules</value></data>
   <data name="StatsTitle.Text" xml:space="preserve"><value>Statistiques</value></data>
   <data name="StatsNoData.Text" xml:space="preserve"><value>Aucun commit à compter.</value></data>
   <data name="StatsMonthTitle.Text" xml:space="preserve"><value>Commits par mois</value></data>

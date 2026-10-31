@@ -176,6 +176,20 @@ public sealed class RepositoryStatsTests
     }
 
     [Fact]
+    public async Task Including_submodules_reads_the_history_again_with_the_option()
+    {
+        _git.Stats = StatsOf(("Ada", "ada@x.dev", 3));
+        var page = Create();
+        await page.OpenAsync();
+        Assert.False(_git.StatsIncludedSubmodules);
+
+        page.IncludeSubmodules = true;
+        while (_git.StatsCalls < 2) await Task.Delay(10, TestContext.Current.CancellationToken);
+
+        Assert.True(_git.StatsIncludedSubmodules);
+    }
+
+    [Fact]
     public async Task A_repository_without_commit_has_nothing_to_draw()
     {
         var page = Create();

@@ -64,10 +64,14 @@
                             <TextBlock Text="{x:Bind ViewModel.ProgressText, Mode=OneWay}" FontSize="{ThemeResource VigoFontSize12}" Foreground="{ThemeResource VigoText3Brush}"
                                        VerticalAlignment="Center" />
                         </StackPanel>
-                        <Button x:Uid="StatsRefresh" Grid.Column="1" Style="{StaticResource VigoSubtleButton}" Height="28" Padding="8,0"
-                                Command="{x:Bind ViewModel.RefreshCommand}">
-                            <FontIcon Style="{StaticResource VigoIcon}" FontSize="16" Glyph="{x:Bind controls:FluentIcons.ArrowSync}" />
-                        </Button>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="12">
+                            <CheckBox x:Uid="StatsIncludeSubmodules" MinWidth="0" VerticalAlignment="Center"
+                                      IsChecked="{x:Bind ViewModel.IncludeSubmodules, Mode=TwoWay}" />
+                            <Button x:Uid="StatsRefresh" Style="{StaticResource VigoSubtleButton}" Height="28" Padding="8,0"
+                                    Command="{x:Bind ViewModel.RefreshCommand}">
+                                <FontIcon Style="{StaticResource VigoIcon}" FontSize="16" Glyph="{x:Bind controls:FluentIcons.ArrowSync}" />
+                            </Button>
+                        </StackPanel>
                     </Grid>
                 </Border>
 

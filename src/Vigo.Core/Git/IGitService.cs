@@ -435,8 +435,9 @@ public interface IGitService
     /// Statistics of the history of HEAD for the "Statistiques" page (J7.14): commits per month, contributors (the mailmap applies),
     /// weekday and hour of the authors. The log is read as a stream and aggregated on the fly, without keeping the commits;
     /// <paramref name="progress"/> receives the number of commits read so far. No commit: <see cref="RepositoryStats.Empty"/>.
+    /// With <paramref name="includeSubmodules"/>, the history of every initialized submodule is counted too.
     /// </summary>
-    Task<GitResult<RepositoryStats>> ReadCommitStatsAsync(string repositoryPath, IProgress<int>? progress, CancellationToken cancellationToken = default);
+    Task<GitResult<RepositoryStats>> ReadCommitStatsAsync(string repositoryPath, IProgress<int>? progress, bool includeSubmodules = false, CancellationToken cancellationToken = default);
 
     /// <summary>Working directories of the repository, the main one first (<c>git worktree list --porcelain</c>).</summary>
     Task<GitResult<IReadOnlyList<Worktree>>> GetWorktreesAsync(string repositoryPath, CancellationToken cancellationToken = default);
