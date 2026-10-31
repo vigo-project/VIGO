@@ -551,9 +551,14 @@ public sealed partial class PullRequestViewModel : HostedDiscussionViewModel, ID
     private async Task LoadFullSidesAsync(PullRequestFileRow row)
     {
         if (Accounts is null || Repository is not { } repository || Pull is not { } pull) return;
-        _sidesLoading?.Cancel();
-        _sidesLoading?.Dispose();
+        // The field changes before the await: a call made meanwhile cancels this source, not the previous one again.
+        var previous = _sidesLoading;
         var source = _sidesLoading = CancellationTokenSource.CreateLinkedTokenSource(Lifetime);
+        if (previous is not null)
+        {
+            await previous.CancelAsync();
+            previous.Dispose();
+        }
         var result = await Accounts.GetPullRequestFileSidesAsync(repository, pull, row.File, ProfileId?.Invoke(), source.Token);
         if (source.IsCancellationRequested || result.Value is not Success<DiffSides> { Value: var full }) return;
         _fullSides[row.Path] = full;
