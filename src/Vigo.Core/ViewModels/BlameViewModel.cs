@@ -141,6 +141,7 @@ public sealed partial class BlameViewModel : ObservableObject
     private async Task LoadAsync(string path, string? revision)
     {
         _loading?.Cancel();
+        _loading?.Dispose();
         var cts = _loading = CancellationTokenSource.CreateLinkedTokenSource(_lifetime);
         Path = path;
         Revision = revision;

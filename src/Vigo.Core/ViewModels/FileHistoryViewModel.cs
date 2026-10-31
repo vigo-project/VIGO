@@ -239,6 +239,7 @@ public sealed partial class FileHistoryViewModel : ObservableObject
     {
         if (Path is not { } path) return;
         _loading?.Cancel();
+        _loading?.Dispose();
         _diffLoading?.Cancel();
         var cts = _loading = CancellationTokenSource.CreateLinkedTokenSource(_lifetime);
         Entries.Clear();
@@ -308,6 +309,8 @@ public sealed partial class FileHistoryViewModel : ObservableObject
             return;
         }
 
+        // Canceled above; disposed only when replaced, so the field never holds a disposed source (Cancel would throw).
+        _diffLoading?.Dispose();
         var cts = _diffLoading = CancellationTokenSource.CreateLinkedTokenSource(_lifetime);
         IsDiffLoading = true;
         try

@@ -416,9 +416,11 @@ public sealed partial class PullRequestViewModel : HostedDiscussionViewModel, ID
 
         _mentionsAsked.UnionWith(ids);
         var result = await Accounts.ResolveMentionsAsync(repository, ids, ProfileId?.Invoke(), Lifetime);
+        var names = result.Value is Success<IReadOnlyDictionary<string, string>> success ? success.Value : null;
+        // Names recorded before the ids leave the asked set: a call in between would otherwise ask them again.
+        if (names is not null) foreach (var id in ids) _mentionNames[id] = names.TryGetValue(id, out var name) ? name : string.Empty;
         _mentionsAsked.ExceptWith(ids);
-        if (result.Value is not Success<IReadOnlyDictionary<string, string>> { Value: var names }) return;
-        foreach (var id in ids) _mentionNames[id] = names.TryGetValue(id, out var name) ? name : string.Empty;
+        if (names is null) return;
         BumpReviewRevision();
         // The conversation shows the names too: its texts that mention someone are read again.
         if (Detail is { } detail && MentionPattern().IsMatch(detail.Body)) Description = MarkdownParser.Parse(detail.Body, References);
@@ -549,7 +551,14 @@ public sealed partial class PullRequestViewModel : HostedDiscussionViewModel, ID
     private async Task LoadFullSidesAsync(PullRequestFileRow row)
     {
         if (Accounts is null || Repository is not { } repository || Pull is not { } pull) return;
+        // The field changes before the await: a call made meanwhile cancels this source, not the previous one again.
+        var previous = _sidesLoading;
         var source = _sidesLoading = CancellationTokenSource.CreateLinkedTokenSource(Lifetime);
+        if (previous is not null)
+        {
+            await previous.CancelAsync();
+            previous.Dispose();
+        }
         var result = await Accounts.GetPullRequestFileSidesAsync(repository, pull, row.File, ProfileId?.Invoke(), source.Token);
         if (source.IsCancellationRequested || result.Value is not Success<DiffSides> { Value: var full }) return;
         _fullSides[row.Path] = full;
@@ -571,6 +580,12 @@ public sealed partial class PullRequestViewModel : HostedDiscussionViewModel, ID
     {
         _loading?.Cancel();
         _loading?.Dispose();
+        _sidesLoading?.Cancel();
+        _sidesLoading?.Dispose();
+        _diffComputing?.Cancel();
+        _diffComputing?.Dispose();
+        _statsComputing?.Cancel();
+        _statsComputing?.Dispose();
         _checksPoller.Dispose();
     }
 
@@ -1024,6 +1039,7 @@ public sealed partial class PullRequestViewModel : HostedDiscussionViewModel, ID
     private async Task ComputeDiffAsync(PullRequestFileRow row)
     {
         _diffComputing?.Cancel();
+        _diffComputing?.Dispose();
         var source = _diffComputing = CancellationTokenSource.CreateLinkedTokenSource(Lifetime);
         if (Accounts is null || Repository is not { } repository || Pull is not { } pull) return;
 
@@ -1085,6 +1101,7 @@ public sealed partial class PullRequestViewModel : HostedDiscussionViewModel, ID
     private async Task ComputeAllStatsAsync()
     {
         _statsComputing?.Cancel();
+        _statsComputing?.Dispose();
         var source = _statsComputing = CancellationTokenSource.CreateLinkedTokenSource(Lifetime);
         if (Accounts is null || Repository is not { } repository || Pull is not { } pull) return;
 

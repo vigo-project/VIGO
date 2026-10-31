@@ -458,7 +458,7 @@ public sealed partial class MainWindow : Window, IDisposable
             }
             if (ViewModel.Projects.Count > 0) assign.Items.Add(new MenuFlyoutSeparator());
             var create = new MenuFlyoutItem { Text = Loc.Get("Shell.TabMenu.NewProject") };
-            create.Click += async (_, _) => await ViewModel.NewProjectAsync(tab);
+            create.Click += async (_, _) => await ViewModel.NewProjectAsync(tab, _closing.Token);
             assign.Items.Add(create);
             menu.Items.Add(assign);
 
@@ -539,7 +539,7 @@ public sealed partial class MainWindow : Window, IDisposable
             });
             if (path is not null)
             {
-                await ViewModel.OpenRepositoryAsync(path);
+                await ViewModel.OpenRepositoryAsync(path, _closing.Token);
                 if (session.Windows.Count > 1) Activate();
             }
             // Automatic fetch of the visible tab, once the session is back (not for each restored tab).

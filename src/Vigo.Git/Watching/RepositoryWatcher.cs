@@ -113,7 +113,7 @@ public sealed partial class RepositoryWatcher : IRepositoryWatcher
         try
         {
             // Off the file system event thread; until the list is there, every event counts.
-            var directories = await Task.Run(() => _listIgnored(_stopping.Token));
+            var directories = await Task.Run(() => _listIgnored(_stopping.Token), _stopping.Token);
             if (directories is not null) _ignored = new HashSet<string>(directories, StringComparer.OrdinalIgnoreCase);
         }
         catch (Exception ex) when (ex is OperationCanceledException or ObjectDisposedException)

@@ -193,6 +193,7 @@ public sealed partial class InteractiveRebaseViewModel : ObservableObject
         }
 
         _loading?.Cancel();
+        _loading?.Dispose();
         var loading = _loading = CancellationTokenSource.CreateLinkedTokenSource(_lifetime);
         IsLoading = true;
         try

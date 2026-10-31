@@ -1,10 +1,10 @@
 using System.ComponentModel;
-using System.Diagnostics;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Vigo.App.Controls;
+using Vigo.App.Services;
 using Vigo.Core.Models;
 using Vigo.Core.Services;
 using Vigo.Core.ViewModels;
@@ -231,7 +231,7 @@ public sealed partial class WorkingTreePanel : UserControl
     private void OnFolderOpenClick(object sender, RoutedEventArgs e)
     {
         if (FolderOf(sender) is not { } folder || ViewModel.FullPath(folder) is not { } path) return;
-        Process.Start(new ProcessStartInfo("explorer.exe", $"\"{path}\"") { UseShellExecute = false });
+        Explorer.Open($"\"{path}\"");
     }
 
     /// <summary>Stage (+) on unstaged rows, unstage (−) on staged rows, mark resolved (✓) on conflicts (mockup).</summary>
@@ -302,6 +302,6 @@ public sealed partial class WorkingTreePanel : UserControl
         if (ItemOf(sender) is not { } item || ViewModel.FullPath(item) is not { } path) return;
         // A deleted file cannot be selected: open its folder instead.
         var arguments = File.Exists(path) ? $"/select,\"{path}\"" : $"\"{Path.GetDirectoryName(path)}\"";
-        Process.Start(new ProcessStartInfo("explorer.exe", arguments) { UseShellExecute = false });
+        Explorer.Open(arguments);
     }
 }
