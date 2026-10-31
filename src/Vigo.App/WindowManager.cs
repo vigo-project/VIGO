@@ -113,7 +113,7 @@ public sealed partial class WindowManager
     {
         if ((_lastActive ?? _windows.FirstOrDefault()) is not { } window) return;
         window.Activate();
-        if (path is not null) await window.ViewModel.OpenRepositoryAsync(path);
+        if (path is not null) await window.ViewModel.OpenRepositoryAsync(path, window.ClosingToken);
     }
 
     /// <summary>Tab being dragged from one of the windows (null otherwise): drops between windows stay in-process.</summary>

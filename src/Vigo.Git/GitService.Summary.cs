@@ -25,7 +25,7 @@ public sealed partial class GitService
         var branchNames = Cli.RunAsync(repositoryPath, ["for-each-ref", "--format=%(refname)", "refs/heads"], cancellationToken);
         var tagNames = Cli.RunAsync(repositoryPath, ["for-each-ref", "--format=%(refname)", "refs/tags"], cancellationToken);
         var head = ReadOptionalAsync(repositoryPath, ["rev-parse", "--verify", "--quiet", "HEAD"], cancellationToken);
-        var readme = Task.Run(() => ReadReadme(repositoryPath));
+        var readme = Task.Run(() => ReadReadme(repositoryPath), cancellationToken);
         await Task.WhenAll(branches, tags, branchNames, tagNames, head, readme);
 
         if (cancellationToken.IsCancellationRequested) return Canceled.Instance;
