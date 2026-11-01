@@ -50,11 +50,11 @@ jobs:
       VERSION: ${{ github.event.inputs.version || github.ref_name }}
       INSTALLER_REPO: ${{ github.server_url }}/${{ github.repository }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-dotnet@v5
+      - uses: actions/setup-dotnet@v6
         with:
           global-json-file: global.json
 
