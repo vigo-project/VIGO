@@ -1,0 +1,20 @@
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ["*"]
+
+  # Central package management: Directory.Packages.props at the root.
+  - package-ecosystem: nuget
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      # Minor and patch updates in one pull request; majors stay separate.
+      nuget:
+        patterns: ["*"]
+        update-types: [minor, patch]
