@@ -1,3 +1,6 @@
+## Unreleased
+- Éditeur de code (blame, diff, conflits) : les fichiers .tsx et .jsx ont maintenant la coloration syntaxique.
+
 ## 0.34.0 — 2026-10-31
 - Statistiques : un sélecteur (affiché quand le dépôt a des sous-modules initialisés) compte le dépôt seul, un sous-module, ou tout ensemble.
 - Markdown (pull requests, issues) : les images s'affichent à leur taille naturelle, plafonnée à 640 px, au lieu d'être étirées (les petites icônes ne prennent plus des centaines de pixels).
