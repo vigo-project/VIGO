@@ -1,4 +1,4 @@
-## Unreleased
+## 0.35.0 — 2026-11-02
 - Éditeur de code (blame, diff, conflits) : les fichiers .tsx et .jsx ont maintenant la coloration syntaxique.
 
 ## 0.34.0 — 2026-10-31
