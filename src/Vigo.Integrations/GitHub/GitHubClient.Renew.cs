@@ -1,4 +1,3 @@
-using System.Globalization;
 using System.Net.Http.Json;
 using System.Text.Json;
 using Vigo.Core.Models;
@@ -13,51 +12,13 @@ namespace Vigo.Integrations.GitHub;
 public sealed partial class GitHubClient
 {
     private const string StoredPrefix = "gh1|";
-    private static readonly TimeSpan RenewMargin = TimeSpan.FromMinutes(2);
 
-    // A refresh token works once: calls made at the same time (the pull requests and the issues) must share one renewal.
-    private readonly object _renewalGate = new();
-    private (string Stored, Task<GitResult<ResolvedToken>> Renewal)? _renewal;
+    private readonly TokenRenewal _renewal = new();
 
     /// <summary>Renews an access token that expires within two minutes; a personal access token is returned as is.</summary>
-    public async Task<GitResult<ResolvedToken>> ResolveTokenAsync(string stored, CancellationToken cancellationToken = default)
-    {
-        if (!TryUnpack(stored, out var access, out var refresh, out var expiresAt))
-            return new Success<ResolvedToken>(new ResolvedToken(stored, null));
-        if (_time.GetUtcNow() + RenewMargin < expiresAt) return new Success<ResolvedToken>(new ResolvedToken(access, null));
-        if (!SupportsDeviceFlow)
-            return new AuthenticationFailed("github", Loc.Get("Hosting.GitHubSessionExpired"));
-
-        Task<GitResult<ResolvedToken>> renewal;
-        lock (_renewalGate)
-        {
-            if (_renewal is { } known && known.Stored == stored) renewal = known.Renewal;
-            else
-            {
-                renewal = RenewAsync(refresh);
-                _renewal = (stored, renewal);
-            }
-        }
-        // The shared renewal keeps going for the other callers; only this wait is abandoned.
-        GitResult<ResolvedToken> result;
-        try
-        {
-            result = await renewal.WaitAsync(cancellationToken);
-        }
-        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-        {
-            return Canceled.Instance;
-        }
-        // A refusal is final for this value; a network failure is worth another try.
-        if (result is not Success<ResolvedToken> and not AuthenticationFailed)
-        {
-            lock (_renewalGate)
-            {
-                if (_renewal is { } current && current.Renewal == renewal) _renewal = null;
-            }
-        }
-        return result;
-    }
+    public Task<GitResult<ResolvedToken>> ResolveTokenAsync(string stored, CancellationToken cancellationToken = default) =>
+        _renewal.ResolveAsync(StoredPrefix, stored, _time, SupportsDeviceFlow,
+            () => new AuthenticationFailed("github", Loc.Get("Hosting.GitHubSessionExpired")), RenewAsync, cancellationToken);
 
     // Not tied to the caller's cancellation: the renewal is shared, and a half-finished one would lose the refresh token.
     private async Task<GitResult<ResolvedToken>> RenewAsync(string refresh)
@@ -96,23 +57,10 @@ public sealed partial class GitHubClient
     // What the vault keeps for a token the service issued: expiring tokens carry their refresh token and expiry.
     private string Pack(AccessTokenResponse response, string? refresh) =>
         response.ExpiresIn > 0 && !string.IsNullOrEmpty(refresh)
-            ? string.Create(CultureInfo.InvariantCulture,
-                $"{StoredPrefix}{_time.GetUtcNow().AddSeconds(response.ExpiresIn).ToUnixTimeSeconds()}|{refresh}|{response.AccessToken}")
+            ? StoredToken.Pack(StoredPrefix, _time.GetUtcNow().AddSeconds(response.ExpiresIn), refresh, response.AccessToken)
             : response.AccessToken!;
 
-    private static bool TryUnpack(string stored, out string access, out string refresh, out DateTimeOffset expiresAt)
-    {
-        access = refresh = string.Empty;
-        expiresAt = default;
-        if (!stored.StartsWith(StoredPrefix, StringComparison.Ordinal)) return false;
-        var parts = stored[StoredPrefix.Length..].Split('|', 3);
-        if (parts.Length != 3 || !long.TryParse(parts[0], NumberStyles.None, CultureInfo.InvariantCulture, out var seconds)) return false;
-        expiresAt = DateTimeOffset.FromUnixTimeSeconds(seconds);
-        refresh = parts[1];
-        access = parts[2];
-        return true;
-    }
-
     // The access token inside a stored value (sign-in checks the account with the freshly obtained value).
-    private static string AccessTokenOf(string stored) => TryUnpack(stored, out var access, out _, out _) ? access : stored;
+    private static string AccessTokenOf(string stored) =>
+        StoredToken.TryUnpack(StoredPrefix, stored, out var access, out _, out _) ? access : stored;
 }

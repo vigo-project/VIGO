@@ -525,6 +525,23 @@
                     </ItemsControl>
 
                     <Button Style="{StaticResource VigoStandardButton}" x:Uid="PrefShortcutsResetAll" Click="OnShortcutResetAllClick" HorizontalAlignment="Left" Margin="0,8,0,0" />
+
+                    <TextBlock x:Uid="PrefShortcutsFixedTitle" Style="{StaticResource SettingTitle}" Margin="0,24,0,0" />
+                    <TextBlock x:Uid="PrefShortcutsFixedIntro" Style="{StaticResource SettingDescription}" />
+                    <ItemsControl ItemsSource="{x:Bind ViewModel.FixedShortcutItems}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:FixedShortcutItem">
+                                <Grid Padding="0,8" ColumnSpacing="12" BorderThickness="0,0,0,1" BorderBrush="{ThemeResource VigoStrokeSubtleBrush}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="{x:Bind Use}" TextWrapping="Wrap" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="1" Text="{x:Bind Keys}" FontFamily="{StaticResource VigoMonoFont}" VerticalAlignment="Center" />
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
                 </StackPanel>
 
                 <!-- Clés SSH (mockup VIGO Outils, pSsh): key cards, Windows agent switch, Générer / Importer. -->

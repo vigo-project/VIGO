@@ -1,3 +1,8 @@
+## Unreleased
+- Graphe : les checkpoints de Copilot (refs/copilot/*) n'encombrent plus l'historique.
+- Graphe : nouvelle entrée « Copier le SHA court » dans le menu d'un commit ; copier le SHA court (Ctrl+C) ou complet (Ctrl+Maj+C) est maintenant un raccourci configurable.
+- Préférences › Raccourcis : une liste « Raccourcis fixes » montre maintenant les raccourcis non modifiables (copier, valider, Échap, Alt+↑/↓, touches du rebase, F2…).
+
 ## 0.35.0 — 2026-11-02
 - Éditeur de code (blame, diff, conflits) : les fichiers .tsx et .jsx ont maintenant la coloration syntaxique.
 

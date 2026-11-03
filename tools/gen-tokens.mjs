@@ -19,7 +19,7 @@ function toArgb(v) {
   let m;
   if ((m = v.match(/^#([0-9a-f]{6})$/i))) return '#FF' + m[1].toUpperCase();
   if ((m = v.match(/^rgba\((\d+),(\d+),(\d+),([\d.]+)\)$/i)))
-    return '#' + hex2(parseFloat(m[4]) * 255) + hex2(+m[1]) + hex2(+m[2]) + hex2(+m[3]);
+    return '#' + hex2(Number.parseFloat(m[4]) * 255) + hex2(+m[1]) + hex2(+m[2]) + hex2(+m[3]);
   return null;
 }
 const pascal = k => k.split('-').map(p => p[0].toUpperCase() + p.slice(1)).join('');

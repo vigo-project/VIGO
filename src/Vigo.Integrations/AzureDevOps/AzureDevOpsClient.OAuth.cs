@@ -20,7 +20,6 @@ public sealed partial class AzureDevOpsClient
     private const string DeviceCodeUrl = "https://login.microsoftonline.com/common/oauth2/v2.0/devicecode";
     private const string TokenUrl = "https://login.microsoftonline.com/common/oauth2/v2.0/token";
     private const string StoredPrefix = "oauth1|";
-    private static readonly TimeSpan RenewMargin = TimeSpan.FromMinutes(2);
 
     private readonly TimeProvider _time = time ?? TimeProvider.System;
 
@@ -83,48 +82,12 @@ public sealed partial class AzureDevOpsClient
         }
     }
 
+    private readonly TokenRenewal _renewal = new();
+
     /// <summary>Renews an OAuth access token that expires within two minutes; a personal access token is returned as is.</summary>
-    public async Task<GitResult<ResolvedToken>> ResolveTokenAsync(string stored, CancellationToken cancellationToken = default)
-    {
-        if (!TryUnpack(stored, out var access, out var refresh, out var expiresAt))
-            return new Success<ResolvedToken>(new ResolvedToken(stored, null));
-        if (_time.GetUtcNow() + RenewMargin < expiresAt) return new Success<ResolvedToken>(new ResolvedToken(access, null));
-        if (!SupportsDeviceFlow)
-            return new AuthenticationFailed(Remote, Loc.Get("Hosting.AzureSessionExpired"));
-
-        Task<GitResult<ResolvedToken>> renewal;
-        lock (_renewalGate)
-        {
-            if (_renewal is { } known && known.Stored == stored) renewal = known.Renewal;
-            else
-            {
-                renewal = RenewAsync(refresh);
-                _renewal = (stored, renewal);
-            }
-        }
-        GitResult<ResolvedToken> result;
-        try
-        {
-            result = await renewal.WaitAsync(cancellationToken);
-        }
-        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-        {
-            return Canceled.Instance;
-        }
-        // A refusal is final for this value; a network failure is worth another try.
-        if (result is not Success<ResolvedToken> and not AuthenticationFailed)
-        {
-            lock (_renewalGate)
-            {
-                if (_renewal is { } current && current.Renewal == renewal) _renewal = null;
-            }
-        }
-        return result;
-    }
-
-    // A refresh token works once: calls made at the same time (work item images) must share one renewal.
-    private readonly object _renewalGate = new();
-    private (string Stored, Task<GitResult<ResolvedToken>> Renewal)? _renewal;
+    public Task<GitResult<ResolvedToken>> ResolveTokenAsync(string stored, CancellationToken cancellationToken = default) =>
+        _renewal.ResolveAsync(StoredPrefix, stored, _time, SupportsDeviceFlow,
+            () => new AuthenticationFailed(Remote, Loc.Get("Hosting.AzureSessionExpired")), RenewAsync, cancellationToken);
 
     // Not tied to the caller's cancellation: the renewal is shared, and a half-finished one would lose the refresh token.
     private async Task<GitResult<ResolvedToken>> RenewAsync(string refresh)
@@ -162,26 +125,12 @@ public sealed partial class AzureDevOpsClient
     private string AdminApprovalMessage() =>
         Loc.Format("Hosting.AdminApproval", $"https://login.microsoftonline.com/organizations/adminconsent?client_id={clientId}");
 
-    // "oauth1|<expiry, Unix seconds>|<refresh token>|<access token>": none of the parts contains a '|'.
     private string Pack(AzureTokenResponse response, string? refresh) =>
-        string.Create(CultureInfo.InvariantCulture,
-            $"{StoredPrefix}{_time.GetUtcNow().AddSeconds(response.ExpiresIn > 0 ? response.ExpiresIn : 3600).ToUnixTimeSeconds()}|{refresh}|{response.AccessToken}");
-
-    private static bool TryUnpack(string stored, out string access, out string refresh, out DateTimeOffset expiresAt)
-    {
-        access = refresh = string.Empty;
-        expiresAt = default;
-        if (!stored.StartsWith(StoredPrefix, StringComparison.Ordinal)) return false;
-        var parts = stored[StoredPrefix.Length..].Split('|', 3);
-        if (parts.Length != 3 || !long.TryParse(parts[0], NumberStyles.None, CultureInfo.InvariantCulture, out var seconds)) return false;
-        expiresAt = DateTimeOffset.FromUnixTimeSeconds(seconds);
-        refresh = parts[1];
-        access = parts[2];
-        return true;
-    }
+        StoredToken.Pack(StoredPrefix, _time.GetUtcNow().AddSeconds(response.ExpiresIn > 0 ? response.ExpiresIn : 3600), refresh, response.AccessToken);
 
     // The access token inside a stored value (sign-in checks the account with the freshly obtained value).
-    private static string AccessTokenOf(string stored) => TryUnpack(stored, out var access, out _, out _) ? access : stored;
+    private static string AccessTokenOf(string stored) =>
+        StoredToken.TryUnpack(StoredPrefix, stored, out var access, out _, out _) ? access : stored;
 
     // Entra ID access tokens are JWTs; a personal access token has no dot.
     private static bool IsJwt(string token) => token.StartsWith("eyJ", StringComparison.Ordinal) && token.Contains('.', StringComparison.Ordinal);

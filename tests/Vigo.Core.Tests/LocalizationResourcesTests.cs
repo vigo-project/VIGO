@@ -70,7 +70,7 @@ public sealed partial class LocalizationResourcesTests
         var keys = Load("fr-FR").Keys.ToHashSet(StringComparer.Ordinal);
         // Any string literal that looks like a key of an area (Refs., Toolbar., ...): also finds keys chosen by a condition.
         var areas = keys.Where(k => k.Contains('.') && !k.Contains(".[")).Select(k => k[..k.IndexOf('.')]).Distinct().ToList();
-        var literal = new Regex(@"""(?<key>(?:" + string.Join('|', areas) + @")\.[A-Za-z0-9.]+)""");
+        var literal = new Regex(@"""(?<key>(?:" + string.Join('|', areas) + @")\.[A-Za-z0-9.]+)""", RegexOptions.None, TimeSpan.FromSeconds(5));
         var used = Directory.EnumerateFiles(Path.Combine(SourceRoot, "src"), "*.cs", SearchOption.AllDirectories)
             .Where(f => !f.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}") && !f.Contains($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}"))
             .SelectMany(f => literal.Matches(File.ReadAllText(f)).Select(m => m.Groups["key"].Value))

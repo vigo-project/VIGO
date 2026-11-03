@@ -146,7 +146,8 @@ public sealed class ShortcutTests : IDisposable
     public async Task Conflicts_name_the_command_or_the_fixed_shortcut_that_uses_the_gesture()
     {
         Assert.Equal("Tirer", _map.FindConflict(ShortcutIds.Push, new KeyGesture('L', GestureModifiers.Ctrl | GestureModifiers.Shift)));
-        Assert.Equal("Copier", _map.FindConflict(ShortcutIds.Push, new KeyGesture('C', GestureModifiers.Ctrl)));
+        Assert.Equal("Coller", _map.FindConflict(ShortcutIds.Push, new KeyGesture('V', GestureModifiers.Ctrl)));
+        Assert.Equal(Loc.Get("Shortcuts.Name.CopyShortSha"), _map.FindConflict(ShortcutIds.Push, new KeyGesture('C', GestureModifiers.Ctrl)));
         Assert.Null(_map.FindConflict(ShortcutIds.Push, new KeyGesture('L', GestureModifiers.Ctrl | GestureModifiers.Shift) with { Key = 'K' }));
         // Its own gesture is not a conflict.
         Assert.Null(_map.FindConflict(ShortcutIds.Pull, new KeyGesture('L', GestureModifiers.Ctrl | GestureModifiers.Shift)));

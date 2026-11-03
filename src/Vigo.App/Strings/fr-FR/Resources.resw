@@ -1735,6 +1735,20 @@ Stocké par Git LFS (déclaré dans {1}).</value></data>
   <data name="Shortcuts.ResetConflict" xml:space="preserve"><value>{0} est utilisé par « {1} » : changez d'abord ce raccourci.</value></data>
   <data name="Shortcuts.Scope.Repository" xml:space="preserve"><value>Dépôt ouvert</value></data>
   <data name="Shortcuts.Scope.Window" xml:space="preserve"><value>Fenêtre</value></data>
+  <data name="PrefShortcutsFixedTitle.Text" xml:space="preserve"><value>Raccourcis fixes</value></data>
+  <data name="PrefShortcutsFixedIntro.Text" xml:space="preserve"><value>Ces raccourcis ne peuvent pas être modifiés. Certains ne fonctionnent que dans la vue concernée.</value></data>
+  <data name="Shortcuts.Fixed.Escape.Keys" xml:space="preserve"><value>Échap</value></data>
+  <data name="Shortcuts.Fixed.Escape.Use" xml:space="preserve"><value>Fermer la vue ouverte (diff, conflit, historique, pull request…)</value></data>
+  <data name="Shortcuts.Fixed.PrevNext.Use" xml:space="preserve"><value>Changement précédent / suivant (diff, conflit)</value></data>
+  <data name="Shortcuts.Fixed.StageSelection.Use" xml:space="preserve"><value>Indexer la sélection ou le bloc courant (diff)</value></data>
+  <data name="Shortcuts.Fixed.Delete.Keys" xml:space="preserve"><value>Suppr</value></data>
+  <data name="Shortcuts.Fixed.DiscardSelection.Use" xml:space="preserve"><value>Abandonner la sélection ou le bloc courant (diff)</value></data>
+  <data name="Shortcuts.Fixed.RebaseAction.Use" xml:space="preserve"><value>Pick / reword / edit / squash / fixup / drop du commit sélectionné (rebase)</value></data>
+  <data name="Shortcuts.Fixed.RebaseMove.Use" xml:space="preserve"><value>Monter / descendre le commit sélectionné (rebase)</value></data>
+  <data name="Shortcuts.Fixed.Rename.Use" xml:space="preserve"><value>Renommer la branche ou le dépôt distant sélectionné</value></data>
+  <data name="Shortcuts.Fixed.DeleteRef.Use" xml:space="preserve"><value>Supprimer la branche, le dépôt distant ou le worktree sélectionné</value></data>
+  <data name="Shortcuts.Fixed.GraphMove.Use" xml:space="preserve"><value>Se déplacer dans les commits du graphe</value></data>
+  <data name="Shortcuts.Fixed.Format.Use" xml:space="preserve"><value>Gras / italique / souligné (commentaire de review)</value></data>
   <data name="Shortcuts.Capturing" xml:space="preserve"><value>Appuyez sur les touches…</value></data>
   <data name="Project.Summary.None" xml:space="preserve"><value>Aucun dépôt : affectez un onglet avec son menu contextuel</value></data>
   <data name="Project.Summary.One" xml:space="preserve"><value>1 dépôt</value></data>
@@ -2020,6 +2034,9 @@ Stocké par Git LFS (déclaré dans {1}).</value></data>
   <data name="Shortcuts.Name.Undo" xml:space="preserve"><value>Annuler la dernière opération</value></data>
   <data name="Shortcuts.Name.Redo" xml:space="preserve"><value>Rétablir l'opération annulée</value></data>
   <data name="Shortcuts.Name.Terminal" xml:space="preserve"><value>Basculer le terminal</value></data>
+  <data name="Shortcuts.Name.CopyShortSha" xml:space="preserve"><value>Copier le SHA court du commit sélectionné</value></data>
+  <data name="Shortcuts.Name.CopySha" xml:space="preserve"><value>Copier le SHA complet du commit sélectionné</value></data>
+  <data name="GraphCopyShortShaItem.Text" xml:space="preserve"><value>Copier le SHA court</value></data>
   <data name="Shortcuts.Reserved.Copy" xml:space="preserve"><value>Copier</value></data>
   <data name="Shortcuts.Reserved.Paste" xml:space="preserve"><value>Coller</value></data>
   <data name="Shortcuts.Reserved.Cut" xml:space="preserve"><value>Couper</value></data>

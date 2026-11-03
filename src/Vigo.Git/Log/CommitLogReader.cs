@@ -15,7 +15,7 @@ internal sealed class CommitLogReader
     private const int FieldCount = 6;
     private const byte Separator = 0;
 
-    /// <summary>Arguments for git.exe; refs/stash, notes, maintenance prefetch refs and AI agent checkpoints (refs/agents/*) are left out of the graph.</summary>
+    /// <summary>Arguments for git.exe; refs/stash, notes, maintenance prefetch refs and AI agent checkpoints (refs/agents/*, refs/copilot/*) are left out of the graph.</summary>
     public static IReadOnlyList<string> BuildArguments(CommitLogOptions options)
     {
         List<string> args =
@@ -39,7 +39,7 @@ internal sealed class CommitLogReader
         if (filter?.Sha is { } sha) args.AddRange(["--no-walk", sha]);
         else
         {
-            args.AddRange(["--exclude=refs/stash", "--exclude=refs/notes/*", "--exclude=refs/prefetch/*", "--exclude=refs/agents/*"]);
+            args.AddRange(["--exclude=refs/stash", "--exclude=refs/notes/*", "--exclude=refs/prefetch/*", "--exclude=refs/agents/*", "--exclude=refs/copilot/*"]);
             // Refs hidden by the user (full names, no wildcard in a valid ref name): git leaves out the commits only they reach.
             if (options.HiddenRefs is { Count: > 0 } hidden) args.AddRange(hidden.Select(name => "--exclude=" + name));
             args.Add("--all");

@@ -43,6 +43,8 @@ public static class ShortcutIds
     public const string Undo = "git.undo";
     public const string Redo = "git.redo";
     public const string Terminal = "terminal.toggle";
+    public const string CopySha = "graph.copy-sha";
+    public const string CopyShortSha = "graph.copy-short-sha";
 }
 
 /// <summary>The configurable shortcuts with their defaults, and the fixed ones they must not collide with.</summary>
@@ -70,6 +72,8 @@ public static class ShortcutCatalog
         new(ShortcutIds.Undo, "Shortcuts.Name.Undo", ShortcutScope.Repository, new('Z', Ctrl)),
         new(ShortcutIds.Redo, "Shortcuts.Name.Redo", ShortcutScope.Repository, new('Y', Ctrl)),
         new(ShortcutIds.Terminal, "Shortcuts.Name.Terminal", ShortcutScope.Repository, new(192, Ctrl)),
+        new(ShortcutIds.CopyShortSha, "Shortcuts.Name.CopyShortSha", ShortcutScope.Repository, new('C', Ctrl)),
+        new(ShortcutIds.CopySha, "Shortcuts.Name.CopySha", ShortcutScope.Repository, new('C', Ctrl | Shift)),
     ];
 
     /// <summary>
@@ -78,7 +82,6 @@ public static class ShortcutCatalog
     /// </summary>
     public static ImmutableArray<(KeyGesture Gesture, string Use)> Reserved =>
     [
-        (new('C', Ctrl), Loc.Get("Shortcuts.Reserved.Copy")),
         (new('V', Ctrl), Loc.Get("Shortcuts.Reserved.Paste")),
         (new('X', Ctrl), Loc.Get("Shortcuts.Reserved.Cut")),
         (new('A', Ctrl), Loc.Get("Shortcuts.Reserved.SelectAll")),
@@ -88,6 +91,25 @@ public static class ShortcutCatalog
         (new(KeyGesture.Enter, Ctrl), Loc.Get("Shortcuts.Reserved.Commit")),
         (new(KeyGesture.Enter, Ctrl | Shift), Loc.Get("Shortcuts.Reserved.CommitPush")),
         (new(115, Alt), Loc.Get("Shortcuts.Reserved.CloseWindow")),
+    ];
+
+    /// <summary>
+    /// Every fixed shortcut shown (read-only) in preferences: the <see cref="Reserved"/> gestures, then the contextual keys
+    /// handled by views (they do not take part in the conflict check).
+    /// </summary>
+    public static ImmutableArray<(string Keys, string Use)> Fixed =>
+    [
+        .. Reserved.Select(r => (r.Gesture.ToString(), r.Use)),
+        (Loc.Get("Shortcuts.Fixed.Escape.Keys"), Loc.Get("Shortcuts.Fixed.Escape.Use")),
+        ("Alt+↑ / Alt+↓", Loc.Get("Shortcuts.Fixed.PrevNext.Use")),
+        ("S", Loc.Get("Shortcuts.Fixed.StageSelection.Use")),
+        (Loc.Get("Shortcuts.Fixed.Delete.Keys"), Loc.Get("Shortcuts.Fixed.DiscardSelection.Use")),
+        ("P / R / E / S / F / D", Loc.Get("Shortcuts.Fixed.RebaseAction.Use")),
+        ("Alt+↑ / Alt+↓", Loc.Get("Shortcuts.Fixed.RebaseMove.Use")),
+        ("F2", Loc.Get("Shortcuts.Fixed.Rename.Use")),
+        (Loc.Get("Shortcuts.Fixed.Delete.Keys"), Loc.Get("Shortcuts.Fixed.DeleteRef.Use")),
+        ("↑ / ↓ / PgUp / PgDn / Home / End", Loc.Get("Shortcuts.Fixed.GraphMove.Use")),
+        ("Ctrl+B / Ctrl+I / Ctrl+U", Loc.Get("Shortcuts.Fixed.Format.Use")),
     ];
 
     public static ShortcutDefinition? Find(string id) => All.FirstOrDefault(d => d.Id == id);
