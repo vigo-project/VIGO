@@ -57,10 +57,27 @@ public sealed partial class CodeEditor : UserControl
         if (IsNativeDiffShown) RevealNativeHunk(hunk);
     }
 
-    /// <summary>Shows a side-by-side diff.</summary>
-    public void ShowSideBySide(DiffSides sides)
+    /// <summary>The line action of a side-by-side diff (button or key): these lines, original side as <c>true</c>.</summary>
+    public event EventHandler<IReadOnlyList<(bool Original, int Number)>>? SideLinesInvoked;
+
+    /// <summary>The checked lines of a side-by-side diff changed.</summary>
+    public event EventHandler<IReadOnlyList<(bool Original, int Number)>>? SideSelectionChanged;
+
+    /// <summary>A block button of a side-by-side diff was clicked: line ranges of the block, and discard (else stage / unstage).</summary>
+    public event EventHandler<(int OldStart, int OldCount, int NewStart, int NewCount, bool Discard)>? SideBlockInvoked;
+
+    /// <summary>Shows a side-by-side diff; <paramref name="staging"/> null for a read-only one.</summary>
+    public void ShowSideBySide(DiffSides sides, EditorStaging? staging, IReadOnlyList<(bool Original, int Number)> selected)
     {
-        if (!_closed) ShowNativeSideBySide(sides);
+        if (!_closed) ShowNativeSideBySide(sides, staging, selected);
+    }
+
+    /// <summary>Shows a read-only side-by-side diff.</summary>
+    public void ShowSideBySide(DiffSides sides) => ShowSideBySide(sides, null, []);
+
+    public void SetSideSelection(IReadOnlyList<(bool Original, int Number)> lines)
+    {
+        if (!_closed) SetNativeSideSelection(lines);
     }
 
     /// <summary>Shows the conflict editor: panes ours / theirs built from the segments, result with the chosen lines.</summary>
@@ -173,4 +190,4 @@ public sealed record EditorConflictBlock(
 public sealed record EditorBlameCommit(string Summary, string Date, string Initials, int ColorIndex, double Age, string ToolTip);
 
 /// <summary>Texts of the staging controls drawn in a unified diff (user-facing: localized by the caller).</summary>
-public sealed record EditorStaging(string ApplyLabel, string? DiscardLabel, string Hint, string ToggleTip);
+public sealed record EditorStaging(string ApplyLabel, string? DiscardLabel, string Hint, string ToggleTip, string LineLabel = "");

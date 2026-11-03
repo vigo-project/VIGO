@@ -1,4 +1,5 @@
 ## Unreleased
+- Diff: the side-by-side view can now stage, unstage and discard too: a check box on each changed line (Ctrl+click picks a modified line's deleted and added halves together), a button on the hovered line, and a button on every block of changes.
 - Graph: Copilot checkpoints (refs/copilot/*) no longer clutter the history.
 - Graph: new "Copy short SHA" entry in the commit menu; copying the short (Ctrl+C) or full (Ctrl+Shift+C) SHA is now a configurable shortcut.
 - Preferences › Shortcuts: a "Fixed shortcuts" list now shows the shortcuts that cannot be changed (copy, commit, Esc, Alt+↑/↓, rebase keys, F2…).

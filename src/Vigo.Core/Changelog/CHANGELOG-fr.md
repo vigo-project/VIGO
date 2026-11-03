@@ -1,4 +1,5 @@
 ## Unreleased
+- Diff : la vue côte à côte permet maintenant d'indexer, désindexer et annuler aussi : une case sur chaque ligne modifiée (Ctrl+clic prend ensemble la moitié supprimée et la moitié ajoutée d'une ligne modifiée), un bouton sur la ligne survolée et un bouton sur chaque bloc de changements.
 - Graphe : les checkpoints de Copilot (refs/copilot/*) n'encombrent plus l'historique.
 - Graphe : nouvelle entrée « Copier le SHA court » dans le menu d'un commit ; copier le SHA court (Ctrl+C) ou complet (Ctrl+Maj+C) est maintenant un raccourci configurable.
 - Préférences › Raccourcis : une liste « Raccourcis fixes » montre maintenant les raccourcis non modifiables (copier, valider, Échap, Alt+↑/↓, touches du rebase, F2…).
