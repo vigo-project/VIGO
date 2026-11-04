@@ -1085,9 +1085,10 @@ public sealed partial class GraphCanvas : UserControl
 
         if (hovered)
         {
-            // Hover: a stronger tint and a thicker border in the lane color, so the pointed badge stands out.
-            ds.FillRoundedRectangle(rect, 4, 4, Color.FromArgb(72, laneColor.R, laneColor.G, laneColor.B));
-            ds.DrawRoundedRectangle(Inset(rect, 1), 3, 3, laneColor, 2);
+            // Hover: a stronger tint and a thicker border, so the pointed badge stands out. A tag is neutral (gray), not lane-colored.
+            var tint = badge.Kind == RefBadgeKind.Tag ? colors.Text : laneColor;
+            ds.FillRoundedRectangle(rect, 4, 4, Color.FromArgb(badge.Kind == RefBadgeKind.Tag ? (byte)40 : (byte)72, tint.R, tint.G, tint.B));
+            ds.DrawRoundedRectangle(Inset(rect, 1), 3, 3, badge.Kind == RefBadgeKind.Tag ? colors.Text2 : laneColor, 2);
         }
 
         var iconX = x + padding;
