@@ -1,4 +1,6 @@
 ## Unreleased
+- AI commit messages: OpenCode (`opencode run`) joins Claude and Copilot as a command-line tool.
+- Pull requests and issues: "Copy number" in the sidebar menu; clicking the number of an open pull request copies it.
 
 ## 0.36.0 — 2026-11-04
 - Statistics: the top contributors pie chart no longer shows a stray line sticking out of the disc next to very thin slices.

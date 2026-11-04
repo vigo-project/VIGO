@@ -348,6 +348,11 @@
                             <FontIcon Glyph="{x:Bind controls:FluentIcons.Copy}" FontFamily="{StaticResource VigoIconFont}" />
                         </MenuFlyoutItem.Icon>
                     </MenuFlyoutItem>
+                    <MenuFlyoutItem x:Name="CopyNumberItem" x:Uid="RefsCopyNumberItem" Click="OnCopyNumberClick">
+                        <MenuFlyoutItem.Icon>
+                            <FontIcon Glyph="{x:Bind controls:FluentIcons.Copy}" FontFamily="{StaticResource VigoIconFont}" />
+                        </MenuFlyoutItem.Icon>
+                    </MenuFlyoutItem>
                 </MenuFlyout>
             </FlyoutBase.AttachedFlyout>
         </ListView>

@@ -182,6 +182,9 @@ public sealed record RefRowMenu
 
     public string? CopyText { get; init; }
 
+    /// <summary>"#123" of a pull request or issue row ("Copier le numéro"); null hides the entry.</summary>
+    public string? CopyNumberText { get; init; }
+
     /// <summary>"Nouveau worktree…" (section header) or "Ouvrir dans un nouveau worktree…" (local branch).</summary>
     public bool CanAddWorktree { get; init; }
 
@@ -455,6 +458,8 @@ public sealed partial class RefsPanelViewModel : ObservableObject, IDisposable
                     OpenUrl = url,
                     CopyText = url,
                     CopyLabel = Loc.Get("Refs.Menu.CopyLink"),
+                    // Keys are "pr:<n>" / "issue:<n>" (RefRowBuilder).
+                    CopyNumberText = "#" + row.Key[(row.Key.IndexOf(':', StringComparison.Ordinal) + 1)..],
                 };
 
             case RefRowKind.Worktree when row.Worktree is { } worktree && _worktrees is not null:

@@ -1,4 +1,6 @@
 ## Unreleased
+- Messages de commit IA : OpenCode (`opencode run`) rejoint Claude et Copilot parmi les outils en ligne de commande.
+- Pull requests et tickets : « Copier le numéro » dans le menu de la barre latérale ; un clic sur le numéro d'une pull request ouverte le copie.
 
 ## 0.36.0 — 2026-11-04
 - Statistiques : le camembert des principaux contributeurs n'a plus de trait qui dépasse du disque à côté des parts très fines.

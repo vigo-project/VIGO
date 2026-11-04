@@ -46,6 +46,9 @@ public enum AiCliTool
 
     /// <summary>GitHub Copilot CLI (<c>copilot -p {prompt}</c>): the prompt is an argument of the command line.</summary>
     Copilot,
+
+    /// <summary>OpenCode (<c>opencode run</c>): the prompt goes to standard input.</summary>
+    OpenCode,
 }
 
 /// <summary>Row heights and toolbar of the application (mockup: <c>data-density</c>).</summary>
@@ -177,6 +180,9 @@ public sealed record UserPreferences
     /// <summary>Command line of the Copilot engine; <c>{prompt}</c> stands for the prompt; null for the default.</summary>
     public string? AiCopilotCommand { get; init; }
 
+    /// <summary>Command line of the OpenCode engine; null for the default.</summary>
+    public string? AiOpenCodeCommand { get; init; }
+
     /// <summary>Model asked of the engine; null for its default.</summary>
     public string? AiModel { get; init; }
 
@@ -273,6 +279,7 @@ public sealed record UserPreferences
         AiCliTool = Enum.IsDefined(AiCliTool) ? AiCliTool : AiCliTool.Claude,
         AiCliCommand = string.IsNullOrWhiteSpace(AiCliCommand) ? null : AiCliCommand.Trim(),
         AiCopilotCommand = string.IsNullOrWhiteSpace(AiCopilotCommand) ? null : AiCopilotCommand.Trim(),
+        AiOpenCodeCommand = string.IsNullOrWhiteSpace(AiOpenCodeCommand) ? null : AiOpenCodeCommand.Trim(),
         AiModel = string.IsNullOrWhiteSpace(AiModel) ? null : AiModel.Trim(),
         TerminalShell = string.IsNullOrWhiteSpace(TerminalShell) ? null : TerminalShell.Trim(),
         TerminalCommand = string.IsNullOrWhiteSpace(TerminalCommand) ? null : TerminalCommand.Trim(),

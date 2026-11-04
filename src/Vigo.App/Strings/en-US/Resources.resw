@@ -851,6 +851,7 @@ Stored by Git LFS (declared in {1}).</value></data>
   <data name="RefsAddSubmoduleItem.Text" xml:space="preserve"><value>Add a submodule…</value></data>
   <data name="RefsApplyStashItem.Text" xml:space="preserve"><value>Apply</value></data>
   <data name="RefsCopyItem.Text" xml:space="preserve"><value>Copy name</value></data>
+  <data name="RefsCopyNumberItem.Text" xml:space="preserve"><value>Copy number</value></data>
   <data name="RefsDeinitSubmoduleItem.Text" xml:space="preserve"><value>Deinitialize…</value></data>
   <data name="RefsEditRemoteItem.Text" xml:space="preserve"><value>Edit the remote…</value></data>
   <data name="RefsFilter.PlaceholderText" xml:space="preserve"><value>Filter branches, tags…</value></data>
