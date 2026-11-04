@@ -32,6 +32,7 @@ public sealed partial class PreferencesTabViewModel
     [
         new(AiCliTool.Claude, "Claude (claude -p)"),
         new(AiCliTool.Copilot, "GitHub Copilot (copilot -p)"),
+        new(AiCliTool.OpenCode, "OpenCode (opencode run)"),
     ];
 
     /// <summary>Tool the command-line engine runs: it decides the default command and how the prompt is handed over.</summary>
@@ -74,8 +75,12 @@ public sealed partial class PreferencesTabViewModel
     partial void OnAiCliCommandTextChanged(string value)
     {
         // Each tool keeps its own command.
-        if (AiCliToolChoice?.Tool == AiCliTool.Copilot) Update(p => p with { AiCopilotCommand = value });
-        else Update(p => p with { AiCliCommand = value });
+        switch (AiCliToolChoice?.Tool)
+        {
+            case AiCliTool.Copilot: Update(p => p with { AiCopilotCommand = value }); break;
+            case AiCliTool.OpenCode: Update(p => p with { AiOpenCodeCommand = value }); break;
+            default: Update(p => p with { AiCliCommand = value }); break;
+        }
     }
 
     public string AiCliCommandPlaceholder => AiSettings.DefaultCommandFor(AiCliToolChoice?.Tool ?? AiCliTool.Claude);
@@ -86,7 +91,12 @@ public sealed partial class PreferencesTabViewModel
         : Loc.Get("Ai.CommandHint.Claude");
 
     private static string CommandTextOf(UserPreferences p) =>
-        (p.AiCliTool == AiCliTool.Copilot ? p.AiCopilotCommand : p.AiCliCommand) ?? string.Empty;
+        (p.AiCliTool switch
+        {
+            AiCliTool.Copilot => p.AiCopilotCommand,
+            AiCliTool.OpenCode => p.AiOpenCodeCommand,
+            _ => p.AiCliCommand,
+        }) ?? string.Empty;
 
     /// <summary>Model name; empty means the engine's default.</summary>
     [ObservableProperty]

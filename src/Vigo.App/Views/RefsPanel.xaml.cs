@@ -313,6 +313,7 @@ public sealed partial class RefsPanel : UserControl
 
         _menuRow = row;
         _menuCopyText = menu.CopyText;
+        _menuCopyNumber = menu.CopyNumberText;
         _menuMerge = menu.Merge;
         _menuRebase = menu.Rebase;
         CheckoutItem.Text = menu.CheckoutLabel ?? string.Empty;
@@ -348,7 +349,7 @@ public sealed partial class RefsPanel : UserControl
             (LfsSeparator, [(TrackLfsItem, menu.CanTrackLfs), (PullLfsItem, menu.CanPullLfs), (UntrackLfsItem, menu.CanUntrackLfs)]),
             (GitFlowSeparator, [(InitGitFlowItem, menu.CanInitGitFlow), (StartFeatureItem, menu.CanStartGitFlow), (StartReleaseItem, menu.CanStartGitFlow),
                 (StartHotfixItem, menu.CanStartGitFlow), (FinishGitFlowItem, menu.FinishGitFlowLabel is not null)]),
-            (CopySeparator, [(CopyItem, menu.CopyText is not null)]),
+            (CopySeparator, [(CopyItem, menu.CopyText is not null), (CopyNumberItem, menu.CopyNumberText is not null)]),
         ];
         var anyBefore = false;
         foreach (var (separator, items) in groups)
@@ -383,6 +384,7 @@ public sealed partial class RefsPanel : UserControl
     }
 
     private string? _menuCopyText;
+    private string? _menuCopyNumber;
     private string? _menuOpenUrl;
     private MergePlan? _menuMerge;
     private RebasePlan? _menuRebase;
@@ -671,9 +673,13 @@ public sealed partial class RefsPanel : UserControl
         if (_menuRow is { } row) ViewModel.RemoveWorktreeCommand.Execute(row);
     }
 
-    private void OnCopyNameClick(object sender, RoutedEventArgs e)
+    private void OnCopyNameClick(object sender, RoutedEventArgs e) => CopyToClipboard(_menuCopyText);
+
+    private void OnCopyNumberClick(object sender, RoutedEventArgs e) => CopyToClipboard(_menuCopyNumber);
+
+    private static void CopyToClipboard(string? text)
     {
-        if (_menuCopyText is not { } text) return;
+        if (text is null) return;
         var package = new DataPackage();
         package.SetText(text);
         Clipboard.SetContent(package);

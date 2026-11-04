@@ -649,11 +649,33 @@ public sealed partial class GraphViewModel : ObservableObject, IDisposable
     {
         Head = refs.Head;
         HeadBranch = refs.CurrentBranch;
-        _badges = RefBadge.FromRefs(refs, Hidden);
+        _badges = RefBadge.FromRefs(refs, Hidden, RemoteTags);
         _tips = TipsOf(refs);
         _refsLoaded = true;
         Refs = refs;
         RefsChanged?.Invoke(this, EventArgs.Empty);
+        // Read once on the first refs; after that, fetches and pushes ask for it (RemoteActionsViewModel).
+        if (!_remoteTagsRequested) _ = RefreshRemoteTagsAsync();
+    }
+
+    /// <summary>Tags known to exist on the remote (cloud icon on their badge); null while not read or when it failed.</summary>
+    public IReadOnlySet<string>? RemoteTags { get; private set; }
+
+    private bool _remoteTagsRequested;
+
+    /// <summary>
+    /// Reads the tags of the remote again (<c>git ls-remote</c>, in the background) and redraws the badges. A failure
+    /// (offline, no remote) keeps what was known. Call from the UI thread, after a fetch or a push.
+    /// </summary>
+    public async Task RefreshRemoteTagsAsync()
+    {
+        _remoteTagsRequested = true;
+        if (await _git.GetRemoteTagsAsync(_repositoryPath, _disposed.Token) is not { Value: Success<IReadOnlySet<string>> { Value: var tags } }
+            || _disposed.IsCancellationRequested)
+            return;
+        RemoteTags = tags;
+        if (Refs is { } refs) _badges = RefBadge.FromRefs(refs, Hidden, tags);
+        OnPropertyChanged(nameof(RemoteTags));
     }
 
     internal static Task RunOnAsync(SynchronizationContext? context, Action action)

@@ -335,6 +335,14 @@ public sealed partial class PullRequestView : UserControl
         if ((sender as FrameworkElement)?.DataContext is FileCommentPreview preview) _viewModel?.OpenThreadCommand.Execute(preview);
     }
 
+    private void OnCopyNumberClick(object sender, RoutedEventArgs e)
+    {
+        if (_viewModel is not { NumberText: { Length: > 0 } number }) return;
+        var package = new Windows.ApplicationModel.DataTransfer.DataPackage();
+        package.SetText(number);
+        Windows.ApplicationModel.DataTransfer.Clipboard.SetContent(package);
+    }
+
     private void OnConversationClick(object sender, RoutedEventArgs e) => _viewModel?.SelectTabCommand.Execute(PullRequestTab.Conversation);
 
     private void OnCommitsClick(object sender, RoutedEventArgs e) => _viewModel?.SelectTabCommand.Execute(PullRequestTab.Commits);

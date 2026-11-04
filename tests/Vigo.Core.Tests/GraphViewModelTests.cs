@@ -172,6 +172,22 @@ public sealed class GraphViewModelTests
     }
 
     [Fact]
+    public void A_tag_that_exists_on_the_remote_gets_the_cloud_flag()
+    {
+        var a = Sha(new string('a', 40));
+        var refs = new RepositoryRefs(
+        [
+            new GitRef("refs/tags/pushed", "pushed", GitRefKind.Tag, a),
+            new GitRef("refs/tags/local", "local", GitRefKind.Tag, a),
+        ], null, "main");
+
+        Assert.All(RefBadge.FromRefs(refs)[a], badge => Assert.False(badge.IsOnRemote));
+        Assert.Equal(
+            [new RefBadge("pushed", RefBadgeKind.Tag, IsOnRemote: true), new RefBadge("local", RefBadgeKind.Tag)],
+            RefBadge.FromRefs(refs, null, new HashSet<string> { "pushed" })[a]);
+    }
+
+    [Fact]
     public void Detached_head_gets_its_own_badge()
     {
         var a = Sha(new string('a', 40));

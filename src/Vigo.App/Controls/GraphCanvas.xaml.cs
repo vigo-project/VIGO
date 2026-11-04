@@ -50,6 +50,7 @@ public sealed partial class GraphCanvas : UserControl
     private Columns _columns;
     private double _dragStartWidth;
     private int _hoveredRow = -1;
+    private RefBadge? _hoveredBadge;
 
     // Drag and drop of a branch (J4.3): badges drawn on the visible rows (canvas coordinates), the badge pressed and
     // where, the row a branch is dragged over.
@@ -496,6 +497,9 @@ public sealed partial class GraphCanvas : UserControl
                 EnsureVisible(_graph!.SelectedRow);
                 Canvas.Invalidate();
                 break;
+            case nameof(GraphViewModel.RemoteTags):
+                Canvas.Invalidate();
+                break;
             case nameof(GraphViewModel.IsLoading) or nameof(GraphViewModel.ErrorMessage) or nameof(GraphViewModel.IsEmpty)
                 or nameof(GraphViewModel.HasWorkInProgress) or nameof(GraphViewModel.IsFiltered) or nameof(GraphViewModel.IsSearching):
                 UpdateStatus();
@@ -615,17 +619,20 @@ public sealed partial class GraphCanvas : UserControl
         }
 
         var row = RowAt(point.Position.Y);
-        if (row != _hoveredRow)
+        var badge = _badgeHits.FirstOrDefault(h => h.Bounds.Contains(point.Position)).Badge;
+        if (row != _hoveredRow || badge != _hoveredBadge)
         {
             _hoveredRow = row;
+            _hoveredBadge = badge;
             Canvas.Invalidate();
         }
     }
 
     private void OnPointerExited(object sender, PointerRoutedEventArgs e)
     {
-        if (_hoveredRow < 0) return;
+        if (_hoveredRow < 0 && _hoveredBadge is null) return;
         _hoveredRow = -1;
+        _hoveredBadge = null;
         Canvas.Invalidate();
     }
 
@@ -886,7 +893,7 @@ public sealed partial class GraphCanvas : UserControl
             if (graph.IsWorkInProgressRow(row))
                 DrawWorkInProgressText(ds, graph, row * RowHeight - _offset, columns, formats, colors);
             else
-                DrawRowText(ds, sender, graph, row, row * RowHeight - _offset, columns, formats, colors, _dashed, _badgeHits);
+                DrawRowText(ds, sender, graph, row, row * RowHeight - _offset, columns, formats, colors, _dashed, _badgeHits, _hoveredBadge);
         }
 
         var footer = graph.RowCount * RowHeight - _offset;
@@ -1005,7 +1012,7 @@ public sealed partial class GraphCanvas : UserControl
     }
 
     private static void DrawRowText(CanvasDrawingSession ds, ICanvasResourceCreator device, GraphViewModel graph, int row, float top,
-        Columns columns, TextFormats formats, ThemeColors colors, CanvasStrokeStyle dashed, List<BadgeHit> badgeHits)
+        Columns columns, TextFormats formats, ThemeColors colors, CanvasStrokeStyle dashed, List<BadgeHit> badgeHits, RefBadge? hoveredBadge)
     {
         var commit = graph.GetCommit(row);
         var center = top + RowHeight / 2;
@@ -1017,7 +1024,7 @@ public sealed partial class GraphCanvas : UserControl
         foreach (var badge in graph.GetBadges(commit.Sha))
         {
             if (messageEnd - x < 48) break;
-            var badgeWidth = DrawBadge(ds, device, badge, x, center, messageEnd - x, laneColor, formats, colors, dashed);
+            var badgeWidth = DrawBadge(ds, device, badge, x, center, messageEnd - x, laneColor, formats, colors, dashed, badge == hoveredBadge);
             badgeHits.Add(new BadgeHit(new Rect(x, center - BadgeHeight / 2, badgeWidth, BadgeHeight), badge, laneColor));
             x += badgeWidth + 6;
         }
@@ -1038,7 +1045,7 @@ public sealed partial class GraphCanvas : UserControl
 
     /// <summary>Draws a ref badge (mockup <c>refBadge</c>) and returns its width.</summary>
     private static float DrawBadge(CanvasDrawingSession ds, ICanvasResourceCreator device, RefBadge badge, float x, float center,
-        float maxWidth, Color laneColor, TextFormats formats, ThemeColors colors, CanvasStrokeStyle dashed)
+        float maxWidth, Color laneColor, TextFormats formats, ThemeColors colors, CanvasStrokeStyle dashed, bool hovered = false)
     {
         const float height = BadgeHeight, padding = 6, icon = 12, gap = 4;
         var glyph = badge.Kind switch
@@ -1074,6 +1081,14 @@ public sealed partial class GraphCanvas : UserControl
                 ds.FillRoundedRectangle(rect, 4, 4, colors.Ctrl);
                 ds.DrawRoundedRectangle(Inset(rect, 0.5f), 4, 4, colors.StrokeStrong, 1);
                 break;
+        }
+
+        if (hovered)
+        {
+            // Hover: a stronger tint and a thicker border, so the pointed badge stands out. A tag is neutral (gray), not lane-colored.
+            var tint = badge.Kind == RefBadgeKind.Tag ? colors.Text : laneColor;
+            ds.FillRoundedRectangle(rect, 4, 4, Color.FromArgb(badge.Kind == RefBadgeKind.Tag ? (byte)40 : (byte)72, tint.R, tint.G, tint.B));
+            ds.DrawRoundedRectangle(Inset(rect, 1), 3, 3, badge.Kind == RefBadgeKind.Tag ? colors.Text2 : laneColor, 2);
         }
 
         var iconX = x + padding;

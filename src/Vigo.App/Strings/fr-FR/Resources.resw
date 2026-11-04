@@ -851,6 +851,7 @@ Stocké par Git LFS (déclaré dans {1}).</value></data>
   <data name="RefsAddSubmoduleItem.Text" xml:space="preserve"><value>Ajouter un submodule…</value></data>
   <data name="RefsApplyStashItem.Text" xml:space="preserve"><value>Appliquer</value></data>
   <data name="RefsCopyItem.Text" xml:space="preserve"><value>Copier le nom</value></data>
+  <data name="RefsCopyNumberItem.Text" xml:space="preserve"><value>Copier le numéro</value></data>
   <data name="RefsDeinitSubmoduleItem.Text" xml:space="preserve"><value>Désinitialiser…</value></data>
   <data name="RefsEditRemoteItem.Text" xml:space="preserve"><value>Modifier le distant…</value></data>
   <data name="RefsFilter.PlaceholderText" xml:space="preserve"><value>Filtrer branches, tags…</value></data>
@@ -1413,6 +1414,8 @@ Stocké par Git LFS (déclaré dans {1}).</value></data>
   <data name="PrBack.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Retour au graphe (Échap)</value></data>
   <data name="PrRefresh.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Actualiser la pull request</value></data>
   <data name="PrRefresh.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Actualiser</value></data>
+  <data name="PrCopyNumber.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Copier le numéro de la pull request</value></data>
+  <data name="PrCopyNumber.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Copier le numéro</value></data>
   <data name="PrMarkReady.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Prête pour relecture</value></data>
   <data name="PrMarkReadyText.Text" xml:space="preserve"><value>Prête pour relecture</value></data>
   <data name="PrMakeDraft.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Repasser en brouillon</value></data>

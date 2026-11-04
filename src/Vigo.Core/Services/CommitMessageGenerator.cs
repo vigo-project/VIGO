@@ -33,7 +33,15 @@ public static class AiSettings
 
     public const string PromptPlaceholder = "{prompt}";
 
-    public static string DefaultCommandFor(AiCliTool tool) => tool == AiCliTool.Copilot ? DefaultCopilotCommand : DefaultCliCommand;
+    /// <summary>The prompt goes to standard input (so it also works with the <c>opencode.cmd</c> npm shim).</summary>
+    public const string DefaultOpenCodeCommand = "opencode run";
+
+    public static string DefaultCommandFor(AiCliTool tool) => tool switch
+    {
+        AiCliTool.Copilot => DefaultCopilotCommand,
+        AiCliTool.OpenCode => DefaultOpenCodeCommand,
+        _ => DefaultCliCommand,
+    };
 
     /// <summary>Characters of prompt that fit in an argument (CreateProcess allows 32 767 for the whole line).</summary>
     public const int MaxArgumentPromptChars = 24_000;
@@ -150,7 +158,12 @@ public sealed class CommitMessageGenerator(Preferences preferences, IGitService 
         return new Failure(Loc.Get("Ai.Error.Unexpected"));
     }
 
-    private static string? CommandOf(UserPreferences p) => p.AiCliTool == AiCliTool.Copilot ? p.AiCopilotCommand : p.AiCliCommand;
+    private static string? CommandOf(UserPreferences p) => p.AiCliTool switch
+    {
+        AiCliTool.Copilot => p.AiCopilotCommand,
+        AiCliTool.OpenCode => p.AiOpenCodeCommand,
+        _ => p.AiCliCommand,
+    };
 
     /// <summary>"Tester" of the preferences: whether the chosen backend can run.</summary>
     public async Task<GitResult> CheckAsync(CancellationToken cancellationToken = default)

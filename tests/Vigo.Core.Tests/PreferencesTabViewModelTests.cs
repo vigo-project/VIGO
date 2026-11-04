@@ -201,7 +201,7 @@ public sealed class AiPreferencesTests : IDisposable
     {
         using var sut = Create();
         Assert.Equal([AiProvider.Off, AiProvider.Cli, AiProvider.Api], sut.AiProviderOptions.Select(o => o.Provider));
-        Assert.Equal([AiCliTool.Claude, AiCliTool.Copilot], sut.AiCliToolOptions.Select(o => o.Tool));
+        Assert.Equal([AiCliTool.Claude, AiCliTool.Copilot, AiCliTool.OpenCode], sut.AiCliToolOptions.Select(o => o.Tool));
 
         sut.AiProviderChoice = sut.AiProviderOptions.Single(o => o.Provider == AiProvider.Cli);
         Assert.True(sut.IsAiCli);
@@ -217,6 +217,11 @@ public sealed class AiPreferencesTests : IDisposable
         Assert.Equal(AiCliTool.Copilot, _preferences.Current.AiCliTool);
         Assert.Equal("claude -p --max-turns 1", _preferences.Current.AiCliCommand);
         Assert.Equal("copilot -p {prompt} -s", _preferences.Current.AiCopilotCommand);
+
+        sut.AiCliToolChoice = sut.AiCliToolOptions.Single(o => o.Tool == AiCliTool.OpenCode);
+        Assert.Equal(AiSettings.DefaultOpenCodeCommand, sut.AiCliCommandPlaceholder);
+        sut.AiCliCommandText = "opencode run --model a/b";
+        Assert.Equal("opencode run --model a/b", _preferences.Current.AiOpenCodeCommand);
 
         sut.AiCliToolChoice = sut.AiCliToolOptions.Single(o => o.Tool == AiCliTool.Claude);
         Assert.Equal("claude -p --max-turns 1", sut.AiCliCommandText);

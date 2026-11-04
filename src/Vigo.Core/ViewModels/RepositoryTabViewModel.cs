@@ -193,8 +193,11 @@ public sealed partial class RepositoryTabViewModel : TabViewModel, IDisposable
     public bool ShowGraph => !Diff.IsOpen && !Conflicts.IsOpen && !Rebase.IsOpen && !FileHistory.IsOpen && !Blame.IsOpen && !PullRequest.IsOpen && !Issue.IsOpen
         && !WorkItem.IsOpen && !Summary.IsOpen && !Stats.IsOpen;
 
-    /// <summary>The right column is shown: the summary and statistics pages take the whole width.</summary>
-    public bool ShowRightPanel => !Summary.IsOpen && !Stats.IsOpen;
+    /// <summary>
+    /// The right column is shown: the summary and statistics pages take the whole width, and so does the "Files changed"
+    /// tab of a pull request (its own file list is already on the left of the diff).
+    /// </summary>
+    public bool ShowRightPanel => !Summary.IsOpen && !Stats.IsOpen && !(PullRequest.IsOpen && PullRequest.IsFiles);
 
     /// <summary>Undo / Redo of the operations made in this tab (toolbar, Ctrl+Z / Ctrl+Y).</summary>
     public UndoHistory Undo { get; }
@@ -529,6 +532,7 @@ public sealed partial class RepositoryTabViewModel : TabViewModel, IDisposable
     private void OnPullRequestPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (e.PropertyName == nameof(PullRequestViewModel.IsOpen)) OnPropertyChanged(nameof(ShowGraph));
+        if (e.PropertyName is nameof(PullRequestViewModel.IsOpen) or nameof(PullRequestViewModel.SelectedTab)) OnPropertyChanged(nameof(ShowRightPanel));
     }
 
     /// <summary>

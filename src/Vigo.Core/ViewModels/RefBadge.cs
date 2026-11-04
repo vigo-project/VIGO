@@ -15,13 +15,15 @@ public enum RefBadgeKind
 
 /// <summary>Badge drawn before the message of a graph row.</summary>
 /// <param name="IsOnRemote">
-/// Local branch whose upstream points at the same commit: the remote badge is folded into this one (cloud icon).
+/// Local branch whose upstream points at the same commit (the remote badge is folded into this one), or tag that exists
+/// on the remote: cloud icon.
 /// </param>
 public sealed record RefBadge(string Label, RefBadgeKind Kind, bool IsOnRemote = false)
 {
     /// <summary>Badges by commit, in display order: head, local branches, remote branches, tags.</summary>
     /// <param name="hidden">Refs the user hid from the graph get no badge.</param>
-    public static Dictionary<GitSha, RefBadge[]> FromRefs(RepositoryRefs refs, HiddenRefs? hidden = null)
+    /// <param name="remoteTags">Tags known to exist on the remote (cloud icon); null while unknown.</param>
+    public static Dictionary<GitSha, RefBadge[]> FromRefs(RepositoryRefs refs, HiddenRefs? hidden = null, IReadOnlySet<string>? remoteTags = null)
     {
         IEnumerable<GitRef> Visible(GitRefKind kind) => refs.OfKind(kind).Where(r => hidden?.IsHidden(r) != true);
 
@@ -50,7 +52,7 @@ public sealed record RefBadge(string Label, RefBadgeKind Kind, bool IsOnRemote =
         badges.AddRange(Visible(GitRefKind.RemoteBranch)
             .Where(r => !folded.Contains(r.Name))
             .Select(r => (r.Target, new RefBadge(r.Name, RefBadgeKind.Remote))));
-        badges.AddRange(Visible(GitRefKind.Tag).Select(r => (r.Target, new RefBadge(r.Name, RefBadgeKind.Tag))));
+        badges.AddRange(Visible(GitRefKind.Tag).Select(r => (r.Target, new RefBadge(r.Name, RefBadgeKind.Tag, remoteTags?.Contains(r.Name) == true))));
 
         // Stable sort: the kind order wins, the order of the refs is kept within a kind.
         return badges

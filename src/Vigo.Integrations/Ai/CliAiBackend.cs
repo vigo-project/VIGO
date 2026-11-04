@@ -114,7 +114,8 @@ public sealed partial class CliAiBackend : IAiBackend
 
     private static bool SupportsModelFlag(string program) =>
         Path.GetFileNameWithoutExtension(program) is var name
-        && (name.Equals("claude", StringComparison.OrdinalIgnoreCase) || name.Equals("copilot", StringComparison.OrdinalIgnoreCase));
+        && (name.Equals("claude", StringComparison.OrdinalIgnoreCase) || name.Equals("copilot", StringComparison.OrdinalIgnoreCase)
+            || name.Equals("opencode", StringComparison.OrdinalIgnoreCase));
 
     // A command line has a size limit: the end of a long patch is cut (the diffstat at the top stays).
     private static string Clip(string prompt) =>
