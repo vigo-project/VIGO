@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Stage / discard buttons of the change block under the pointer in the side-by-side diff (as Fork's block header): shown in a
+    popup beside the block, so no line moves.
+-->
+<UserControl
+    x:Class="Vigo.App.Controls.DiffBlockBar"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    FontFamily="{ThemeResource VigoFont}">
+
+    <!-- No focus on click: the editor keeps its focus (and its selection). -->
+    <Border Background="{ThemeResource VigoLayerBrush}" BorderBrush="{ThemeResource VigoStrokeStrongBrush}" BorderThickness="1"
+            CornerRadius="6" Padding="3">
+        <StackPanel Orientation="Horizontal" Spacing="4">
+            <Button x:Name="ApplyButton" Style="{StaticResource VigoAccentButton}" Height="26" MinHeight="26" Padding="10,0"
+                    AllowFocusOnInteraction="False" Click="OnApplyClick">
+                <TextBlock x:Name="ApplyText" FontSize="{ThemeResource VigoFontSize12}" FontWeight="SemiBold" />
+            </Button>
+            <Button x:Name="DiscardButton" Style="{StaticResource VigoStandardButton}" Height="26" MinHeight="26" Padding="10,0"
+                    AllowFocusOnInteraction="False" Click="OnDiscardClick">
+                <TextBlock x:Name="DiscardText" FontSize="{ThemeResource VigoFontSize12}" />
+            </Button>
+        </StackPanel>
+    </Border>
+</UserControl>

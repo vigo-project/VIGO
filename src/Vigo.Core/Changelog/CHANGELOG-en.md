@@ -1,3 +1,12 @@
+## Unreleased
+
+## 0.36.0 — 2026-11-04
+- Statistics: the top contributors pie chart no longer shows a stray line sticking out of the disc next to very thin slices.
+- Diff: the side-by-side view can now stage, unstage and discard too: a check box on each changed line (Ctrl+click picks a modified line's deleted and added halves together), and, as in Fork, Stage / Discard buttons that appear beside the block of changes under the pointer.
+- Graph: Copilot checkpoints (refs/copilot/*) no longer clutter the history.
+- Graph: new "Copy short SHA" entry in the commit menu; copying the short (Ctrl+C) or full (Ctrl+Shift+C) SHA is now a configurable shortcut.
+- Preferences › Shortcuts: a "Fixed shortcuts" list now shows the shortcuts that cannot be changed (copy, commit, Esc, Alt+↑/↓, rebase keys, F2…).
+
 ## 0.35.0 — 2026-11-02
 - Code editor (blame, diff, conflicts): .tsx and .jsx files now get syntax coloring.
 

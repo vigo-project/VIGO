@@ -181,6 +181,8 @@ public sealed partial class GraphCanvas : UserControl
         var canCreate = RefActions is { CanPrompt: true };
         NewBranchItem.IsEnabled = NewTagItem.IsEnabled = canCreate;
         var sha = _graph.GetCommit(row).Sha;
+        CopyShortShaItem.KeyboardAcceleratorTextOverride = ShortcutMap.Current.Display(ShortcutIds.CopyShortSha) ?? string.Empty;
+        CopyShaItem.KeyboardAcceleratorTextOverride = ShortcutMap.Current.Display(ShortcutIds.CopySha) ?? string.Empty;
         CherryPickItem.IsEnabled = History?.CanCherryPick(sha) == true;
         RevertItem.IsEnabled = History?.CanRevert(sha) == true;
         ResetItem.IsEnabled = History?.CanReset(sha) == true;
@@ -397,14 +399,16 @@ public sealed partial class GraphCanvas : UserControl
         _ = Rebase.OpenAsync(sha.ToString(), name, sha);
     }
 
-    private void OnCopyShaClick(object sender, RoutedEventArgs e) => CopySelectedSha();
+    private void OnCopyShaClick(object sender, RoutedEventArgs e) => CopySelectedSha(false);
 
-    /// <summary>Full SHA of the selected commit to the clipboard (menu, Ctrl+C).</summary>
-    private void CopySelectedSha()
+    private void OnCopyShortShaClick(object sender, RoutedEventArgs e) => CopySelectedSha(true);
+
+    /// <summary>SHA of the selected commit to the clipboard (menu, configurable shortcuts).</summary>
+    private void CopySelectedSha(bool shortForm)
     {
         if (_graph?.SelectedSha is not { } sha) return;
         var package = new Windows.ApplicationModel.DataTransfer.DataPackage();
-        package.SetText(sha.ToString());
+        package.SetText(shortForm ? sha.ToShortString() : sha.ToString());
         Windows.ApplicationModel.DataTransfer.Clipboard.SetContent(package);
     }
 
@@ -751,13 +755,21 @@ public sealed partial class GraphCanvas : UserControl
         return graph.Refs?.OfKind(GitRefKind.LocalBranch).Where(r => r.Target == sha).OrderByDescending(r => r.IsCurrent).FirstOrDefault();
     }
 
+    private static KeyGesture? PressedGesture(VirtualKey key)
+    {
+        static bool Down(VirtualKey k) => Microsoft.UI.Input.InputKeyboardSource.GetKeyStateForCurrentThread(k).HasFlag(Windows.UI.Core.CoreVirtualKeyStates.Down);
+        var modifiers = (Down(VirtualKey.Control) ? GestureModifiers.Ctrl : 0) | (Down(VirtualKey.Menu) ? GestureModifiers.Alt : 0)
+                        | (Down(VirtualKey.Shift) ? GestureModifiers.Shift : 0);
+        return modifiers == GestureModifiers.None ? null : new KeyGesture((int)key, modifiers);
+    }
+
     private void OnKeyDown(object sender, KeyRoutedEventArgs e)
     {
         if (_graph is null) return;
-        if (e.Key == VirtualKey.C && Microsoft.UI.Input.InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Control)
-                .HasFlag(Windows.UI.Core.CoreVirtualKeyStates.Down))
+        if (PressedGesture(e.Key) is { } pressed
+            && (pressed == ShortcutMap.Current.Get(ShortcutIds.CopyShortSha) || pressed == ShortcutMap.Current.Get(ShortcutIds.CopySha)))
         {
-            CopySelectedSha();
+            CopySelectedSha(pressed == ShortcutMap.Current.Get(ShortcutIds.CopyShortSha));
             e.Handled = true;
             return;
         }

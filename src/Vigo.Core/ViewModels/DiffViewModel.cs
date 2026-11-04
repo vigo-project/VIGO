@@ -37,6 +37,68 @@ public sealed partial class DiffViewModel(
         if (Document?.LineAt(documentLine) is { } line) ToggleLine(line, extend);
     }
 
+    /// <summary>Selected lines as side-by-side lines: deleted ones by old number (Original), added ones by new number.</summary>
+    public IReadOnlyList<(bool Original, int Number)> SelectedSideLines
+    {
+        get
+        {
+            if (Diff is not { } diff) return [];
+            List<(bool, int)> lines = [];
+            foreach (var r in _selection.Order(Comparer<DiffLineRef>.Create(Compare)))
+            {
+                var line = diff.Hunks[r.Hunk].Lines[r.Line];
+                if (line is { Kind: DiffLineKind.Deleted, OldNumber: { } old }) lines.Add((true, old));
+                else if (line.NewNumber is { } added) lines.Add((false, added));
+            }
+            return lines;
+        }
+    }
+
+    /// <summary>
+    /// Replaces the selection with the changed lines at these side-by-side numbers (Original: deleted lines by old
+    /// number, else added lines by new number); numbers git does not report as changed are ignored.
+    /// </summary>
+    public void SelectSideLines(IEnumerable<(bool Original, int Number)> lines)
+    {
+        if (!CanEditLines || Diff is not { } diff) return;
+        var wanted = lines.ToHashSet();
+        _selection.Clear();
+        foreach (var r in SideRefs(diff, l => l.Kind == DiffLineKind.Deleted ? wanted.Contains((true, l.OldNumber ?? 0)) : wanted.Contains((false, l.NewNumber ?? 0))))
+            _selection.Add(r);
+        _anchor = null;
+        NotifySelection();
+    }
+
+    /// <summary>
+    /// Stages / unstages (or discards, with <paramref name="discard"/>) the changed lines of a side-by-side change block:
+    /// original lines [<paramref name="oldStart"/>, +<paramref name="oldCount"/>) and modified lines [<paramref name="newStart"/>, +<paramref name="newCount"/>).
+    /// </summary>
+    public Task ApplyBlockAsync(int oldStart, int oldCount, int newStart, int newCount, bool discard)
+    {
+        if (Diff is not { } diff) return Task.CompletedTask;
+        HashSet<DiffLineRef> lines =
+        [
+            .. SideRefs(diff, l => l.Kind == DiffLineKind.Deleted
+                ? l.OldNumber >= oldStart && l.OldNumber < oldStart + oldCount
+                : l.NewNumber >= newStart && l.NewNumber < newStart + newCount),
+        ];
+        return discard
+            ? DiscardLinesAsync(lines, Loc.Get("Diff.What.ThisHunk"))
+            : ApplyLinesAsync(lines, Loc.Get("Diff.What.Hunk"));
+    }
+
+    private static IEnumerable<DiffLineRef> SideRefs(FileDiff diff, Func<DiffLine, bool> match)
+    {
+        for (var h = 0; h < diff.Hunks.Count; h++)
+        {
+            var lines = diff.Hunks[h].Lines;
+            for (var l = 0; l < lines.Count; l++)
+            {
+                if (lines[l].IsChange && match(lines[l])) yield return new DiffLineRef(h, l);
+            }
+        }
+    }
+
     /// <summary>Unified (staging of hunks and lines) or side by side (whole files); remembered in the preferences.</summary>
     public DiffLayout Layout
     {

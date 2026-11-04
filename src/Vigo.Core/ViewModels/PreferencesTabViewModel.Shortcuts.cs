@@ -16,9 +16,12 @@ public sealed partial class PreferencesTabViewModel
 
     public ObservableCollection<ShortcutItem> ShortcutItems { get; } = [];
 
+    public ObservableCollection<FixedShortcutItem> FixedShortcutItems { get; } = [];
+
     private void InitializeShortcuts()
     {
         if (_shortcuts is null) return;
+        foreach (var (keys, use) in ShortcutCatalog.Fixed) FixedShortcutItems.Add(new FixedShortcutItem(keys, use));
         foreach (var definition in ShortcutCatalog.All) ShortcutItems.Add(new ShortcutItem(definition));
         _shortcuts.Changed += OnShortcutsChanged;
         SyncShortcuts();
@@ -117,6 +120,9 @@ public sealed partial class PreferencesTabViewModel
         return _shortcuts?.ResetAllAsync() ?? Task.CompletedTask;
     }
 }
+
+/// <summary>Read-only row of the fixed shortcuts list.</summary>
+public sealed record FixedShortcutItem(string Keys, string Use);
 
 /// <summary>Row of the "Raccourcis" section.</summary>
 public sealed partial class ShortcutItem(ShortcutDefinition definition) : ObservableObject

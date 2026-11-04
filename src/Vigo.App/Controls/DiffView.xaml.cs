@@ -36,6 +36,14 @@ public sealed partial class DiffView : UserControl
             else _viewModel?.ApplyHunkCommand.Execute(e.Hunk);
         };
         Editor.KeyPressed += OnEditorKey;
+        Editor.SideLinesInvoked += (_, lines) =>
+        {
+            if (_viewModel is not { } vm) return;
+            vm.SelectSideLines(lines);
+            vm.ApplySelectionCommand.Execute(null);
+        };
+        Editor.SideBlockInvoked += (_, e) => _ = _viewModel?.ApplyBlockAsync(e.OldStart, e.OldCount, e.NewStart, e.NewCount, e.Discard);
+        Editor.SideSelectionChanged += (_, lines) => _viewModel?.SelectSideLines(lines);
         ImageDiff.ModeChanged += (_, mode) =>
         {
             if (_viewModel is { } vm) vm.ImageMode = mode;
@@ -173,7 +181,7 @@ public sealed partial class DiffView : UserControl
             { IsSideBySide: true } => vm.Sides,
             _ => vm.Document,
         };
-        var editable = vm is { CanEditLines: true, IsSideBySide: false };
+        var editable = vm is { CanEditLines: true };
         if (ReferenceEquals(content, _shownContent) && editable == _shownEditable) return;
 
         // Same file and side reread (after staging a hunk, or the file changed on disk): keep the scroll position.
@@ -186,7 +194,7 @@ public sealed partial class DiffView : UserControl
         switch (content)
         {
             case DiffSides sides:
-                Editor.ShowSideBySide(sides);
+                Editor.ShowSideBySide(sides, editable ? Staging(vm!) : null, vm!.SelectedSideLines);
                 break;
             case DiffDocument document:
                 Editor.ShowDiff(vm!.File!.Path, document, vm.SelectedDocumentLines, editable ? Staging(vm) : null, keepScroll);
@@ -207,20 +215,23 @@ public sealed partial class DiffView : UserControl
             vm.HunkActionLabel,
             vm.CanDiscardLines ? Loc.Get("Diff.Discard.Confirm") : null,
             Loc.Format(staged ? "Diff.Staging.Hint.Unstage" : "Diff.Staging.Hint.Stage", keys),
-            Loc.Get("Diff.Staging.SelectLine"));
+            Loc.Get("Diff.Staging.SelectLine"),
+            Loc.Format(staged ? "Diff.Selection.Unstage" : "Diff.Selection.Stage", Loc.Get("Diff.Lines.One")));
     }
 
     private void OnSelectionChanged(object? sender, EventArgs e)
     {
         UpdateSelectionButtons();
-        if (_viewModel is { } vm && ReferenceEquals(_shownContent, vm.Document)) Editor.SetSelection(vm.SelectedDocumentLines);
+        if (_viewModel is not { } vm) return;
+        if (ReferenceEquals(_shownContent, vm.Document)) Editor.SetSelection(vm.SelectedDocumentLines);
+        else if (ReferenceEquals(_shownContent, vm.Sides)) Editor.SetSideSelection(vm.SelectedSideLines);
     }
 
     private void UpdateSelectionButtons()
     {
         var vm = _viewModel;
         var editable = vm is { CanEditLines: true, IsSideBySide: false };
-        var show = editable && vm!.HasSelection;
+        var show = vm is { CanEditLines: true, HasSelection: true };
         ApplySelectionButton.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
         DiscardSelectionButton.Visibility = show && vm!.CanDiscardLines ? Visibility.Visible : Visibility.Collapsed;
         ApplySelectionText.Text = vm?.SelectionActionLabel ?? string.Empty;

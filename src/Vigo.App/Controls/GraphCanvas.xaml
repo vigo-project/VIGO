@@ -185,7 +185,12 @@
                             </MenuFlyoutItem.Icon>
                         </MenuFlyoutItem>
                         <MenuFlyoutSeparator />
-                        <MenuFlyoutItem x:Uid="GraphCopyShaItem" KeyboardAcceleratorTextOverride="Ctrl+C" Click="OnCopyShaClick">
+                        <MenuFlyoutItem x:Name="CopyShortShaItem" x:Uid="GraphCopyShortShaItem" Click="OnCopyShortShaClick">
+                            <MenuFlyoutItem.Icon>
+                                <FontIcon Glyph="{x:Bind controls:FluentIcons.Copy}" FontFamily="{StaticResource VigoIconFont}" />
+                            </MenuFlyoutItem.Icon>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutItem x:Name="CopyShaItem" x:Uid="GraphCopyShaItem" Click="OnCopyShaClick">
                             <MenuFlyoutItem.Icon>
                                 <FontIcon Glyph="{x:Bind controls:FluentIcons.Copy}" FontFamily="{StaticResource VigoIconFont}" />
                             </MenuFlyoutItem.Icon>

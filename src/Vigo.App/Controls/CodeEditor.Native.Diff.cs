@@ -69,6 +69,11 @@ public sealed partial class CodeEditor
         {
             Background = ThemeColorOf(Light.Selected), DarkBackground = ThemeColorOf(Dark.Selected),
         });
+        // The block the side-by-side bar acts on: an accent bar on the left edge of each of its lines (no box).
+        CustomDecorationStyles.Register("vigo-diff-block", new CustomDecorationStyle
+        {
+            Border = ThemeColorOf(Light.Accent), DarkBorder = ThemeColorOf(Dark.Accent), BorderWidth = 0, LeftBorderWidth = 5,
+        });
         CustomDecorationStyles.Register("vigo-diff-note", new CustomDecorationStyle
         {
             Foreground = ThemeColorOf(Light.Text3), DarkForeground = ThemeColorOf(Dark.Text3),

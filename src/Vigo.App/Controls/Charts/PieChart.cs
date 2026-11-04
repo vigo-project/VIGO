@@ -19,6 +19,8 @@ public sealed partial class PieChart : ChartControl
     private const double Detach = 6;
     private const double LegendRow = 22;
 
+    private static readonly CanvasStrokeStyle RoundJoin = new() { LineJoin = CanvasLineJoin.Round };
+
     private IReadOnlyList<PieSlice> _slices = [];
     private int _hover = -1;
 
@@ -106,7 +108,8 @@ public sealed partial class PieChart : ChartControl
                     path.EndFigure(CanvasFigureLoop.Closed);
                     using var geometry = CanvasGeometry.CreatePath(path);
                     ds.FillGeometry(geometry, color);
-                    ds.DrawGeometry(geometry, palette.Surface, 1.5f);
+                    // Round joins: the default miter makes a long spike at the sharp tip of a thin slice.
+                    ds.DrawGeometry(geometry, palette.Surface, 1.5f, RoundJoin);
                 }
                 start += sweep;
             }

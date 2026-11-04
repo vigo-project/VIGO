@@ -246,6 +246,30 @@ public sealed class StagingViewModelTests
     }
 
     [Fact]
+    public async Task Side_by_side_line_and_block_are_staged_by_their_line_numbers()
+    {
+        using var repo = TestRepoBuilder.Create();
+        repo.Commit("init", ("a.txt", "1\n2\n3\n4\n5\n6\n"));
+        repo.WriteFile("a.txt", "1\nTWO\n3\n4\n5\nSIX\n");
+        using var tab = CreateTab(repo);
+        await tab.WorkingTree.StartAsync();
+        var diff = tab.Diff;
+        tab.WorkingTree.OpenFileCommand.Execute(tab.WorkingTree.Unstaged.Single());
+        await WaitUntilAsync(() => diff is { IsOpen: true, IsLoading: false, CanEditLines: true });
+
+        // Only the added half of the first modified line: "+TWO" (new line 2), "-2" stays unstaged.
+        diff.SelectSideLines([(false, 2)]);
+        Assert.Equal([(false, 2)], diff.SelectedSideLines);
+        await diff.ApplySelectionCommand.ExecuteAsync(null);
+        Assert.Equal("1\n2\nTWO\n3\n4\n5\n6\n", repo.Git("show", ":a.txt").Replace("\r", ""));
+
+        // The whole last block: the old side is now the index, which has one more line (old line 7, new line 6).
+        await WaitUntilAsync(() => diff.Diff is { } d && d.Hunks.SelectMany(h => h.Lines).Any(l => l is { Kind: DiffLineKind.Deleted, OldNumber: 7 }));
+        await diff.ApplyBlockAsync(7, 1, 6, 1, discard: false);
+        Assert.EndsWith("SIX\n", repo.Git("show", ":a.txt").Replace("\r", ""));
+    }
+
+    [Fact]
     public async Task Staged_hunk_is_unstaged_and_unstaged_hunk_discarded()
     {
         using var repo = TestRepoBuilder.Create();

@@ -18,7 +18,9 @@ using Windows.System;
 using Windows.UI.Core;
 using Loom = LoomEditor.WinUI.Controls.LoomEditor;
 using LoomDiff = LoomEditor.WinUI.Controls.LoomDiffEditor;
-using LoomWordWrap = LoomEditor.WinUI.Controls.EditorWordWrap;
+using LoomDiffSide = LoomEditor.WinUI.Controls.DiffSide;
+using LoomDiffLine = LoomEditor.WinUI.Controls.DiffLine;
+using LoomWordWrap =LoomEditor.WinUI.Controls.EditorWordWrap;
 using LoomRange = LoomEditor.Core.Text.Range;
 using LoomSelection = LoomEditor.Core.Text.Selection;
 
@@ -163,10 +165,16 @@ public sealed partial class CodeEditor
             else diff.GoToNextChange();
             e.Handled = true;
         };
-        diff.AddCommentRequested += (_, e) => OnDiffAddCommentRequested(e.Side, e.StartLineNumber, e.LineNumber, e.TextRange);
+        diff.SelectionChanged += (_, _) =>
+        {
+            if (!_sideSelectionSync) SideSelectionChanged?.Invoke(this, diff.SelectedLines.Select(l => (l.Side == LoomDiffSide.Original, l.LineNumber)).ToArray());
+        };
+        diff.LineActionInvoked += (_, e) => SideLinesInvoked?.Invoke(this, e.Lines.Select(l => (l.Side == LoomDiffSide.Original, l.LineNumber)).ToArray());
+        diff.AddCommentRequested +=(_, e) => OnDiffAddCommentRequested(e.Side, e.StartLineNumber, e.LineNumber, e.TextRange);
         // The two inner editors exist once the template is applied.
         diff.Loaded += (_, _) =>
         {
+            WireBlockBar(diff);
             ApplyNativeTheme();
             LayoutSideReview();
         };
@@ -174,18 +182,40 @@ public sealed partial class CodeEditor
         return diff;
     }
 
-    private void ShowNativeSideBySide(DiffSides sides)
+    private bool _sideSelectionSync;
+
+    private void ShowNativeSideBySide(DiffSides sides, EditorStaging? staging, IReadOnlyList<(bool Original, int Number)> selected)
     {
         var diff = EnsureDiff();
+        ConfigureSideStaging(diff, staging);
         _diffPath = sides.Path;
         diff.LanguageId = LanguageOf(sides.Path);
         diff.OriginalText = sides.Original;
         diff.ModifiedText = sides.Modified;
         ShowNative(diff);
+        SetNativeSideSelection(selected);
         // The zones of the threads are laid out on the new texts.
         QueueReviewLayout();
         // Not loaded yet (first diff, or after another kind of diff): the control waits for its next load.
         RevealFirstChange(diff);
+    }
+
+    /// <summary>Staging of a side-by-side diff: a check box per changed line, a stage button on each block and on the hovered line.</summary>
+    private void ConfigureSideStaging(LoomDiff diff, EditorStaging? staging)
+    {
+        // A check box per changed line (S stages the checked ones); the buttons of a block are the popup bar of CodeEditor.Native.BlockBar.cs.
+        _sideStaging = staging;
+        diff.LineSelectionEnabled = staging is not null;
+        if (staging is null) HideBlockBar();
+        WireBlockBar(diff);
+    }
+
+    private void SetNativeSideSelection(IReadOnlyList<(bool Original, int Number)> lines)
+    {
+        if (_diff is not { } diff) return;
+        _sideSelectionSync = true;
+        try { diff.SetSelection(lines.Select(l => new LoomDiffLine(l.Original ? LoomDiffSide.Original : LoomDiffSide.Modified, l.Number))); }
+        finally { _sideSelectionSync = false; }
     }
 
     /// <summary>The diff is computed asynchronously: opens the file on its first change once it is known.</summary>
@@ -226,6 +256,7 @@ public sealed partial class CodeEditor
 
     private void ClearNative()
     {
+        HideBlockBar();
         ClearNativeReview();
         ClearNativeDiff();
         ClearNativeConflict();
@@ -247,6 +278,7 @@ public sealed partial class CodeEditor
 
     private void ReleaseNative()
     {
+        HideBlockBar();
         ClearNativeReview();
         ReleaseNativeDiff();
         ReleaseNativeConflict();

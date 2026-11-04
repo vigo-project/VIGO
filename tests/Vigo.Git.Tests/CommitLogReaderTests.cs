@@ -153,6 +153,7 @@ public sealed class CommitLogReaderTests
         // An AI agent keeps its checkpoints as commits under refs/agents/, on top of the current commit.
         var checkpoint = repo.Git("commit-tree", "HEAD^{tree}", "-p", "HEAD", "-m", "Agent host session - turn 1").Trim();
         repo.Git("update-ref", "refs/agents/session-1/checkpoints/turn/0", checkpoint);
+        repo.Git("update-ref", "refs/copilot/checkpoints/s1/00000000000000000001/c1", checkpoint);
 
         var (_, pages) = await ReadAllAsync(repo.Path);
 
