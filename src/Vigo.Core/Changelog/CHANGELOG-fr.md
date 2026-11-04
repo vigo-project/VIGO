@@ -1,4 +1,6 @@
 ## Unreleased
+
+## 0.36.0 — 2026-11-04
 - Statistiques : le camembert des principaux contributeurs n'a plus de trait qui dépasse du disque à côté des parts très fines.
 - Diff : la vue côte à côte permet maintenant d'indexer, désindexer et annuler aussi : une case sur chaque ligne modifiée (Ctrl+clic prend ensemble la moitié supprimée et la moitié ajoutée d'une ligne modifiée), et, comme dans Fork, des boutons Indexer / Annuler qui apparaissent à côté du bloc de changements survolé.
 - Graphe : les checkpoints de Copilot (refs/copilot/*) n'encombrent plus l'historique.
