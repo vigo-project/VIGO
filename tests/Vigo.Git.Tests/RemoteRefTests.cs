@@ -60,6 +60,19 @@ public sealed class RemoteRefTests : IDisposable
     }
 
     [Fact]
+    public async Task Lists_the_tags_of_the_remote_only()
+    {
+        _mine.Tag("pushed");
+        _mine.Tag("local-only");
+        _mine.Git("push", "--quiet", "origin", "pushed");
+
+        var result = await _git.GetRemoteTagsAsync(_mine.Path, Ct);
+
+        var tags = Assert.IsType<Success<IReadOnlySet<string>>>(result.Value).Value;
+        Assert.Equal(["pushed"], tags);
+    }
+
+    [Fact]
     public async Task A_tag_already_on_the_remote_elsewhere_is_explained()
     {
         _mine.Tag("v1");

@@ -360,6 +360,12 @@ public interface IGitService
     /// </summary>
     Task<GitResult> PushRefAsync(string repositoryPath, RefPush push, IProgress<GitProgress>? progress, CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Names of the tags that exist on the remote (<c>git ls-remote --tags</c>: origin, else the first remote), read
+    /// without any prompt. A <see cref="Failure"/> when offline, refused or without a remote: callers keep what they knew.
+    /// </summary>
+    Task<GitResult<IReadOnlySet<string>>> GetRemoteTagsAsync(string repositoryPath, CancellationToken cancellationToken = default);
+
     /// <summary>Adds a remote (<c>git remote add</c>, nothing fetched).</summary>
     Task<GitResult> AddRemoteAsync(string repositoryPath, string name, string url, CancellationToken cancellationToken = default);
 

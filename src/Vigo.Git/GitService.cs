@@ -1626,6 +1626,26 @@ public sealed partial class GitService(GitCli cli) : IGitService
             new GitRemote(f.Name, f.Url, push.TryGetValue(f.Name, out var p) && p != f.Url ? p : null))]);
     }
 
+    public async Task<GitResult<IReadOnlySet<string>>> GetRemoteTagsAsync(string repositoryPath, CancellationToken cancellationToken = default)
+    {
+        if (await GetRemotesAsync(repositoryPath, cancellationToken) is not { Value: Success<IReadOnlyList<GitRemote>> { Value: { Count: > 0 } remotes } })
+            return new Failure(Loc.Get("GitError.InvalidRemote"));
+        var remote = remotes.FirstOrDefault(r => r.Name == "origin")?.Name ?? remotes[0].Name;
+
+        var result = await cli.RunAsync(repositoryPath, ["-c", "credential.interactive=false", "ls-remote", "--tags", "--refs", "--", remote], NonInteractive, cancellationToken);
+        if (result is not Success<CliOutput> s) return Propagate<IReadOnlySet<string>>(result);
+
+        // "<sha>\trefs/tags/<name>" per line.
+        const string prefix = "refs/tags/";
+        HashSet<string> names = new(StringComparer.Ordinal);
+        foreach (var line in s.Value.StandardOutput.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        {
+            var tab = line.IndexOf('\t', StringComparison.Ordinal);
+            if (tab > 0 && line.AsSpan(tab + 1).StartsWith(prefix, StringComparison.Ordinal)) names.Add(line[(tab + 1 + prefix.Length)..]);
+        }
+        return new Success<IReadOnlySet<string>>(names);
+    }
+
     public async Task<GitResult> SetRemoteUrlAsync(string repositoryPath, string remoteName, string url, CancellationToken cancellationToken = default)
     {
         if (remoteName.StartsWith('-') || url.StartsWith('-')) return new Failure(Loc.Get("GitError.InvalidRemoteNameOrUrl"));

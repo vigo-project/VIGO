@@ -187,6 +187,7 @@ public sealed partial class RemoteActionsViewModel : ObservableObject, IDisposab
                     _autoFetchFailing = false;
                     await _tree.RefreshAsync();
                     _ = _graph.RefreshAsync();
+                    _ = _graph.RefreshRemoteTagsAsync();
                     if (Status is { Upstream: { } upstream, Behind: var behind } && before?.Upstream == upstream && behind > before.Behind)
                     {
                         var arrived = behind - before.Behind;
@@ -445,6 +446,8 @@ public sealed partial class RemoteActionsViewModel : ObservableObject, IDisposab
         // Remote-tracking branches moved even when HEAD did not (fetch, push): the badges need the new refs (the
         // history is reread only if new commits arrived).
         _ = _graph.RefreshAsync();
+        // A push (or a tag deletion on the remote) moves the cloud icon of the tag badges.
+        if (result is Done) _ = _graph.RefreshRemoteTagsAsync();
         NotifyCommands();
         // A manual fetch also reads the pull requests and issues of the hosting service again.
         if (fetches && result is Done) FetchCompleted?.Invoke(this, EventArgs.Empty);

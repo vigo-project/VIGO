@@ -1,4 +1,7 @@
 ## Unreleased
+- Pull requests: on the "Files changed" tab the right panel is hidden so the review gets the full width (the file list is already on the left).
+- Graph: the branch or tag badge under the pointer is highlighted (stronger tint, thicker border).
+- Graph: tags that exist on the remote show a cloud icon, like synced branches (read in the background after a fetch or a push).
 - AI commit messages: OpenCode (`opencode run`) joins Claude and Copilot as a command-line tool.
 - Pull requests and issues: "Copy number" in the sidebar menu; clicking the number of an open pull request copies it.
 

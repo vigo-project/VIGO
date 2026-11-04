@@ -1,4 +1,7 @@
 ## Unreleased
+- Pull requests : sur l'onglet « Fichiers modifiés », le panneau de droite est masqué pour laisser toute la largeur à la relecture (la liste des fichiers est déjà à gauche).
+- Graphe : le badge de branche ou de tag sous la souris est mis en évidence (teinte plus forte, bordure épaisse).
+- Graphe : les tags présents sur le remote affichent une icône de nuage, comme les branches synchronisées (lue en arrière-plan après un fetch ou un push).
 - Messages de commit IA : OpenCode (`opencode run`) rejoint Claude et Copilot parmi les outils en ligne de commande.
 - Pull requests et tickets : « Copier le numéro » dans le menu de la barre latérale ; un clic sur le numéro d'une pull request ouverte le copie.
 

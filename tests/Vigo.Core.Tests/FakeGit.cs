@@ -509,6 +509,9 @@ internal sealed class FakeGit : IGitService
         string repositoryPath, RefPush push, IProgress<GitProgress>? progress, CancellationToken cancellationToken = default) =>
         NotImplemented();
 
+    public Task<GitResult<IReadOnlySet<string>>> GetRemoteTagsAsync(string repositoryPath, CancellationToken cancellationToken = default) =>
+        Task.FromResult<GitResult<IReadOnlySet<string>>>(new Failure("not implemented"));
+
     public Task<GitResult> AddRemoteAsync(string repositoryPath, string name, string url, CancellationToken cancellationToken = default) =>
         NotImplemented();
 
