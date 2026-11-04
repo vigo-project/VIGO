@@ -1414,6 +1414,8 @@ Stored by Git LFS (declared in {1}).</value></data>
   <data name="PrBack.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Back to the graph (Esc)</value></data>
   <data name="PrRefresh.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Refresh the pull request</value></data>
   <data name="PrRefresh.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Refresh</value></data>
+  <data name="PrCopyNumber.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Copy the pull request number</value></data>
+  <data name="PrCopyNumber.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Copy number</value></data>
   <data name="PrMarkReady.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Ready for review</value></data>
   <data name="PrMarkReadyText.Text" xml:space="preserve"><value>Ready for review</value></data>
   <data name="PrMakeDraft.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Convert to draft</value></data>

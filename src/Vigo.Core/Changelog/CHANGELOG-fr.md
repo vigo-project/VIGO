@@ -1,11 +1,11 @@
 ## Unreleased
+
+## 0.36.0 — 2026-11-04
 - Pull requests : sur l'onglet « Fichiers modifiés », le panneau de droite est masqué pour laisser toute la largeur à la relecture (la liste des fichiers est déjà à gauche).
 - Graphe : le badge de branche ou de tag sous la souris est mis en évidence (teinte plus forte, bordure épaisse).
 - Graphe : les tags présents sur le remote affichent une icône de nuage, comme les branches synchronisées (lue en arrière-plan après un fetch ou un push).
 - Messages de commit IA : OpenCode (`opencode run`) rejoint Claude et Copilot parmi les outils en ligne de commande.
-- Pull requests et tickets : « Copier le numéro » dans le menu de la barre latérale ; un clic sur le numéro d'une pull request ouverte le copie.
-
-## 0.36.0 — 2026-11-04
+- Pull requests et tickets : « Copier le numéro » dans le menu de la barre latérale ; un bouton à côté du numéro d'une pull request ouverte le copie.
 - Statistiques : le camembert des principaux contributeurs n'a plus de trait qui dépasse du disque à côté des parts très fines.
 - Diff : la vue côte à côte permet maintenant d'indexer, désindexer et annuler aussi : une case sur chaque ligne modifiée (Ctrl+clic prend ensemble la moitié supprimée et la moitié ajoutée d'une ligne modifiée), et, comme dans Fork, des boutons Indexer / Annuler qui apparaissent à côté du bloc de changements survolé.
 - Graphe : les checkpoints de Copilot (refs/copilot/*) n'encombrent plus l'historique.

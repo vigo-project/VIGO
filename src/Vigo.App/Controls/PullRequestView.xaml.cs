@@ -335,7 +335,7 @@ public sealed partial class PullRequestView : UserControl
         if ((sender as FrameworkElement)?.DataContext is FileCommentPreview preview) _viewModel?.OpenThreadCommand.Execute(preview);
     }
 
-    private void OnNumberTapped(object sender, TappedRoutedEventArgs e)
+    private void OnCopyNumberClick(object sender, RoutedEventArgs e)
     {
         if (_viewModel is not { NumberText: { Length: > 0 } number }) return;
         var package = new Windows.ApplicationModel.DataTransfer.DataPackage();

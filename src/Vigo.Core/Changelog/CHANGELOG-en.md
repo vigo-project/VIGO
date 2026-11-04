@@ -1,11 +1,11 @@
 ## Unreleased
+
+## 0.36.0 — 2026-11-04
 - Pull requests: on the "Files changed" tab the right panel is hidden so the review gets the full width (the file list is already on the left).
 - Graph: the branch or tag badge under the pointer is highlighted (stronger tint, thicker border).
 - Graph: tags that exist on the remote show a cloud icon, like synced branches (read in the background after a fetch or a push).
 - AI commit messages: OpenCode (`opencode run`) joins Claude and Copilot as a command-line tool.
-- Pull requests and issues: "Copy number" in the sidebar menu; clicking the number of an open pull request copies it.
-
-## 0.36.0 — 2026-11-04
+- Pull requests and issues: "Copy number" in the sidebar menu; a button next to the number of an open pull request copies it.
 - Statistics: the top contributors pie chart no longer shows a stray line sticking out of the disc next to very thin slices.
 - Diff: the side-by-side view can now stage, unstage and discard too: a check box on each changed line (Ctrl+click picks a modified line's deleted and added halves together), and, as in Fork, Stage / Discard buttons that appear beside the block of changes under the pointer.
 - Graph: Copilot checkpoints (refs/copilot/*) no longer clutter the history.

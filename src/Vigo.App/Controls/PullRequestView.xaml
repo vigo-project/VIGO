@@ -132,8 +132,10 @@
                     <TextBlock Text="{x:Bind ViewModel.Title, Mode=OneWay}" Style="{StaticResource VigoStrongText}" FontSize="{ThemeResource VigoFontSize15}"
                                TextTrimming="CharacterEllipsis" VerticalAlignment="Center" IsTextSelectionEnabled="True" />
                     <TextBlock Text="{x:Bind ViewModel.NumberText, Mode=OneWay}" Foreground="{ThemeResource VigoText3Brush}" FontSize="{ThemeResource VigoFontSize15}"
-                               VerticalAlignment="Center" Tapped="OnNumberTapped" />
-
+                               VerticalAlignment="Center" />
+                    <Button x:Uid="PrCopyNumber" Style="{StaticResource VigoSubtleButton}" Height="24" Padding="6,0" VerticalAlignment="Center" Click="OnCopyNumberClick">
+                        <FontIcon Style="{StaticResource VigoIcon}" FontSize="13" Foreground="{ThemeResource VigoText3Brush}" Glyph="{x:Bind controls:FluentIcons.Copy}" />
+                    </Button>
                 </StackPanel>
                 <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                     <ProgressRing Width="18" Height="18" IsActive="{x:Bind ViewModel.IsLoading, Mode=OneWay}" />
