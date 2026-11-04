@@ -20,8 +20,6 @@ using Loom = LoomEditor.WinUI.Controls.LoomEditor;
 using LoomDiff = LoomEditor.WinUI.Controls.LoomDiffEditor;
 using LoomDiffSide = LoomEditor.WinUI.Controls.DiffSide;
 using LoomDiffLine = LoomEditor.WinUI.Controls.DiffLine;
-using DiffBlockAction = LoomEditor.WinUI.Controls.DiffBlockAction;
-using DiffBlockActionsVisibility = LoomEditor.WinUI.Controls.DiffBlockActionsVisibility;
 using LoomWordWrap =LoomEditor.WinUI.Controls.EditorWordWrap;
 using LoomRange = LoomEditor.Core.Text.Range;
 using LoomSelection = LoomEditor.Core.Text.Selection;
@@ -172,12 +170,11 @@ public sealed partial class CodeEditor
             if (!_sideSelectionSync) SideSelectionChanged?.Invoke(this, diff.SelectedLines.Select(l => (l.Side == LoomDiffSide.Original, l.LineNumber)).ToArray());
         };
         diff.LineActionInvoked += (_, e) => SideLinesInvoked?.Invoke(this, e.Lines.Select(l => (l.Side == LoomDiffSide.Original, l.LineNumber)).ToArray());
-        diff.BlockActionInvoked += (_, e) => SideBlockInvoked?.Invoke(this,
-            (e.Block.OriginalStartLineNumber, e.Block.OriginalLineCount, e.Block.ModifiedStartLineNumber, e.Block.ModifiedLineCount, e.Action == DiffBlockAction.Secondary));
         diff.AddCommentRequested +=(_, e) => OnDiffAddCommentRequested(e.Side, e.StartLineNumber, e.LineNumber, e.TextRange);
         // The two inner editors exist once the template is applied.
         diff.Loaded += (_, _) =>
         {
+            WireBlockBar(diff);
             ApplyNativeTheme();
             LayoutSideReview();
         };
@@ -204,17 +201,13 @@ public sealed partial class CodeEditor
     }
 
     /// <summary>Staging of a side-by-side diff: a check box per changed line, a stage button on each block and on the hovered line.</summary>
-    private static void ConfigureSideStaging(LoomDiff diff, EditorStaging? staging)
+    private void ConfigureSideStaging(LoomDiff diff, EditorStaging? staging)
     {
-        var on = staging is not null;
-        diff.LineSelectionEnabled = on;
-        diff.LineActionGlyph = on ? "" : null;
-        diff.LineActionToolTip = staging?.LineLabel;
-        diff.BlockActionsVisibility = on ? DiffBlockActionsVisibility.Always : DiffBlockActionsVisibility.Off;
-        diff.PrimaryBlockActionGlyph = on ? "" : null;
-        diff.PrimaryBlockActionToolTip = staging?.ApplyLabel;
-        diff.SecondaryBlockActionGlyph = staging?.DiscardLabel is null ? null : "";
-        diff.SecondaryBlockActionToolTip = staging?.DiscardLabel;
+        // A check box per changed line (S stages the checked ones); the buttons of a block are the popup bar of CodeEditor.Native.BlockBar.cs.
+        _sideStaging = staging;
+        diff.LineSelectionEnabled = staging is not null;
+        if (staging is null) HideBlockBar();
+        WireBlockBar(diff);
     }
 
     private void SetNativeSideSelection(IReadOnlyList<(bool Original, int Number)> lines)
@@ -263,6 +256,7 @@ public sealed partial class CodeEditor
 
     private void ClearNative()
     {
+        HideBlockBar();
         ClearNativeReview();
         ClearNativeDiff();
         ClearNativeConflict();
@@ -284,6 +278,7 @@ public sealed partial class CodeEditor
 
     private void ReleaseNative()
     {
+        HideBlockBar();
         ClearNativeReview();
         ReleaseNativeDiff();
         ReleaseNativeConflict();
