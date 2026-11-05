@@ -1088,7 +1088,9 @@ public sealed partial class GraphCanvas : UserControl
             // Hover: a stronger tint and a thicker border, so the pointed badge stands out. A tag is neutral (gray), not lane-colored.
             var tint = badge.Kind == RefBadgeKind.Tag ? colors.Text : laneColor;
             ds.FillRoundedRectangle(rect, 4, 4, Color.FromArgb(badge.Kind == RefBadgeKind.Tag ? (byte)40 : (byte)72, tint.R, tint.G, tint.B));
-            ds.DrawRoundedRectangle(Inset(rect, 1), 3, 3, badge.Kind == RefBadgeKind.Tag ? colors.Text2 : laneColor, 2);
+            // A remote branch keeps its dashed border.
+            ds.DrawRoundedRectangle(Inset(rect, 1), 3, 3, badge.Kind == RefBadgeKind.Tag ? colors.Text2 : laneColor, 2,
+                badge.Kind == RefBadgeKind.Remote ? dashed : null);
         }
 
         var iconX = x + padding;
