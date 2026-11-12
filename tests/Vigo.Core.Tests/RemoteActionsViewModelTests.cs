@@ -228,6 +228,26 @@ public sealed class RemoteActionsViewModelTests : IDisposable
     }
 
     [Fact]
+    public async Task The_keep_preference_leaves_the_push_after_committing_box_checked_after_a_push()
+    {
+        var preferences = new Preferences(new InMemoryPreferencesStore(), new UserPreferences { KeepPushAfterCommit = true });
+        using var tab = new RepositoryTabViewModel(
+            new RepositoryInfo(_mine.Path, Path.Combine(_mine.Path, ".git"), "repo", "main", null, false, false, false),
+            _git, _time, NullLogger.Instance, watchers: null, _notifier, _confirmations, preferences: preferences);
+        await tab.LoadAsync();
+        _mine.WriteFile("b.txt", "b\n").Stage("b.txt");
+        await tab.WorkingTree.RefreshAsync();
+        var form = tab.WorkingTree.CommitForm;
+        form.Summary = "Add b";
+        Assert.True(form.PushAfter);
+
+        await form.CommitCommand.ExecuteAsync(null);
+
+        Assert.Equal(_mine.Head(), RemoteHead());
+        Assert.True(form.PushAfter);
+    }
+
+    [Fact]
     public async Task Without_the_box_the_button_only_commits()
     {
         using var tab = await OpenAsync();

@@ -1,6 +1,8 @@
 ## Unreleased
+- Preferences: new option "Keep 'Push after committing' checked", so the commit form's box no longer clears itself after each push.
 - Left panel: right-click a folder of local branches ("feature/"…) to delete all the local branches it holds in one go; the checked-out branch is kept, and if some have a remote branch you are asked whether to delete those too.
 - Branch comparison: compare two branches (or tags) through their common ancestor — files only on one side, files changed on one side (who is ahead), files changed on both sides (clean merge or certain conflict). Open it from "Compare with…" in the branch menu, the command palette, the new toolbar button or Ctrl+Shift+D, or by dropping a branch on another one (graph or left panel); click a file to see its diff.
+- Code editor (blame, diff, conflicts): Lua files now get syntax coloring.
 
 ## 0.37.0 — 2026-11-04
 - Pull requests: on the "Files changed" tab the right panel is hidden so the review gets the full width (the file list is already on the left).

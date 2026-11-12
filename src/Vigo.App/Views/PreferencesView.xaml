@@ -163,6 +163,18 @@
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
                         <StackPanel>
+                            <TextBlock x:Uid="PrefKeepPushAfterTitle" Style="{StaticResource SettingTitle}" />
+                            <TextBlock x:Uid="PrefKeepPushAfterDescription" Style="{StaticResource SettingDescription}" />
+                        </StackPanel>
+                        <ToggleSwitch x:Uid="PrefKeepPushAfterSwitch" Grid.Column="1" VerticalAlignment="Center" MinWidth="0"
+                                      IsOn="{x:Bind ViewModel.KeepPushAfterCommit, Mode=TwoWay}" />
+                    </Grid>
+                    <Grid Style="{StaticResource SettingRow}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
                             <TextBlock x:Uid="PrefKeepSubmodulesTitle" Style="{StaticResource SettingTitle}" />
                             <TextBlock x:Uid="PrefKeepSubmodulesDescription" Style="{StaticResource SettingDescription}" />
                         </StackPanel>

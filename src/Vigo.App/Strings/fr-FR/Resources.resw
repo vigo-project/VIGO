@@ -463,6 +463,11 @@
   <data name="PrefAutoFetchCombo.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Récupération automatique</value></data>
   <data name="PrefAutoFetchDescription.Text" xml:space="preserve"><value>Récupère les distants de l'onglet visible en arrière-plan, sans jamais demander d'identifiants.</value></data>
   <data name="PrefAutoFetchTitle.Text" xml:space="preserve"><value>Récupération automatique</value></data>
+  <data name="PrefKeepPushAfterDescription.Text" xml:space="preserve"><value>La case « Pousser après la validation » du formulaire de commit reste cochée, même après un push. Désactivé : elle se décoche après chaque push.</value></data>
+  <data name="PrefKeepPushAfterSwitch.OffContent" xml:space="preserve"><value>Non</value></data>
+  <data name="PrefKeepPushAfterSwitch.OnContent" xml:space="preserve"><value>Oui</value></data>
+  <data name="PrefKeepPushAfterSwitch.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Garder « Pousser après la validation » cochée</value></data>
+  <data name="PrefKeepPushAfterTitle.Text" xml:space="preserve"><value>Garder « Pousser après la validation » cochée</value></data>
   <data name="PrefAutoPruneDescription.Text" xml:space="preserve"><value>À chaque récupération, retire les branches distantes qui n'existent plus sur le serveur. Désactivé : la configuration git (fetch.prune) décide.</value></data>
   <data name="PrefAutoPruneSwitch.OffContent" xml:space="preserve"><value>Non</value></data>
   <data name="PrefAutoPruneSwitch.OnContent" xml:space="preserve"><value>Oui</value></data>

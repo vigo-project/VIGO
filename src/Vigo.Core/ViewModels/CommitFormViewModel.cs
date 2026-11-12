@@ -53,11 +53,18 @@ public sealed partial class CommitFormViewModel : ObservableObject, IDisposable
     private readonly CommitMessageGenerator? _generator;
     private CancellationTokenSource? _generating;
     private bool _settingsLoaded;
+    private readonly Preferences? _preferences;
 
     public CommitFormViewModel(
         IGitService git, string repositoryPath, WorkingTreeViewModel tree, IUserNotifier? notifier, CancellationToken lifetime, GitProfiles? profiles = null,
-        CommitMessageGenerator? generator = null)
+        CommitMessageGenerator? generator = null, Preferences? preferences = null)
     {
+        _preferences = preferences;
+        if (_preferences is not null)
+        {
+            PushAfter = _preferences.Current.KeepPushAfterCommit;
+            _preferences.Changed += OnPreferencesChanged;
+        }
         _generator = generator;
         if (_generator is not null) _generator.Changed += OnGeneratorChanged;
         _git = git;
@@ -294,8 +301,15 @@ public sealed partial class CommitFormViewModel : ObservableObject, IDisposable
     [RelayCommand]
     public void CancelGeneration() => _generating?.Cancel();
 
+    // Turning the preference on checks the box right away; turning it off leaves the current tick alone.
+    private void OnPreferencesChanged(object? sender, EventArgs e)
+    {
+        if (_preferences?.Current.KeepPushAfterCommit == true) PushAfter = true;
+    }
+
     public void Dispose()
     {
+        if (_preferences is not null) _preferences.Changed -= OnPreferencesChanged;
         CancelGeneration();
         if (_generator is not null) _generator.Changed -= OnGeneratorChanged;
         _tree.StatusChanged -= OnStatusChanged;
@@ -330,8 +344,8 @@ public sealed partial class CommitFormViewModel : ObservableObject, IDisposable
             if (!await RunCommitAsync(skipHooks) || !pushes || PushAfterCommit is not { } pushNow) return;
             Phase = CommitPhase.Pushing;
             await pushNow();
-            // One push per tick: the box is for this commit only.
-            PushAfter = false;
+            // One push per tick (the box is for this commit only), unless the user asked for it to stay checked.
+            PushAfter = _preferences?.Current.KeepPushAfterCommit == true;
         }
         finally
         {
