@@ -463,6 +463,11 @@
   <data name="PrefAutoFetchCombo.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Automatic fetch</value></data>
   <data name="PrefAutoFetchDescription.Text" xml:space="preserve"><value>Fetches the remotes of the visible tab in the background, never asking for credentials.</value></data>
   <data name="PrefAutoFetchTitle.Text" xml:space="preserve"><value>Automatic fetch</value></data>
+  <data name="PrefKeepPushAfterDescription.Text" xml:space="preserve"><value>The "Push after committing" box of the commit form stays checked, also after a push. Off: it clears itself after each push.</value></data>
+  <data name="PrefKeepPushAfterSwitch.OffContent" xml:space="preserve"><value>No</value></data>
+  <data name="PrefKeepPushAfterSwitch.OnContent" xml:space="preserve"><value>Yes</value></data>
+  <data name="PrefKeepPushAfterSwitch.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Keep "Push after committing" checked</value></data>
+  <data name="PrefKeepPushAfterTitle.Text" xml:space="preserve"><value>Keep "Push after committing" checked</value></data>
   <data name="PrefAutoPruneDescription.Text" xml:space="preserve"><value>On every fetch, removes the remote branches that no longer exist on the server. Off: the git config (fetch.prune) decides.</value></data>
   <data name="PrefAutoPruneSwitch.OffContent" xml:space="preserve"><value>No</value></data>
   <data name="PrefAutoPruneSwitch.OnContent" xml:space="preserve"><value>Yes</value></data>

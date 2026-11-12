@@ -241,6 +241,11 @@ public sealed partial class PreferencesTabViewModel : TabViewModel, IDisposable
     partial void OnCheckoutNewBranchChanged(bool value) => Update(p => p with { CheckoutNewBranch = value });
 
     [ObservableProperty]
+    public partial bool KeepPushAfterCommit { get; set; }
+
+    partial void OnKeepPushAfterCommitChanged(bool value) => Update(p => p with { KeepPushAfterCommit = value });
+
+    [ObservableProperty]
     public partial bool AutoPrune { get; set; }
 
     partial void OnAutoPruneChanged(bool value) => Update(p => p with { AutoPrune = value });
@@ -563,6 +568,7 @@ public sealed partial class PreferencesTabViewModel : TabViewModel, IDisposable
             }
             AutoFetch = option;
             CheckoutNewBranch = current.CheckoutNewBranch;
+            KeepPushAfterCommit = current.KeepPushAfterCommit;
             AutoPrune = current.AutoPrune;
             UpdatePreReleases = current.UpdatePreReleases;
             KeepSubmodulesUpToDate = current.KeepSubmodulesUpToDate;

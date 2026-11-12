@@ -44,14 +44,15 @@ public sealed partial class WorkingTreeViewModel : ObservableObject, IDisposable
         IUserNotifier? notifier = null,
         IConfirmationService? confirmations = null,
         GitProfiles? profiles = null,
-        CommitMessageGenerator? commitMessages = null)
+        CommitMessageGenerator? commitMessages = null,
+        Preferences? preferences = null)
     {
         _git = git;
         _repository = repository;
         _watchers = watchers;
         _logger = logger;
         Actions = new StagingActions(notifier, confirmations, RefreshAsync, _disposed.Token);
-        CommitForm = new CommitFormViewModel(git, RepositoryPath, this, notifier, _disposed.Token, profiles, commitMessages);
+        CommitForm = new CommitFormViewModel(git, RepositoryPath, this, notifier, _disposed.Token, profiles, commitMessages, preferences);
     }
 
     /// <summary>Index and working-tree operations, shared with the diff view.</summary>

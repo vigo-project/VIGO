@@ -46,7 +46,7 @@ MSIX package description).
 
 ## Stack
 
-.NET 11 (RC) / C# 15, WinUI 3 (Windows App SDK 2.x), CommunityToolkit.Mvvm, Microsoft.Extensions.Hosting/DI,
+.NET 11 / C# 15, WinUI 3 (Windows App SDK 2.x), CommunityToolkit.Mvvm, Microsoft.Extensions.Hosting/DI,
 Serilog, LibGit2Sharp + git.exe, Win2D, LoomEditor (native code editor), xUnit v3 with its native `Assert` assertions (Microsoft.Testing.Platform; **no FluentAssertions**), Native AOT.
 
 ## Architecture

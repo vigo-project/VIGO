@@ -56,7 +56,7 @@ public sealed partial class RepositoryTabViewModel : TabViewModel, IDisposable
         // Keyed by the Git directory: the same repository opened from a worktree or a subfolder shares its choice.
         Graph = new GraphViewModel(git, path, time, logger, new HiddenRefs(hiddenRefs, info.GitDirectory), preferences);
         Details = new CommitDetailsViewModel(git, path, Graph, time);
-        WorkingTree = new WorkingTreeViewModel(git, info, watchers, logger, notifier, confirmations, profiles, commitMessages);
+        WorkingTree = new WorkingTreeViewModel(git, info, watchers, logger, notifier, confirmations, profiles, commitMessages, preferences);
         Diff = new DiffViewModel(git, path, WorkingTree.Actions, preferences);
         Remote = new RemoteActionsViewModel(git, path, WorkingTree, Graph, notifier, logger, _disposed.Token, authentication, time, preferences);
         RefActions = new RefActionsViewModel(git, path, Graph, WorkingTree.Actions, Remote, WorkingTree.IsAvailable, inputs, notifier, _disposed.Token, preferences);

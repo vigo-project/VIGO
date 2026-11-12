@@ -125,6 +125,9 @@ public sealed record UserPreferences
     /// <summary>Updates also offer pre-releases (betas); stable releases only by default.</summary>
     public bool UpdatePreReleases { get; init; }
 
+    /// <summary>"Push after committing" of the commit form stays checked (also after a push) instead of clearing itself.</summary>
+    public bool KeepPushAfterCommit { get; init; }
+
     /// <summary>Folder the last clone went into: the next one is proposed there.</summary>
     public string? LastCloneParent { get; init; }
 
