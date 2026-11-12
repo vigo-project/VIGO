@@ -43,6 +43,14 @@ public sealed class DiffDocument
 
     public IReadOnlyList<DiffDocumentHunk> Hunks { get; }
 
+    /// <summary>Branch comparison: <see cref="OriginA"/>, <see cref="OriginB"/> or a space per document line, telling whose change a changed line is; null otherwise.</summary>
+    public string? Origins { get; private init; }
+
+    public const char OriginA = 'A', OriginB = 'B', OriginBoth = 'C';
+
+    /// <summary>The same document with an origin letter per line.</summary>
+    public DiffDocument WithOrigins(string origins) => new(Text, Kinds, [.. OldNumbers], [.. NewNumbers], [.. Hunks], _refs) { Origins = origins };
+
     public int LineCount => Kinds.Length;
 
     public static DiffDocument Build(FileDiff diff)

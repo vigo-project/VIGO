@@ -42,6 +42,7 @@ public static class ShortcutIds
     public const string Stash = "git.stash";
     public const string Undo = "git.undo";
     public const string Redo = "git.redo";
+    public const string CompareBranches = "git.compare";
     public const string Terminal = "terminal.toggle";
     public const string CopySha = "graph.copy-sha";
     public const string CopyShortSha = "graph.copy-short-sha";
@@ -69,6 +70,7 @@ public static class ShortcutCatalog
         new(ShortcutIds.Push, "Shortcuts.Name.Push", ShortcutScope.Repository, new('P', Ctrl | Shift)),
         new(ShortcutIds.NewBranch, "Shortcuts.Name.NewBranch", ShortcutScope.Repository, new('B', Ctrl)),
         new(ShortcutIds.Stash, "Shortcuts.Name.Stash", ShortcutScope.Repository, new('S', Ctrl | Shift)),
+        new(ShortcutIds.CompareBranches, "Shortcuts.Name.CompareBranches", ShortcutScope.Repository, new('D', Ctrl | Shift)),
         new(ShortcutIds.Undo, "Shortcuts.Name.Undo", ShortcutScope.Repository, new('Z', Ctrl)),
         new(ShortcutIds.Redo, "Shortcuts.Name.Redo", ShortcutScope.Repository, new('Y', Ctrl)),
         new(ShortcutIds.Terminal, "Shortcuts.Name.Terminal", ShortcutScope.Repository, new(192, Ctrl)),

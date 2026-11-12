@@ -29,6 +29,9 @@ public sealed record DiffHunk(string Header, int OldStart, int OldCount, int New
 /// <param name="OldPath">Path of the old side (differs from <paramref name="Path"/> for a rename).</param>
 public sealed record DiffSides(string Path, string OldPath, string Original, string Modified)
 {
+    /// <summary>Branch comparison: whose change (<see cref="DiffDocument.OriginA"/> or <see cref="DiffDocument.OriginB"/>) each changed line is, by side and line number; null otherwise.</summary>
+    public IReadOnlyList<(bool Original, int Number, char Origin)>? Origins { get; init; }
+
     /// <summary>
     /// Both sides rebuilt from the hunks alone, for a diff whose whole files are not at hand (a pull request on a hosting service).
     /// What lies between two hunks is unchanged, so it is the same number of empty lines on both sides: the lines keep their real numbers.

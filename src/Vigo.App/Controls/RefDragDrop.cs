@@ -65,7 +65,7 @@ internal static class RefDragDrop
     /// </summary>
     public static void ShowMenu(
         FrameworkElement target, Point position, DropMenu menu, MergeActionsViewModel merge, InteractiveRebaseViewModel? interactive = null,
-        HostingPanelViewModel? hosting = null)
+        HostingPanelViewModel? hosting = null, Func<GitRef, GitRef, Task>? compare = null)
     {
         var flyout = new MenuFlyout();
         flyout.Items.Add(new MenuFlyoutItem { Text = menu.Title, IsEnabled = false });
@@ -97,6 +97,13 @@ internal static class RefDragDrop
         {
             var item = Item(Loc.Format("Graph.Menu.PullRequestTo", source.Name, destination.Name), FluentIcons.Merge);
             item.Click += (_, _) => _ = hosting.CreatePullRequestAsync(source, destination);
+            flyout.Items.Add(item);
+        }
+        // Comparison of the two branches, the dragged one as A.
+        if (compare is not null && menu.Source is { } left && menu.Target is { } right)
+        {
+            var item = Item(Loc.Format("Graph.Menu.CompareTo", left.Name, right.Name), FluentIcons.ArrowSwap);
+            item.Click += (_, _) => _ = compare(left, right);
             flyout.Items.Add(item);
         }
         flyout.Items.Add(new MenuFlyoutSeparator());

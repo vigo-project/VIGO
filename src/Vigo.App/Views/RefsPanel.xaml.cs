@@ -317,6 +317,7 @@ public sealed partial class RefsPanel : UserControl
         _menuMerge = menu.Merge;
         _menuRebase = menu.Rebase;
         CheckoutItem.Text = menu.CheckoutLabel ?? string.Empty;
+        CompareItem.Text = menu.CompareLabel ?? string.Empty;
         MergeItem.Text = menu.Merge?.Label ?? string.Empty;
         RebaseItem.Text = menu.Rebase?.Label ?? string.Empty;
         InteractiveRebaseItem.Text = menu.Rebase?.InteractiveLabel ?? string.Empty;
@@ -334,7 +335,7 @@ public sealed partial class RefsPanel : UserControl
         FillIssueFilterMenu(menu.IssueFilters);
         (MenuFlyoutSeparator? Separator, (MenuFlyoutItemBase Item, bool Visible)[] Items)[] groups =
         [
-            (null, [(CheckoutItem, menu.CheckoutLabel is not null), (MergeItem, menu.Merge is not null), (RebaseItem, menu.Rebase is not null),
+            (null, [(CheckoutItem, menu.CheckoutLabel is not null), (CompareItem, menu.CompareLabel is not null), (MergeItem, menu.Merge is not null), (RebaseItem, menu.Rebase is not null),
                 (InteractiveRebaseItem, menu.Rebase is not null && Rebase is not null),
                 (ApplyStashItem, menu.CanApplyStash), (PopStashItem, menu.CanApplyStash)]),
             (CreateSeparator, [(NewBranchItem, menu.CanCreateBranch), (NewTagItem, menu.CanCreateTag), (PushItem, menu.PushLabel is not null), (NewPullRequestItem, menu.CanCreatePullRequest)]),
@@ -388,6 +389,17 @@ public sealed partial class RefsPanel : UserControl
     private string? _menuOpenUrl;
     private MergePlan? _menuMerge;
     private RebasePlan? _menuRebase;
+
+    /// <summary>Opens the comparison of the checked-out branch with the branch or tag of the row; set once by the repository view.</summary>
+    public Func<GitRef, Task>? CompareRequested { get; set; }
+
+    /// <summary>Comparison of a dragged branch (A) with the one it was dropped on (B); set once by the repository view.</summary>
+    public Func<GitRef, GitRef, Task>? CompareOfRequested { get; set; }
+
+    private void OnCompareClick(object sender, RoutedEventArgs e)
+    {
+        if (_menuRow?.Ref is { } reference) _ = CompareRequested?.Invoke(reference);
+    }
 
     private void OnMergeClick(object sender, RoutedEventArgs e)
     {
@@ -511,7 +523,7 @@ public sealed partial class RefsPanel : UserControl
         SetDropContainer(null);
         if (RefDragDrop.SourceFor(target) is not { } source) return;
         var position = e.GetPosition(RefList);
-        if (await ViewModel.Merge.DropMenuAsync(source, target!) is { } menu) RefDragDrop.ShowMenu(RefList, position, menu, ViewModel.Merge, Rebase, Hosting);
+        if (await ViewModel.Merge.DropMenuAsync(source, target!) is { } menu) RefDragDrop.ShowMenu(RefList, position, menu, ViewModel.Merge, Rebase, Hosting, CompareOfRequested);
     }
 
     /// <summary>

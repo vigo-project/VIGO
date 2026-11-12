@@ -176,6 +176,7 @@ public sealed partial class CodeEditor
         {
             WireBlockBar(diff);
             ApplyNativeTheme();
+            ApplySideOrigins();
             LayoutSideReview();
         };
         ApplyNativeTheme();
@@ -190,9 +191,12 @@ public sealed partial class CodeEditor
         ConfigureSideStaging(diff, staging);
         _diffPath = sides.Path;
         diff.LanguageId = LanguageOf(sides.Path);
+        _sideOrigins = sides.Origins;
+        ApplyNativeTheme();
         diff.OriginalText = sides.Original;
         diff.ModifiedText = sides.Modified;
         ShowNative(diff);
+        ApplySideOrigins();
         SetNativeSideSelection(selected);
         // The zones of the threads are laid out on the new texts.
         QueueReviewLayout();
@@ -310,6 +314,8 @@ public sealed partial class CodeEditor
         if (_diff is { } diff)
         {
             var wrap = Appearance.Current.Editor.WordWrap;
+            var sideTheme = _sideOrigins is null ? theme : dark ? DarkOriginTheme.Value : LightOriginTheme.Value;
+            theme = sideTheme;
             diff.Theme = theme;
             diff.LineHeight = LineHeightOf(Appearance.Current.Editor);
             // Original / Modified throw until the template is applied: set again on Loaded.
@@ -454,11 +460,16 @@ public sealed partial class CodeEditor
     private static readonly Lazy<EditorTheme> DarkTheme = new(() => BuildTheme(Dark, dark: true));
     private static readonly Lazy<EditorTheme> LightTheme = new(() => BuildTheme(Light, dark: false));
 
+    // Branch comparison (side by side): no added / removed colours, the lines are coloured by branch (CodeEditor.Native.Diff.cs).
+    private static readonly Lazy<EditorTheme> DarkOriginTheme = new(() => BuildTheme(Dark, dark: true, neutralDiff: true));
+    private static readonly Lazy<EditorTheme> LightOriginTheme = new(() => BuildTheme(Light, dark: false, neutralDiff: true));
+
     private static ThemeColor ThemeColorOf(Color c) => new(c.A, c.R, c.G, c.B);
 
     /// <summary>The design system's colors as a VS Code color theme (the same keys as the Monaco theme of the page).</summary>
-    private static EditorTheme BuildTheme(Palette p, bool dark)
+    private static EditorTheme BuildTheme(Palette p, bool dark, bool neutralDiff = false)
     {
+        var clear = Color.FromArgb(0, 0, 0, 0);
         static string Rule(string scopes, Color color) => $$"""{ "scope": [{{scopes}}], "settings": { "foreground": "{{Hex(color)}}" } }""";
         var json = $$"""
             {
@@ -476,10 +487,10 @@ public sealed partial class CodeEditor
                 "editorWidget.border": "{{Hex(p.Stroke)}}",
                 "editorStickyScroll.background": "{{Hex(p.Header)}}",
                 "focusBorder": "{{Hex(p.Accent)}}",
-                "diffEditor.insertedLineBackground": "{{Hex(p.Add)}}",
-                "diffEditor.removedLineBackground": "{{Hex(p.Del)}}",
-                "diffEditor.insertedTextBackground": "{{Hex(p.AddStrong)}}",
-                "diffEditor.removedTextBackground": "{{Hex(p.DelStrong)}}",
+                "diffEditor.insertedLineBackground": "{{Hex(neutralDiff ? clear : p.Add)}}",
+                "diffEditor.removedLineBackground": "{{Hex(neutralDiff ? clear : p.Del)}}",
+                "diffEditor.insertedTextBackground": "{{Hex(neutralDiff ? clear : p.AddStrong)}}",
+                "diffEditor.removedTextBackground": "{{Hex(neutralDiff ? clear : p.DelStrong)}}",
                 "scrollbarSlider.background": "{{Hex(p.Scrollbar)}}",
                 "scrollbarSlider.hoverBackground": "{{Hex(p.ScrollbarHover)}}",
                 "scrollbarSlider.activeBackground": "{{Hex(p.ScrollbarHover)}}"

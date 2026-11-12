@@ -184,6 +184,31 @@ public sealed class RefActionsViewModelTests : IDisposable
     }
 
     [Fact]
+    public async Task Deleting_a_folder_deletes_its_local_branches_and_asks_about_their_remote_branches()
+    {
+        _repo.Branch("feature/a");
+        _repo.Commit("fa", ("a.txt", "fa\n"));
+        _repo.Git("push", "--quiet", "--set-upstream", "origin", "feature/a");
+        _repo.Checkout("main");
+        _repo.Branch("feature/b", checkout: false);
+        _repo.Branch("other", checkout: false);
+        using var tab = await OpenAsync();
+        var folder = tab.Refs.Rows.Select(r => r.Row).Single(r => r.Key == "folder:local/feature/");
+        var menu = tab.Refs.MenuFor(folder);
+        Assert.Equal("Supprimer les branches de feature (2)…", menu?.DeleteLabel);
+        _confirmations.Answer = true;
+        _confirmations.CheckOption = true;
+
+        await tab.Refs.DeleteCommand.ExecuteAsync(folder);
+
+        var request = Assert.Single(_confirmations.Requests);
+        Assert.Equal("Supprimer les branches de feature/ ?", request.Title);
+        Assert.Equal("Supprimer aussi les branches distantes correspondantes (1)", request.OptionText);
+        Assert.Equal(["main", "other"], LocalBranches());
+        Assert.DoesNotContain("feature/a", _remote.Git("for-each-ref", "--format=%(refname)"), StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task Pushes_a_branch_that_has_no_upstream_to_origin()
     {
         _repo.Branch("feature", checkout: false);

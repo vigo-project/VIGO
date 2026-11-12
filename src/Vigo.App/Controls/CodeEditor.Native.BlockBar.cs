@@ -1,4 +1,5 @@
 using LoomEditor.View.Decorations;
+using Vigo.Core.Models;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -99,6 +100,28 @@ public sealed partial class CodeEditor
         _blockModifiedMarks ??= diff.Modified.CreateDecorationsCollection(Array.Empty<EditorDecoration>());
         _blockOriginalMarks.Set(LinesOf(block?.OriginalStartLineNumber ?? 0, block?.OriginalLineCount ?? 0));
         _blockModifiedMarks.Set(LinesOf(block?.ModifiedStartLineNumber ?? 0, block?.ModifiedLineCount ?? 0));
+    }
+
+    private static readonly EditorDecorationOptions SideOriginA = WholeLine("vigo-diff-a");
+    private static readonly EditorDecorationOptions SideOriginB = WholeLine("vigo-diff-b");
+    private static readonly EditorDecorationOptions SideOriginBoth = WholeLine("vigo-diff-both");
+    private IReadOnlyList<(bool Original, int Number, char Origin)>? _sideOrigins;
+    private DecorationsCollection? _sideOriginalOrigins, _sideModifiedOrigins;
+
+    /// <summary>Branch comparison: colours each changed line of both sides by the branch that changed it.</summary>
+    private void ApplySideOrigins()
+    {
+        if (_diff is not { IsLoaded: true } diff) return;
+        _sideOriginalOrigins ??= diff.Original.CreateDecorationsCollection(Array.Empty<EditorDecoration>());
+        _sideModifiedOrigins ??= diff.Modified.CreateDecorationsCollection(Array.Empty<EditorDecoration>());
+        List<EditorDecoration> original = [], modified = [];
+        foreach (var (isOriginal, number, origin) in _sideOrigins ?? [])
+        {
+            var mark = new EditorDecoration(new LoomRange(number, 1, number, 1), origin == DiffDocument.OriginA ? SideOriginA : origin == DiffDocument.OriginBoth ? SideOriginBoth : SideOriginB);
+            (isOriginal ? original : modified).Add(mark);
+        }
+        _sideOriginalOrigins.Set(original);
+        _sideModifiedOrigins.Set(modified);
     }
 
     private static List<EditorDecoration> LinesOf(int start, int count)

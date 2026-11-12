@@ -260,6 +260,10 @@
                         x:Uid="RepoToolbarBranch">
                     <controls:ToolbarButtonContent x:Uid="RepoToolbarBranchContent" Icon="branch" />
                 </Button>
+                <!-- Comparison of two branches (also: drop a branch on another one, or "Comparer avec…" in the left panel) -->
+                <Button Style="{StaticResource VigoToolbarButton}" Command="{x:Bind ViewModel.CompareCommand}" x:Uid="RepoToolbarCompare">
+                    <controls:ToolbarButtonContent x:Uid="RepoToolbarCompareContent" Icon="arrow_swap" />
+                </Button>
                 <!-- Stash (J4.4): every change at once, untracked files included; right click: with a message -->
                 <Button Style="{StaticResource VigoToolbarButton}" Command="{x:Bind ViewModel.Stash.StashCommand}"
                         x:Uid="RepoStash">
@@ -348,6 +352,7 @@
                  blame of a file (J5.6), or by a pull request (J6.9a). -->
             <controls:GraphCanvas x:Name="GraphView" Grid.Column="1" Background="{ThemeResource VigoSunkenBrush}"
                                   Visibility="{x:Bind ViewModel.ShowGraph, Mode=OneWay}" />
+            <controls:BranchCompareView x:Name="CompareView" Grid.Column="1" Visibility="{x:Bind ViewModel.Compare.IsOpen, Mode=OneWay}" />
             <controls:DiffView x:Name="DiffView" Grid.Column="1" Visibility="{x:Bind ViewModel.Diff.IsOpen, Mode=OneWay}" />
             <controls:ConflictView x:Name="ConflictView" Grid.Column="1" Visibility="{x:Bind ViewModel.Conflicts.IsOpen, Mode=OneWay}" />
             <controls:RebaseView x:Name="RebaseView" Grid.Column="1" Visibility="{x:Bind ViewModel.Rebase.IsOpen, Mode=OneWay}" />

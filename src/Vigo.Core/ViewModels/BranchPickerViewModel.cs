@@ -29,14 +29,17 @@ public sealed partial class BranchPickerViewModel : ObservableObject
     private const int MaxItemsPerGroup = 100;
 
     private readonly GraphViewModel _graph;
-    private readonly RefsPanelViewModel _refs;
+    private readonly RefsPanelViewModel? _refs;
     private readonly bool _canCheckout;
+    private readonly Func<GitRef, Task>? _choose;
 
-    public BranchPickerViewModel(GraphViewModel graph, RefsPanelViewModel refs, bool canCheckout)
+    /// <param name="choose">What picking an item does instead of a checkout (branch comparison: any item, the current branch too).</param>
+    public BranchPickerViewModel(GraphViewModel graph, RefsPanelViewModel? refs, bool canCheckout, Func<GitRef, Task>? choose = null)
     {
         _graph = graph;
         _refs = refs;
         _canCheckout = canCheckout;
+        _choose = choose;
     }
 
     /// <summary>Branches and tags matching <see cref="Filter"/> (an ObservableCollection: bound as an ItemsSource).</summary>
@@ -102,9 +105,11 @@ public sealed partial class BranchPickerViewModel : ObservableObject
 
     /// <summary>Checks out the branch or tag (nothing for the current branch).</summary>
     [RelayCommand]
-    private Task ChooseAsync(BranchPickerItem? item) =>
-        item is { IsCurrent: false } && _canCheckout ? _refs.CheckoutRefAsync(item.Ref) : Task.CompletedTask;
+    private Task ChooseAsync(BranchPickerItem? item) => item is null ? Task.CompletedTask
+        : _choose is not null ? _choose(item.Ref)
+        : item.IsCurrent || !_canCheckout || _refs is null ? Task.CompletedTask
+        : _refs.CheckoutRefAsync(item.Ref);
 
     /// <summary>Enter in the filter: the first branch listed.</summary>
-    public Task ChooseFirstAsync() => ChooseAsync(Items.FirstOrDefault(i => !i.IsCurrent));
+    public Task ChooseFirstAsync() => ChooseAsync(Items.FirstOrDefault(i => _choose is not null || !i.IsCurrent));
 }

@@ -85,6 +85,9 @@ public sealed partial class RepositoryView : UserControl
         RefsPanel.TrackPages(viewModel.Summary, viewModel.Stats);
         GraphView.Rebase = viewModel.Rebase;
         RefsPanel.Rebase = viewModel.Rebase;
+        RefsPanel.CompareRequested = viewModel.ShowCompareAsync;
+        RefsPanel.CompareOfRequested = GraphView.CompareOfRequested = viewModel.ShowCompareOfAsync;
+        CompareView.ViewModel = viewModel.Compare;
         GraphView.Hosting = viewModel.Hosting;
         RefsPanel.Hosting = viewModel.Hosting;
         ConflictView.AbortRequested += (_, _) => Run(viewModel.Merge.AbortCommand);
@@ -278,6 +281,7 @@ public sealed partial class RepositoryView : UserControl
         KeyboardShortcuts.AddCommand(this, ShortcutIds.Push, () => Run(ViewModel.Remote.PushCommand));
         KeyboardShortcuts.AddCommand(this, ShortcutIds.NewBranch, () => Run(ViewModel.RefActions.CreateBranchCommand));
         KeyboardShortcuts.AddCommand(this, ShortcutIds.Stash, () => Run(ViewModel.Stash.StashCommand));
+        KeyboardShortcuts.AddCommand(this, ShortcutIds.CompareBranches, () => Run(ViewModel.CompareCommand));
         // A focused TextBox keeps its own Ctrl+Z / Ctrl+Y (built-in accelerators win over the app's): text undo still works.
         KeyboardShortcuts.AddCommand(this, ShortcutIds.Undo, () => Run(ViewModel.Undo.UndoCommand));
         KeyboardShortcuts.AddCommand(this, ShortcutIds.Redo, () => Run(ViewModel.Undo.RedoCommand));
@@ -300,6 +304,7 @@ public sealed partial class RepositoryView : UserControl
         DiffView.Release();
         ConflictView.Release();
         RebaseView.Release();
+        CompareView.Release();
         FileHistoryView.Release();
         BlameView.Release();
         PullRequestView.Release();
