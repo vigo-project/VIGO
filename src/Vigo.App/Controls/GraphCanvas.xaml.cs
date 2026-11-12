@@ -161,6 +161,9 @@ public sealed partial class GraphCanvas : UserControl
     /// <summary>Pull request of the row menu and of the drop menu (J6.2); set once by the repository view.</summary>
     public HostingPanelViewModel? Hosting { get; set; }
 
+    /// <summary>Comparison of a dragged branch (A) with the one it was dropped on (B); set once by the repository view.</summary>
+    public Func<GitRef, GitRef, Task>? CompareOfRequested { get; set; }
+
     /// <summary>
     /// Right click (or menu key / Shift+F10) on a commit row: selects it and opens the row menu. No menu on the
     /// work-in-progress row.
@@ -673,13 +676,13 @@ public sealed partial class GraphCanvas : UserControl
         if (Merge is not { } merge) return;
         if (RefDragDrop.SourceFor(target) is { } source)
         {
-            if (await merge.DropMenuAsync(source, target!) is { } menu) RefDragDrop.ShowMenu(Canvas, position, menu, merge, Rebase, Hosting);
+            if (await merge.DropMenuAsync(source, target!) is { } menu) RefDragDrop.ShowMenu(Canvas, position, menu, merge, Rebase, Hosting, CompareOfRequested);
         }
         else if (RefDragDrop.PullRequestSourceFor(target) is { } pullRequestSource && Hosting?.CanCreatePullRequest(pullRequestSource) == true)
         {
             // Remote badge: no merge or rebase on it, only the pull request towards that branch.
             var menu = new DropMenu($"{pullRequestSource.Name} → {target!.Name}", null, null, pullRequestSource, target);
-            RefDragDrop.ShowMenu(Canvas, position, menu, merge, Rebase, Hosting);
+            RefDragDrop.ShowMenu(Canvas, position, menu, merge, Rebase, Hosting, CompareOfRequested);
         }
     }
 

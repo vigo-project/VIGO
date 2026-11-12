@@ -1,4 +1,6 @@
 ## Unreleased
+- Panneau gauche : clic droit sur un dossier de branches locales (« feature/ »…) pour supprimer d'un coup toutes les branches locales qu'il contient ; la branche courante est conservée, et si certaines ont une branche distante on vous demande si elles doivent être supprimées aussi.
+- Comparaison de branches : compare deux branches (ou tags) à partir de leur ancêtre commun — fichiers présents d'un seul côté, modifiés d'un seul côté (qui est en avance), modifiés des deux côtés (fusion automatique ou conflit certain). Ouverte par « Comparer avec… » dans le menu d'une branche, la palette de commandes, le nouveau bouton de la barre d'outils ou Ctrl+Maj+D, ou en déposant une branche sur une autre (graphe ou panneau de gauche) ; un clic sur un fichier affiche son diff.
 
 ## 0.37.0 — 2026-11-04
 - Pull requests : sur l'onglet « Fichiers modifiés », le panneau de droite est masqué pour laisser toute la largeur à la relecture (la liste des fichiers est déjà à gauche).

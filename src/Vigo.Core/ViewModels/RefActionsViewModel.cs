@@ -164,6 +164,45 @@ public sealed partial class RefActionsViewModel : ObservableObject
         if (answer.OptionChecked && upstream is not null) await DeleteOnRemoteAsync(upstream);
     }
 
+    /// <summary>Local branches under <paramref name="folder"/> ("feature/", "feature/sub/") that can go: all but the checked-out one.</summary>
+    public IReadOnlyList<GitRef> DeletableIn(string folder) =>
+        [.. Refs?.OfKind(GitRefKind.LocalBranch).Where(b => !b.IsCurrent && b.Name.StartsWith(folder, StringComparison.Ordinal)) ?? []];
+
+    /// <summary>
+    /// "Supprimer les branches du dossier…": deletes every local branch under a folder of the panel (not the checked-out one) after one
+    /// confirmation, which asks whether to delete too the remote branches that some of them have.
+    /// </summary>
+    [RelayCommand]
+    private async Task DeleteFolderBranchesAsync(string folder)
+    {
+        var branches = DeletableIn(folder);
+        if (branches.Count == 0 || _actions.IsBusy) return;
+        var remotes = Refs?.OfKind(GitRefKind.RemoteBranch).ToList() ?? [];
+        var upstreams = branches.Select(b => b.Upstream is { } u ? remotes.FirstOrDefault(r => r.Name == u) : null).OfType<GitRef>().Distinct().ToList();
+
+        var exclusive = await CountExclusiveAsync([.. branches.Select(b => b.CanonicalName)]);
+        var message = Loc.Format(branches.Count == 1 ? "RefActions.DeleteFolder.MessageOne" : "RefActions.DeleteFolder.MessageMany", branches.Count, folder);
+        if (exclusive > 0) message += " " + Loc.Format("RefActions.DeleteFolder.Exclusive", exclusive);
+        if (Refs?.OfKind(GitRefKind.LocalBranch).FirstOrDefault(b => b.IsCurrent && b.Name.StartsWith(folder, StringComparison.Ordinal)) is { } current)
+            message += " " + Loc.Format("RefActions.DeleteFolder.KeepsCurrent", current.Name);
+
+        var answer = await _actions.ConfirmAsync(new ConfirmationRequest(Loc.Format("RefActions.DeleteFolder.Title", folder), message, Loc.Get("RefActions.Common.Delete"),
+            OptionText: upstreams.Count == 0 ? null : Loc.Format("RefActions.DeleteFolder.AlsoRemote", upstreams.Count), IsDestructive: true));
+        if (!answer.Confirmed) return;
+
+        foreach (var branch in branches)
+        {
+            if (!await RunLocalAsync(Loc.Format("RefActions.DeleteBranch.Failed", branch.Name), ct => _git.DeleteBranchAsync(_repositoryPath, branch.Name, ct),
+                    new UndoStep(Loc.Format("RefActions.DeleteBranch.Undo", branch.Name)))) return;
+        }
+        _notifier?.Notify(NotificationSeverity.Info, Loc.Format("RefActions.DeleteFolder.Done", branches.Count, folder), string.Empty);
+        if (!answer.OptionChecked) return;
+        foreach (var upstream in upstreams)
+        {
+            if (!await DeleteOnRemoteAsync(upstream)) return;
+        }
+    }
+
     /// <summary>"Supprimer du distant…" of a remote branch (<c>git push --delete</c>), after confirmation.</summary>
     [RelayCommand]
     private async Task DeleteRemoteBranchAsync(GitRef remoteBranch)

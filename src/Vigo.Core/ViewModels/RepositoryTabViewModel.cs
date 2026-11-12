@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using Vigo.Core.Git;
 using Vigo.Core.Models;
@@ -69,6 +70,8 @@ public sealed partial class RepositoryTabViewModel : TabViewModel, IDisposable
         Rebase = new InteractiveRebaseViewModel(git, path, Graph, WorkingTree, time, notifier, _disposed.Token);
         FileHistory = new FileHistoryViewModel(git, path, time, WorkingTree.IsAvailable, confirmations, notifier, _disposed.Token, preferences);
         Blame = new BlameViewModel(git, path, time, _disposed.Token);
+        Compare = new BranchCompareViewModel(git, path, Graph, _disposed.Token);
+        CompareCommand = new AsyncRelayCommand(() => ShowCompareAsync());
         Undo = new UndoHistory(git, path, WorkingTree, Graph, notifier, _disposed.Token);
         WorkingTree.Actions.Undo = Undo;
 
@@ -104,6 +107,8 @@ public sealed partial class RepositoryTabViewModel : TabViewModel, IDisposable
         FileHistory.InspectionRequested += OnInspectionRequested;
         Blame.InspectionRequested += OnInspectionRequested;
         Blame.CommitShown += OnBlameCommitShown;
+        Compare.PropertyChanged += OnComparePropertyChanged;
+        Compare.DiffRequested += OnCompareDiffRequested;
         PullRequest.PropertyChanged += OnPullRequestPropertyChanged;
         Issue.PropertyChanged += OnIssuePropertyChanged;
         WorkItem.PropertyChanged += OnWorkItemPropertyChanged;
@@ -171,6 +176,12 @@ public sealed partial class RepositoryTabViewModel : TabViewModel, IDisposable
     /// <summary>Blame of a file (J5.6), shown in place of the graph.</summary>
     public BlameViewModel Blame { get; }
 
+    /// <summary>Comparison of two branches, shown in place of the graph.</summary>
+    public BranchCompareViewModel Compare { get; }
+
+    /// <summary>Opens the comparison of the checked-out branch with the main one (palette, shortcut).</summary>
+    public IAsyncRelayCommand CompareCommand { get; }
+
     /// <summary>Pull request screen (J6.9a), shown in place of the graph.</summary>
     public PullRequestViewModel PullRequest { get; }
 
@@ -190,7 +201,7 @@ public sealed partial class RepositoryTabViewModel : TabViewModel, IDisposable
     /// The main area shows the graph: neither a diff, the conflict editor, the interactive rebase, a file history, a
     /// blame, a pull request, an issue, the summary nor the statistics is open.
     /// </summary>
-    public bool ShowGraph => !Diff.IsOpen && !Conflicts.IsOpen && !Rebase.IsOpen && !FileHistory.IsOpen && !Blame.IsOpen && !PullRequest.IsOpen && !Issue.IsOpen
+    public bool ShowGraph => !Diff.IsOpen && !Conflicts.IsOpen && !Rebase.IsOpen && !FileHistory.IsOpen && !Blame.IsOpen && !Compare.IsOpen && !PullRequest.IsOpen && !Issue.IsOpen
         && !WorkItem.IsOpen && !Summary.IsOpen && !Stats.IsOpen;
 
     /// <summary>
@@ -294,6 +305,8 @@ public sealed partial class RepositoryTabViewModel : TabViewModel, IDisposable
         FileHistory.InspectionRequested -= OnInspectionRequested;
         Blame.InspectionRequested -= OnInspectionRequested;
         Blame.CommitShown -= OnBlameCommitShown;
+        Compare.PropertyChanged -= OnComparePropertyChanged;
+        Compare.DiffRequested -= OnCompareDiffRequested;
         PullRequest.PropertyChanged -= OnPullRequestPropertyChanged;
         Issue.PropertyChanged -= OnIssuePropertyChanged;
         WorkItem.PropertyChanged -= OnWorkItemPropertyChanged;
@@ -315,6 +328,7 @@ public sealed partial class RepositoryTabViewModel : TabViewModel, IDisposable
         Submodules.Dispose();
         Lfs.Dispose();
         GitFlow.Dispose();
+        Compare.Dispose();
         PullRequest.Dispose();
         Issue.Dispose();
         WorkItem.Dispose();
@@ -413,6 +427,7 @@ public sealed partial class RepositoryTabViewModel : TabViewModel, IDisposable
         {
             Summary.Close();
             Stats.Close();
+            Compare.Close();
         }
         if (e.PropertyName != nameof(GraphViewModel.SelectedSha) || !Diff.IsOpen) return;
         if (Diff.WorkingFile is null || Graph.SelectedSha is not null)
@@ -429,7 +444,7 @@ public sealed partial class RepositoryTabViewModel : TabViewModel, IDisposable
     {
         if (e.PropertyName != nameof(DiffViewModel.IsOpen)) return;
         if (!Diff.IsOpen && !Conflicts.IsOpen) WorkingTree.MarkOpened(null, WorkingDiffSide.Unstaged);
-        if (Diff.IsOpen) CloseInspections();
+        if (Diff.IsOpen) CloseInspections(keepCompare: Diff.IsCompared);
         OnPropertyChanged(nameof(ShowGraph));
     }
 
@@ -460,8 +475,9 @@ public sealed partial class RepositoryTabViewModel : TabViewModel, IDisposable
     }
 
     // What a file inspection or the pull request screen shows in the main area gives way to a diff, the conflict editor or the rebase.
-    private void CloseInspections()
+    private void CloseInspections(bool keepCompare = false)
     {
+        if (!keepCompare) Compare.Close();
         FileHistory.Close();
         Blame.Close();
         PullRequest.Close();
@@ -494,6 +510,7 @@ public sealed partial class RepositoryTabViewModel : TabViewModel, IDisposable
         Diff.CloseCommand.Execute(null);
         FileHistory.Close();
         Blame.Close();
+        Compare.Close();
         PullRequest.Close();
         Issue.Close();
         WorkItem.Close();
@@ -517,6 +534,7 @@ public sealed partial class RepositoryTabViewModel : TabViewModel, IDisposable
         Diff.CloseCommand.Execute(null);
         FileHistory.Close();
         Blame.Close();
+        Compare.Close();
         PullRequest.Close();
         Issue.Close();
         WorkItem.Close();
@@ -547,6 +565,7 @@ public sealed partial class RepositoryTabViewModel : TabViewModel, IDisposable
         Diff.CloseCommand.Execute(null);
         FileHistory.Close();
         Blame.Close();
+        Compare.Close();
         Issue.Close();
         WorkItem.Close();
         Summary.Close();
@@ -563,6 +582,7 @@ public sealed partial class RepositoryTabViewModel : TabViewModel, IDisposable
         Diff.CloseCommand.Execute(null);
         FileHistory.Close();
         Blame.Close();
+        Compare.Close();
         PullRequest.Close();
         Summary.Close();
         Stats.Close();
@@ -595,6 +615,7 @@ public sealed partial class RepositoryTabViewModel : TabViewModel, IDisposable
         if (!await Conflicts.ConfirmCloseAsync()) return;
         Conflicts.Close();
         Rebase.Close();
+        Compare.Close();
         PullRequest.Close();
         Issue.Close();
         WorkItem.Close();
@@ -611,6 +632,40 @@ public sealed partial class RepositoryTabViewModel : TabViewModel, IDisposable
             FileHistory.Close();
             await Blame.OpenAsync(request.Path, request.Revision);
         }
+    }
+
+    private void OnComparePropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(BranchCompareViewModel.IsOpen)) OnPropertyChanged(nameof(ShowGraph));
+    }
+
+    // A file of the comparison: its diff A → B opens above the list, which is back when the diff is closed.
+    private void OnCompareDiffRequested(object? sender, BranchCompareDiffRequest request) =>
+        _ = Diff.OpenComparedAsync(request.A, request.B, request.File, request.MergeBase, request.NameA, request.NameB);
+
+    /// <summary>
+    /// Shows the comparison of two branches in place of the graph (left panel menu, palette, shortcut): the checked-out branch
+    /// and <paramref name="other"/> when given. Whatever else had the main area is closed (the conflict editor asks first).
+    /// </summary>
+    public Task ShowCompareAsync(GitRef? other = null) => ShowCompareCoreAsync(null, other);
+
+    /// <summary>Same screen with both sides chosen (a branch dropped on another one): <paramref name="a"/> against <paramref name="b"/>.</summary>
+    public Task ShowCompareOfAsync(GitRef a, GitRef b) => ShowCompareCoreAsync(a, b);
+
+    private async Task ShowCompareCoreAsync(GitRef? a, GitRef? other)
+    {
+        if (!await Conflicts.ConfirmCloseAsync()) return;
+        Conflicts.Close();
+        Rebase.Close();
+        Diff.CloseCommand.Execute(null);
+        FileHistory.Close();
+        Blame.Close();
+        PullRequest.Close();
+        Issue.Close();
+        WorkItem.Close();
+        Summary.Close();
+        Stats.Close();
+        await (a is null ? Compare.OpenFromCurrentAsync(other) : Compare.OpenAsync(a, other));
     }
 
     // "Afficher dans le graphe" of the blame: back to the graph, on that commit when it is loaded.

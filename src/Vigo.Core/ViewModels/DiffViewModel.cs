@@ -25,7 +25,77 @@ public sealed partial class DiffViewModel(
     /// <summary>The shown diff as one document for the code editor; null while there is no diff.</summary>
     public DiffDocument? Document { get; private set; }
 
-    partial void OnDiffChanged(FileDiff? value) => Document = value is null ? null : DiffDocument.Build(value);
+    partial void OnDiffChanged(FileDiff? value)
+    {
+        var document = value is null ? null : DiffDocument.Build(value);
+        Document = document is not null && IsCompared && _addedInA is not null && _addedInB is not null ? document.WithOrigins(Origins(value!)) : document;
+    }
+
+    // Branch comparison: the lines each branch added since the merge base (by line number in that branch), null when unknown.
+    private HashSet<int>? _addedInA;
+    private HashSet<int>? _addedInB;
+
+    /// <summary>
+    /// A line only in A was added by A, unless the merge base has it (B deleted it); a line only in B was added by B, unless the
+    /// merge base has it (A deleted it).
+    /// </summary>
+    private string Origins(FileDiff diff)
+    {
+        var letters = new System.Text.StringBuilder();
+        foreach (var line in diff.Hunks.SelectMany(h => h.Lines)) letters.Append(OriginOf(line));
+        return letters.ToString();
+    }
+
+    private char OriginOf(DiffLine line) => line.Kind switch
+    {
+        DiffLineKind.Deleted => _addedInA!.Contains(line.OldNumber ?? 0) ? DiffDocument.OriginA : DiffDocument.OriginB,
+        DiffLineKind.Added => _addedInB!.Contains(line.NewNumber ?? 0) ? DiffDocument.OriginB : DiffDocument.OriginA,
+        // Context line both branches changed the same way: it is not a difference between them, but both touched it.
+        DiffLineKind.Context when _addedInA!.Contains(line.OldNumber ?? 0) && _addedInB!.Contains(line.NewNumber ?? 0) => DiffDocument.OriginBoth,
+        _ => ' ',
+    };
+
+    // Side-by-side: the origin of each changed line, by side and number. The left side is A's and the right one B's, so each
+    // side only shows its own branch's changes (a line B changed stays plain on the left, A's one on the right).
+    // Exception: a block of changed lines with nothing on the other side is a pure deletion (one branch removed what the other
+    // kept): its lines stay coloured, with the colour of the branch that removed them.
+    private List<(bool Original, int Number, char Origin)>? SideOrigins(FileDiff diff)
+    {
+        if (!IsCompared || _addedInA is null || _addedInB is null) return null;
+        var result = new List<(bool, int, char)>();
+        foreach (var hunk in diff.Hunks)
+        {
+            var block = new List<DiffLine>();
+            foreach (var line in hunk.Lines.Append(null))
+            {
+                if (line is { IsChange: true })
+                {
+                    block.Add(line);
+                    continue;
+                }
+                if (line is { Kind: DiffLineKind.Context } && OriginOf(line) == DiffDocument.OriginBoth)
+                {
+                    result.Add((true, line.OldNumber ?? 0, DiffDocument.OriginBoth));
+                    result.Add((false, line.NewNumber ?? 0, DiffDocument.OriginBoth));
+                }
+                var pure = !block.Any(l => l.Kind == DiffLineKind.Added) || !block.Any(l => l.Kind == DiffLineKind.Deleted);
+                foreach (var l in block)
+                {
+                    var original = l.Kind == DiffLineKind.Deleted;
+                    var origin = OriginOf(l);
+                    if (pure || origin == (original ? DiffDocument.OriginA : DiffDocument.OriginB))
+                        result.Add((original, (original ? l.OldNumber : l.NewNumber) ?? 0, origin));
+                }
+                block.Clear();
+            }
+        }
+        return result;
+    }
+
+    /// <summary>Names of the compared branches (legend of the colours); empty outside a branch comparison.</summary>
+    public string CompareNameA { get; private set; } = string.Empty;
+
+    public string CompareNameB { get; private set; } = string.Empty;
 
     /// <summary>Selected lines as document lines (1-based, ascending), for the editor.</summary>
     public IReadOnlyList<int> SelectedDocumentLines =>
@@ -286,6 +356,9 @@ public sealed partial class DiffViewModel(
     [ObservableProperty]
     public partial int CurrentHunk { get; private set; } = -1;
 
+    /// <summary>The shown diff compares two branches (branch comparison): closing it goes back to the comparison.</summary>
+    public bool IsCompared { get; private set; }
+
     /// <summary>Working-directory change shown, with its side; null for a file of a commit.</summary>
     public (StatusEntry Entry, WorkingDiffSide Side)? WorkingFile { get; private set; }
 
@@ -329,11 +402,43 @@ public sealed partial class DiffViewModel(
     {
         GitSha? parent = commit.Parents.Count > 0 ? commit.Parents[0] : null;
         WorkingFile = null;
+        IsCompared = false;
         _versions = (
             parent is { } p ? FileVersion.AtCommit(p.ToString(), file.OldPath ?? file.Path) : null,
             FileVersion.AtCommit(commit.Sha.ToString(), file.Path));
         return LoadAsync(file, ct => git.GetFileDiffAsync(repositoryPath, commit.Sha, parent, file, ct), keepCurrent: false);
     }
+
+    /// <summary>Opens the diff of <paramref name="file"/> from commit <paramref name="from"/> (A) to commit <paramref name="to"/> (B).</summary>
+    public Task OpenComparedAsync(GitSha from, GitSha to, ChangedFile file, GitSha? mergeBase = null, string nameA = "", string nameB = "")
+    {
+        WorkingFile = null;
+        IsCompared = true;
+        CompareNameA = nameA;
+        CompareNameB = nameB;
+        _addedInA = _addedInB = null;
+        _versions = (FileVersion.AtCommit(from.ToString(), file.OldPath ?? file.Path), FileVersion.AtCommit(to.ToString(), file.Path));
+        return LoadAsync(file, async ct =>
+        {
+            var shown = await git.GetFileDiffAsync(repositoryPath, to, from, file, ct);
+            // Who changed what needs the changes of each branch since the merge base (a renamed file is not followed: one colour).
+            if (mergeBase is { } baseSha && file.OldPath is null && shown is Success<FileDiff> { Value.IsBinary: false })
+            {
+                var sinceBase = new ChangedFile(file.Path, null, FileChangeKind.Modified);
+                var inA = await git.GetFileDiffAsync(repositoryPath, from, baseSha, sinceBase, ct);
+                var inB = await git.GetFileDiffAsync(repositoryPath, to, baseSha, sinceBase, ct);
+                if (inA is Success<FileDiff> a && inB is Success<FileDiff> b)
+                {
+                    _addedInA = AddedNumbers(a.Value);
+                    _addedInB = AddedNumbers(b.Value);
+                }
+            }
+            return shown;
+        }, keepCurrent: false);
+    }
+
+    private static HashSet<int> AddedNumbers(FileDiff diff) =>
+        [.. diff.Hunks.SelectMany(h => h.Lines).Where(l => l.Kind == DiffLineKind.Added).Select(l => l.NewNumber ?? 0)];
 
     /// <summary>
     /// Opens the staged or unstaged part of a working-directory change. With <paramref name="refresh"/>, the diff
@@ -344,6 +449,7 @@ public sealed partial class DiffViewModel(
         var kind = (side == WorkingDiffSide.Staged ? entry.IndexChange : entry.WorkTreeChange) ?? FileChangeKind.Modified;
         var file = new ChangedFile(entry.Path, side == WorkingDiffSide.Staged ? entry.OldPath : null, kind);
         WorkingFile = (entry, side);
+        IsCompared = false;
         // Staged: HEAD → index; unstaged: index → disk (nothing before an untracked file).
         _versions = side == WorkingDiffSide.Staged
             ? (FileVersion.AtCommit("HEAD", entry.OldPath ?? entry.Path), FileVersion.InIndex(entry.Path))
@@ -358,6 +464,8 @@ public sealed partial class DiffViewModel(
         IsOpen = false;
         IsLoading = false;
         WorkingFile = null;
+        IsCompared = false;
+        _addedInA = _addedInB = null;
         File = null;
         Diff = null;
         Sides = null;
@@ -497,7 +605,7 @@ public sealed partial class DiffViewModel(
             return;
         }
 
-        Sides = new DiffSides(diff.Path, diff.OldPath ?? diff.Path, o.Value ?? string.Empty, m.Value ?? string.Empty);
+        Sides = new DiffSides(diff.Path, diff.OldPath ?? diff.Path, o.Value ?? string.Empty, m.Value ?? string.Empty) { Origins = SideOrigins(diff) };
 
         Task<GitResult<string?>> Read(FileVersion? version) => version is null
             ? Task.FromResult<GitResult<string?>>(new Success<string?>(null))
@@ -530,6 +638,9 @@ public sealed partial class DiffViewModel(
         OnPropertyChanged(nameof(HunkDisplay));
         OnPropertyChanged(nameof(PlaceholderMessage));
         OnPropertyChanged(nameof(IsImageDiff));
+        OnPropertyChanged(nameof(IsCompared));
+        OnPropertyChanged(nameof(CompareNameA));
+        OnPropertyChanged(nameof(CompareNameB));
         OnPropertyChanged(nameof(CanEditLines));
         OnPropertyChanged(nameof(CanDiscardLines));
         OnPropertyChanged(nameof(IsStagedSide));

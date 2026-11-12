@@ -134,6 +134,9 @@ public sealed partial class DiffView : UserControl
         Status.Letter = vm?.StatusLetter ?? string.Empty;
         PathText.Text = vm?.PathDisplay ?? string.Empty;
         SideText.Text = vm?.SideDisplay ?? string.Empty;
+        CompareLegend.Visibility = vm is { IsCompared: true } ? Visibility.Visible : Visibility.Collapsed;
+        LegendAText.Text = $"{Loc.Get("CompareLetterA.Text")} · {vm?.CompareNameA}";
+        LegendBText.Text = $"{Loc.Get("CompareLetterB.Text")} · {vm?.CompareNameB}";
         SideBadge.Visibility = SideText.Text.Length > 0 ? Visibility.Visible : Visibility.Collapsed;
         AdditionsText.Text = vm?.AdditionsDisplay ?? string.Empty;
         DeletionsText.Text = vm?.DeletionsDisplay ?? string.Empty;

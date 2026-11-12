@@ -180,6 +180,9 @@ public sealed record RefRowMenu
 
     public bool CanRemoveRemote { get; init; }
 
+    /// <summary>"Comparer avec …" on a branch or tag other than the checked-out one: the branch comparison screen; null hides it.</summary>
+    public string? CompareLabel { get; init; }
+
     public string? CopyText { get; init; }
 
     /// <summary>"#123" of a pull request or issue row ("Copier le numéro"); null hides the entry.</summary>
@@ -405,6 +408,10 @@ public sealed partial class RefsPanelViewModel : ObservableObject, IDisposable
         branch.CanonicalName, branch.Kind == GitRefKind.LocalBranch ? RefRowKind.LocalBranch : RefRowKind.RemoteBranch, branch.Name, 0,
         IsHead: branch.IsCurrent, Ref: branch);
 
+    /// <summary>Path ("feature/") of a folder row of the local branches; null for a folder of another section (keys are "folder:local/feature/").</summary>
+    private static string? LocalFolderOf(RefRow row) =>
+        row.Key.StartsWith("folder:local/", StringComparison.Ordinal) ? row.Key["folder:local/".Length..] : null;
+
     /// <summary>Entries of the context menu of <paramref name="row"/> (null: no menu, e.g. a folder).</summary>
     public RefRowMenu? MenuFor(RefRow row)
     {
@@ -444,6 +451,11 @@ public sealed partial class RefsPanelViewModel : ObservableObject, IDisposable
                     },
                     _ => null,
                 };
+
+            case RefRowKind.Folder when LocalFolderOf(row) is { } folder:
+                return actions.DeletableIn(folder).Count is var count and > 0
+                    ? new RefRowMenu { DeleteLabel = Loc.Format("Refs.Menu.DeleteFolder", folder.TrimEnd('/'), count), CanDelete = true }
+                    : null;
 
             case RefRowKind.Remote:
                 return new RefRowMenu { CanAddRemote = prompt, RemoteName = row.Label, CanEditRemote = prompt, CanRemoveRemote = true, CopyText = row.Label };
@@ -510,6 +522,7 @@ public sealed partial class RefsPanelViewModel : ObservableObject, IDisposable
                 return new RefRowMenu
                 {
                     CheckoutLabel = CheckoutLabel(row),
+                    CompareLabel = branch.IsCurrent ? null : Loc.Format("Refs.Menu.Compare", branch.Name),
                     Merge = Merge.HeadMenuFor(branch)?.Merge,
                     Rebase = Merge.HeadMenuFor(branch)?.Rebase,
                     CanCreateBranch = prompt,
@@ -529,6 +542,7 @@ public sealed partial class RefsPanelViewModel : ObservableObject, IDisposable
                 return new RefRowMenu
                 {
                     CheckoutLabel = CheckoutLabel(row),
+                    CompareLabel = Loc.Format("Refs.Menu.Compare", remoteBranch.Name),
                     Merge = Merge.HeadMenuFor(remoteBranch)?.Merge,
                     Rebase = Merge.HeadMenuFor(remoteBranch)?.Rebase,
                     CanCreateBranch = prompt,
@@ -542,6 +556,7 @@ public sealed partial class RefsPanelViewModel : ObservableObject, IDisposable
                 return new RefRowMenu
                 {
                     CheckoutLabel = CheckoutLabel(row),
+                    CompareLabel = Loc.Format("Refs.Menu.Compare", tag.Name),
                     CanCreateBranch = prompt,
                     PushLabel = actions.PushTagLabel(tag),
                     DeleteLabel = Loc.Format("Refs.Menu.DeleteTag", tag.Name),
@@ -646,6 +661,7 @@ public sealed partial class RefsPanelViewModel : ObservableObject, IDisposable
         { Kind: RefRowKind.RemoteBranch, Ref: { } remoteBranch } => RefActions.DeleteRemoteBranchCommand.ExecuteAsync(remoteBranch),
         { Kind: RefRowKind.Tag, Ref: { } tag } => RefActions.DeleteTagCommand.ExecuteAsync(tag),
         { Kind: RefRowKind.Remote } => RefActions.RemoveRemoteCommand.ExecuteAsync(row.Label),
+        { Kind: RefRowKind.Folder } when LocalFolderOf(row) is { } folder => RefActions.DeleteFolderBranchesCommand.ExecuteAsync(folder),
         { Kind: RefRowKind.Stash, Ref: { } stash } when _stash is not null => _stash.DeleteCommand.ExecuteAsync(stash),
         { Kind: RefRowKind.Worktree, Worktree: { } worktree } when _worktrees is not null => _worktrees.RemoveCommand.ExecuteAsync(worktree),
         { Kind: RefRowKind.LfsPattern, LfsPattern: { } pattern } when _lfs is not null => _lfs.UntrackCommand.ExecuteAsync(pattern),

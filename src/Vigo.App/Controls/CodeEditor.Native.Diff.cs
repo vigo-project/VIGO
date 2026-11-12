@@ -1,3 +1,4 @@
+using Vigo.App.Themes;
 using LoomEditor.View.Decorations;
 using Microsoft.Graphics.Canvas.Geometry;
 using Microsoft.Graphics.Canvas.Text;
@@ -34,6 +35,9 @@ public sealed partial class CodeEditor
 
     private static readonly EditorDecorationOptions DiffAddLine = WholeLine("vigo-diff-add");
     private static readonly EditorDecorationOptions DiffDelLine = WholeLine("vigo-diff-del");
+    private static readonly EditorDecorationOptions DiffOriginALine = WholeLine("vigo-diff-a");
+    private static readonly EditorDecorationOptions DiffOriginBLine = WholeLine("vigo-diff-b");
+    private static readonly EditorDecorationOptions DiffOriginBothLine = WholeLine("vigo-diff-both");
     private static readonly EditorDecorationOptions DiffSelectedLine = WholeLine("vigo-diff-selected");
     private static readonly EditorDecorationOptions DiffNote = new() { InlineClassName = "vigo-diff-note" };
 
@@ -52,6 +56,12 @@ public sealed partial class CodeEditor
     private readonly Dictionary<int, double> _zoneAbove = [];
     private bool _unifiedRevealPending;
 
+    /// <summary>Background of a changed line of branch A or B in a branch comparison.</summary>
+    private static Windows.UI.Color OriginFill(char origin, bool light) => origin == DiffDocument.OriginA
+        ? WithAlpha(light ? DesignTokens.Light.Accent : DesignTokens.Dark.Accent, 0x40)
+        : origin == DiffDocument.OriginBoth ? WithAlpha(light ? DesignTokens.Light.Success : DesignTokens.Dark.Success, 0x30)
+        : WithAlpha(light ? DesignTokens.Light.Warning : DesignTokens.Dark.Warning, 0x40);
+
     private static EditorDecorationOptions WholeLine(string className) =>
         new() { IsWholeLine = true, ClassName = className, MarginClassName = className };
 
@@ -64,6 +74,19 @@ public sealed partial class CodeEditor
         CustomDecorationStyles.Register("vigo-diff-del", new CustomDecorationStyle
         {
             Background = ThemeColorOf(Light.Del), DarkBackground = ThemeColorOf(Dark.Del),
+        });
+        // Branch comparison: a change of branch A and a change of branch B (accent and warning, instead of added and deleted).
+        CustomDecorationStyles.Register("vigo-diff-a", new CustomDecorationStyle
+        {
+            Background = ThemeColorOf(OriginFill(DiffDocument.OriginA, true)), DarkBackground = ThemeColorOf(OriginFill(DiffDocument.OriginA, false)),
+        });
+        CustomDecorationStyles.Register("vigo-diff-b", new CustomDecorationStyle
+        {
+            Background = ThemeColorOf(OriginFill(DiffDocument.OriginB, true)), DarkBackground = ThemeColorOf(OriginFill(DiffDocument.OriginB, false)),
+        });
+        CustomDecorationStyles.Register("vigo-diff-both", new CustomDecorationStyle
+        {
+            Background = ThemeColorOf(OriginFill(DiffDocument.OriginBoth, true)), DarkBackground = ThemeColorOf(OriginFill(DiffDocument.OriginBoth, false)),
         });
         CustomDecorationStyles.Register("vigo-diff-selected", new CustomDecorationStyle
         {
@@ -271,9 +294,15 @@ public sealed partial class CodeEditor
                     items.Add(new EditorDecoration(new LoomRange(line, 1, line, editor.Model.GetLineLength(line) + 1), DiffNote));
                     break;
                 case DiffDocument.Added or DiffDocument.Deleted:
+                    var origin = doc.Origins is { } origins && i < origins.Length ? origins[i] : ' ';
                     var options = _staging is not null && _selectedLines.Contains(line) ? DiffSelectedLine
+                        : origin == DiffDocument.OriginA ? DiffOriginALine
+                        : origin == DiffDocument.OriginB ? DiffOriginBLine
                         : kinds[i] == DiffDocument.Added ? DiffAddLine : DiffDelLine;
                     items.Add(new EditorDecoration(new LoomRange(line, 1, line, 1), options));
+                    break;
+                case DiffDocument.Context when doc.Origins is { } both && i < both.Length && both[i] == DiffDocument.OriginBoth:
+                    items.Add(new EditorDecoration(new LoomRange(line, 1, line, 1), DiffOriginBothLine));
                     break;
             }
         }
@@ -432,9 +461,14 @@ public sealed partial class CodeEditor
             var kind = i < doc.Kinds.Length ? doc.Kinds[i] : DiffDocument.Context;
             var changed = kind is DiffDocument.Added or DiffDocument.Deleted;
             var selected = changed && _staging is not null && _selectedLines.Contains(line);
+            if (!changed && kind == DiffDocument.Context && doc.Origins is { } common && i < common.Length && common[i] == DiffDocument.OriginBoth)
+                ds.FillRectangle(0, top, full, h, OriginFill(DiffDocument.OriginBoth, ActualTheme == ElementTheme.Light));
             if (changed)
             {
-                ds.FillRectangle(0, top, full, h, selected ? palette.Selected : kind == DiffDocument.Added ? palette.Add : palette.Del);
+                var origin = doc.Origins is { } origins && i < origins.Length ? origins[i] : ' ';
+                var fill = origin is DiffDocument.OriginA or DiffDocument.OriginB ? OriginFill(origin, ActualTheme == ElementTheme.Light)
+                    : kind == DiffDocument.Added ? palette.Add : palette.Del;
+                ds.FillRectangle(0, top, full, h, selected ? palette.Selected : fill);
                 if (selected) ds.FillRectangle(0, top, 3, h, palette.Accent);
             }
             if (changed && _staging is not null) DrawCheck(ds, palette, checkWidth / 2, top + rowH / 2, selected);

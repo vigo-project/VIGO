@@ -192,6 +192,17 @@ internal sealed class FakeGit : IGitService
         string repositoryPath, GitSha head, GitSha target, CancellationToken cancellationToken = default) =>
         Task.FromResult<GitResult<IReadOnlyList<string>>>(new Success<IReadOnlyList<string>>(ChangedOnTarget));
 
+    // Branch comparison: what the next comparison returns, and the pairs asked for.
+    public GitResult<BranchComparison>? Comparison { get; set; }
+
+    public List<(GitSha A, GitSha B)> Compared { get; } = [];
+
+    public Task<GitResult<BranchComparison>> CompareBranchesAsync(string repositoryPath, GitSha a, GitSha b, CancellationToken cancellationToken = default)
+    {
+        Compared.Add((a, b));
+        return Task.FromResult(Comparison ?? new Failure("no comparison"));
+    }
+
     // Summary page (J7.13): what the next reads return, and how many were made.
     public RepositorySummary Summary { get; set; } = new(0, 0, 0, [], [], [], null);
 

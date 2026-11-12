@@ -37,6 +37,15 @@
             <TextBlock x:Name="PathText" Grid.Column="2" FontFamily="{StaticResource VigoMonoFont}" FontSize="{ThemeResource VigoFontSize12}"
                        VerticalAlignment="Center" TextTrimming="CharacterEllipsis" IsTextSelectionEnabled="True" />
             <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                <!-- Branch comparison: whose change each highlighted line is. -->
+                <StackPanel x:Name="CompareLegend" Orientation="Horizontal" Spacing="6" Margin="0,0,8,0" Visibility="Collapsed">
+                    <Ellipse Width="10" Height="10" Fill="{ThemeResource VigoAccentBrush}" VerticalAlignment="Center" />
+                    <TextBlock x:Name="LegendAText" FontSize="{ThemeResource VigoFontSize11}" Foreground="{ThemeResource VigoText2Brush}" />
+                    <Ellipse Width="10" Height="10" Fill="{ThemeResource VigoWarningBrush}" VerticalAlignment="Center" Margin="6,0,0,0" />
+                    <TextBlock x:Name="LegendBText" FontSize="{ThemeResource VigoFontSize11}" Foreground="{ThemeResource VigoText2Brush}" />
+                    <Ellipse Width="10" Height="10" Fill="{ThemeResource VigoSuccessBrush}" VerticalAlignment="Center" Margin="6,0,0,0" />
+                    <TextBlock x:Uid="CompareLegendBoth" FontSize="{ThemeResource VigoFontSize11}" Foreground="{ThemeResource VigoText2Brush}" />
+                </StackPanel>
                 <!-- "Indexé" / "Non indexé" / "Non suivi" for a working-directory change. -->
                 <Border x:Name="SideBadge" Padding="6,1" CornerRadius="4" Background="{ThemeResource VigoCtrlBrush}"
                         BorderBrush="{ThemeResource VigoStrokeBrush}" BorderThickness="1" Margin="0,0,4,0" Visibility="Collapsed">

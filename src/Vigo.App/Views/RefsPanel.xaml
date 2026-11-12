@@ -144,6 +144,11 @@
                             <FontIcon Glyph="{x:Bind controls:FluentIcons.ArrowSwap}" FontFamily="{StaticResource VigoIconFont}" />
                         </MenuFlyoutItem.Icon>
                     </MenuFlyoutItem>
+                    <MenuFlyoutItem x:Name="CompareItem" Click="OnCompareClick">
+                        <MenuFlyoutItem.Icon>
+                            <FontIcon Glyph="{x:Bind controls:FluentIcons.ArrowSwap}" FontFamily="{StaticResource VigoIconFont}" />
+                        </MenuFlyoutItem.Icon>
+                    </MenuFlyoutItem>
                     <MenuFlyoutItem x:Name="MergeItem" Click="OnMergeClick">
                         <MenuFlyoutItem.Icon>
                             <FontIcon Glyph="{x:Bind controls:FluentIcons.Merge}" FontFamily="{StaticResource VigoIconFont}" />

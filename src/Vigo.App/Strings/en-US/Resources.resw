@@ -323,6 +323,7 @@
   <data name="Graph.Menu.InteractiveRebase" xml:space="preserve"><value>Interactive rebase of {0} onto this commit…</value></data>
   <data name="Graph.Menu.PullRequestFor" xml:space="preserve"><value>Create a pull request for {0}…</value></data>
   <data name="Graph.Menu.PullRequestTo" xml:space="preserve"><value>Create a pull request {0} → {1}…</value></data>
+  <data name="Graph.Menu.CompareTo" xml:space="preserve"><value>Compare {0} and {1}</value></data>
   <data name="Graph.Menu.Reset" xml:space="preserve"><value>Reset here</value></data>
   <data name="Graph.Status.Empty" xml:space="preserve"><value>Empty repository: no commits.</value></data>
   <data name="Graph.Status.Loading" xml:space="preserve"><value>Loading history…</value></data>
@@ -1001,6 +1002,9 @@ Stored by Git LFS (declared in {1}).</value></data>
   <data name="RepoToolbarBranch.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Branch</value></data>
   <data name="RepoToolbarBranch.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>New branch on the selected commit, or on HEAD (Ctrl+B)</value></data>
   <data name="RepoToolbarBranchContent.Label" xml:space="preserve"><value>Branch</value></data>
+  <data name="RepoToolbarCompare.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Compare</value></data>
+  <data name="RepoToolbarCompare.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Compare two branches (Ctrl+Shift+D); or drag a branch onto another one</value></data>
+  <data name="RepoToolbarCompareContent.Label" xml:space="preserve"><value>Compare</value></data>
   <data name="RepoUndo.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Undo</value></data>
   <data name="RepoUndoContent.Label" xml:space="preserve"><value>Undo</value></data>
   <data name="RepoPull.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Pull</value></data>
@@ -2625,4 +2629,50 @@ Stored by Git LFS (declared in {1}).</value></data>
   <data name="PrefIconsAssignProfile.Content" xml:space="preserve"><value>Assign to a profile ▾</value></data>
   <data name="PrefIconsAssignRepository.Content" xml:space="preserve"><value>Assign to a repository ▾</value></data>
   <data name="PrefIcons.NoRepository" xml:space="preserve"><value>No recently opened repository</value></data>
+  <data name="Compare.ChooseBoth" xml:space="preserve"><value>Choose the two branches to compare.</value></data>
+  <data name="Compare.Summary" xml:space="preserve"><value>{0} files differ · merge base {1}</value></data>
+  <data name="Compare.Failed" xml:space="preserve"><value>The branches cannot be compared: {0}</value></data>
+  <data name="Compare.Cat.OnlyIn" xml:space="preserve"><value>Only in {0}</value></data>
+  <data name="Compare.Cat.ModifiedIn" xml:space="preserve"><value>Changed only in {0}</value></data>
+  <data name="Compare.Cat.BothMerges" xml:space="preserve"><value>Changed on both sides, merges cleanly</value></data>
+  <data name="Compare.Cat.BothConflicts" xml:space="preserve"><value>Changed on both sides, conflict</value></data>
+  <data name="Compare.Cat.Identical" xml:space="preserve"><value>Same change on both sides</value></data>
+  <data name="Compare.Chip.ChangedIn" xml:space="preserve"><value>Changed only in {0}</value></data>
+  <data name="Compare.Chip.BothMerges" xml:space="preserve"><value>Both sides · auto-merge</value></data>
+  <data name="Compare.Chip.BothConflicts" xml:space="preserve"><value>Both sides · conflict</value></data>
+  <data name="Compare.Chip.Identical" xml:space="preserve"><value>Same change</value></data>
+  <data name="Compare.NoDifference" xml:space="preserve"><value>The two branches have the same files.</value></data>
+  <data name="Compare.NoMatch" xml:space="preserve"><value>No file matches the filters.</value></data>
+  <data name="Compare.Pick" xml:space="preserve"><value>Choose…</value></data>
+  <data name="Refs.Menu.Compare" xml:space="preserve"><value>Compare with {0}…</value></data>
+  <data name="Palette.Cmd.CompareBranches" xml:space="preserve"><value>Compare two branches…</value></data>
+  <data name="Shortcuts.Name.CompareBranches" xml:space="preserve"><value>Compare two branches</value></data>
+  <data name="CompareRoot.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Branch comparison</value></data>
+  <data name="CompareBackButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Back to the graph</value></data>
+  <data name="CompareBackButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Back to the graph (Esc)</value></data>
+  <data name="CompareBackText.Text" xml:space="preserve"><value>Graph</value></data>
+  <data name="CompareTitle.Text" xml:space="preserve"><value>Branch comparison</value></data>
+  <data name="CompareRefreshButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Compare again</value></data>
+  <data name="CompareRefreshButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Compare again (the branches may have moved)</value></data>
+  <data name="CompareSideA.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Branch A</value></data>
+  <data name="CompareSideA.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Choose branch A</value></data>
+  <data name="CompareSideB.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Branch B</value></data>
+  <data name="CompareSideB.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Choose branch B</value></data>
+  <data name="CompareSwapButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Swap A and B</value></data>
+  <data name="CompareSwapButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Swap A and B</value></data>
+  <data name="CompareFilter.PlaceholderText" xml:space="preserve"><value>Filter files…</value></data>
+  <data name="CompareFilter.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Filter files</value></data>
+  <data name="CompareConflictsUnknown.Text" xml:space="preserve"><value>Conflicts are not told apart: this git is older than 2.38.</value></data>
+  <data name="CompareFileList.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Files that differ</value></data>
+  <data name="CompareLetterA.Text" xml:space="preserve"><value>A</value></data>
+  <data name="CompareLetterB.Text" xml:space="preserve"><value>B</value></data>
+  <data name="CompareLegendBoth.Text" xml:space="preserve"><value>Same change</value></data>
+  <data name="RefActions.DeleteFolder.Title" xml:space="preserve"><value>Delete the branches of {0}?</value></data>
+  <data name="RefActions.DeleteFolder.MessageOne" xml:space="preserve"><value>1 local branch of folder {1} will be deleted.</value></data>
+  <data name="RefActions.DeleteFolder.MessageMany" xml:space="preserve"><value>{0} local branches of folder {1} will be deleted.</value></data>
+  <data name="RefActions.DeleteFolder.Exclusive" xml:space="preserve"><value>{0} commit(s) will no longer be on any branch.</value></data>
+  <data name="RefActions.DeleteFolder.KeepsCurrent" xml:space="preserve"><value>The checked-out branch {0} is kept.</value></data>
+  <data name="RefActions.DeleteFolder.AlsoRemote" xml:space="preserve"><value>Also delete the matching remote branches ({0})</value></data>
+  <data name="RefActions.DeleteFolder.Done" xml:space="preserve"><value>{0} branches deleted ({1})</value></data>
+  <data name="Refs.Menu.DeleteFolder" xml:space="preserve"><value>Delete the branches of {0} ({1})…</value></data>
 </root>

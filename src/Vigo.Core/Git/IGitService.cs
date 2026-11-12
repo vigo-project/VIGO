@@ -410,6 +410,13 @@ public interface IGitService
         string repositoryPath, GitSha head, GitSha target, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Compares two commits through their merge base (<c>git merge-base</c>, <c>git diff --name-status</c> A↔B, base→A and
+    /// base→B, renames followed) and classifies every file; a dry-run merge tells a clean merge from a conflict for the files
+    /// changed on both sides. A <see cref="Failure"/> when the commits share no history.
+    /// </summary>
+    Task<GitResult<BranchComparison>> CompareBranchesAsync(string repositoryPath, GitSha a, GitSha b, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Writes the commits as one mbox patch file (<c>git format-patch --stdout --binary</c>, J7.12, ADR-079). The commits must
     /// form a linear chain (each one the only child of the previous); a merge commit has no patch. Nothing written on failure.
     /// </summary>

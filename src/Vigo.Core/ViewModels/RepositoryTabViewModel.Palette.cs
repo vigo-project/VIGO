@@ -42,6 +42,7 @@ public sealed partial class RepositoryTabViewModel
             .. TerminalEntries(),
             .. GitFlowEntries(),
             .. PullRequestEntries(),
+            .. When(!Info.IsEmpty, Command("arrow_swap", Loc.Get("Palette.Cmd.CompareBranches"), CompareCommand, ShortcutMap.Current.Display(ShortcutIds.CompareBranches))),
             .. When(WorkingTree.IsAvailable && !Info.IsEmpty, PickFile("history", Loc.Get("Palette.Cmd.FileHistory"), FileInspectionKind.History)),
             .. When(WorkingTree.IsAvailable && !Info.IsEmpty, PickFile("person", Loc.Get("Palette.Cmd.FileBlame"), FileInspectionKind.Blame)),
         ];
