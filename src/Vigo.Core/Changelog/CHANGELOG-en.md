@@ -1,5 +1,9 @@
 ## Unreleased
 
+## 0.39.0 — 2026-11-13
+- Code editor (blame, diff, conflicts): more languages now get syntax coloring (LoomEditor 0.7).
+- Toolbar: the Pull button now has a down arrow that opens the same menu as the right-click (fetch, pull with merge / rebase / fast-forward only), so the other options are easy to find.
+
 ## 0.38.0 — 2026-11-12
 - Preferences: new option "Keep 'Push after committing' checked", so the commit form's box no longer clears itself after each push.
 - Left panel: right-click a folder of local branches ("feature/"…) to delete all the local branches it holds in one go; the checked-out branch is kept, and if some have a remote branch you are asked whether to delete those too.
