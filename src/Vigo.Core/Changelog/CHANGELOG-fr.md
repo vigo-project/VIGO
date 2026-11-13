@@ -1,5 +1,9 @@
 ## Unreleased
 
+## 0.39.0 — 2026-11-13
+- Éditeur de code (blame, diff, conflits) : davantage de langages ont maintenant la coloration syntaxique (LoomEditor 0.7).
+- Barre d'outils : le bouton Tirer a maintenant une flèche vers le bas qui ouvre le même menu que le clic droit (récupérer, tirer avec fusion / rebase / avance rapide uniquement), pour mieux découvrir les autres options.
+
 ## 0.38.0 — 2026-11-12
 - Préférences : nouvelle option « Garder “Pousser après la validation” cochée », pour que la case du formulaire de commit ne se décoche plus après chaque push.
 - Panneau gauche : clic droit sur un dossier de branches locales (« feature/ »…) pour supprimer d'un coup toutes les branches locales qu'il contient ; la branche courante est conservée, et si certaines ont une branche distante on vous demande si elles doivent être supprimées aussi.

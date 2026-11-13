@@ -109,6 +109,8 @@ public sealed partial class RepositoryView : UserControl
     /// <summary>Application commands of the toolbar (preferences).</summary>
     public ShellViewModel Shell { get; }
 
+    private void OnPullMenuClick(object sender, RoutedEventArgs e) => PullButton.ContextFlyout.ShowAt(PullButton);
+
     private void OnPaletteClick(object sender, RoutedEventArgs e) => _openPalette(string.Empty);
 
     // ---- "Dépôt" selector: the list is read when it opens, the filter box has the focus.

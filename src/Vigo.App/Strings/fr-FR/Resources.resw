@@ -1013,6 +1013,7 @@ Stocké par Git LFS (déclaré dans {1}).</value></data>
   <data name="RepoUndo.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Annuler</value></data>
   <data name="RepoUndoContent.Label" xml:space="preserve"><value>Annuler</value></data>
   <data name="RepoPull.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Tirer</value></data>
+  <data name="RepoPullMenu.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Autres options de tirage</value></data>
   <data name="RepoPullContent.Label" xml:space="preserve"><value>Tirer</value></data>
   <data name="RepoPush.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve"><value>Pousser</value></data>
   <data name="RepoPushContent.Label" xml:space="preserve"><value>Pousser</value></data>
